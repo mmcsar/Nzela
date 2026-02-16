@@ -89,11 +89,13 @@ Pipelines crees dans `.github/workflows`:
 
 ### Secrets GitHub requis
 
-Configurer ces secrets dans `Settings > Secrets and variables > Actions`:
+Configurer ces secrets dans **Settings → Secrets and variables → Actions** (ou dans l’environnement **production** si utilisé) :
 
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
+| Secret | Où le récupérer |
+|--------|------------------|
+| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) → Create Token |
+| `VERCEL_ORG_ID` | Projet Vercel → Settings → General (ou `.vercel/project.json` après `vercel link`) |
+| `VERCEL_PROJECT_ID` | Même page, champ **Project ID** |
 
 ### Strategie de branches
 
