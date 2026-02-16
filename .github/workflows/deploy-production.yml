@@ -21,6 +21,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check Vercel secrets
+        run: |
+          missing=""
+          [ -z "${{ secrets.VERCEL_TOKEN }}" ] && missing="VERCEL_TOKEN $missing"
+          [ -z "${{ secrets.VERCEL_ORG_ID }}" ] && missing="VERCEL_ORG_ID $missing"
+          [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ] && missing="VERCEL_PROJECT_ID $missing"
+          if [ -n "$missing" ]; then
+            echo "::error::Secrets manquants: $missing"
+            echo "Ce job utilise l'environnement 'production'. Ajoute ces secrets dans:"
+            echo "  - Settings > Secrets and variables > Actions (secrets du repo), OU"
+            echo "  - Settings > Environments > production > Environment secrets"
+            echo "Voir README section 'Secrets GitHub requis' pour où récupérer les valeurs."
+            exit 1
+          fi
+          echo "Secrets Vercel présents."
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
