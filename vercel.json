@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "regions": ["fra1"],
+  "rewrites": [{ "source": "/", "destination": "/fr" }],
   "headers": [
     {
       "source": "/(.*)",
