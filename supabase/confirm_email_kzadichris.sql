@@ -1,0 +1,6 @@
+-- Confirmer l'email de kzadichris@gmail.com (entreprise)
+-- Executer dans Supabase SQL Editor
+--
+-- ATTENTION: confirmed_at dans auth.users est une colonne generee (Supabase).
+-- Ne pas la modifier manuellement. La confirmation se fait via le lien email
+-- ou via le dashboard Supabase: Authentication > Users > [user] > Confirm email

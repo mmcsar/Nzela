@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#059669" />
+  <title>Nzela — Hors connexion</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #1f2937;
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 440px;
+      background: white;
+      border-radius: 24px;
+      padding: 48px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+    }
+    
+    .icon-wrapper {
+      width: 96px;
+      height: 96px;
+      background: linear-gradient(135deg, #059669, #047857);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.3);
+    }
+    
+    .icon-wrapper svg {
+      width: 48px;
+      height: 48px;
+      color: white;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    
+    .status-card {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+    
+    .status-card .dot {
+      width: 10px;
+      height: 10px;
+      background: #f59e0b;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    
+    .status-card p {
+      font-size: 13px;
+      color: #92400e;
+      font-weight: 500;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    
+    .feature {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 12px 8px;
+      font-size: 11px;
+      color: #4b5563;
+      font-weight: 600;
+    }
+    
+    .feature .emoji { font-size: 18px; display: block; margin-bottom: 4px; }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #059669, #047857);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,0.4); }
+    .btn:active { transform: translateY(0); }
+    
+    .btn svg { width: 18px; height: 18px; }
+    
+    .footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    
+    .footer strong { color: #059669; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon-wrapper">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728M5.636 5.636a9 9 0 000 12.728M8.464 8.464a5 5 0 010 7.072M15.536 8.464a5 5 0 000 7.072M12 12h.01" />
+      </svg>
+    </div>
+    
+    <h1>Mode Hors Connexion</h1>
+    <p class="subtitle">
+      Vous n'etes pas connecte a Internet.<br />
+      Certaines donnees recentes peuvent rester accessibles grace au cache PWA.
+    </p>
+    
+    <div class="status-card">
+      <div class="dot"></div>
+      <p>En attente de reconnexion... Les ecrans charges recemment sont disponibles hors ligne.</p>
+    </div>
+    
+    <div class="features">
+      <div class="feature"><span class="emoji">📦</span>Load Board</div>
+      <div class="feature"><span class="emoji">📄</span>POD & BOL</div>
+      <div class="feature"><span class="emoji">💬</span>Messagerie</div>
+      <div class="feature"><span class="emoji">🚛</span>Tracking</div>
+    </div>
+    
+    <button class="btn" onclick="window.location.reload()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      Reessayer la connexion
+    </button>
+    
+    <p class="footer">
+      <strong>Nzela</strong> — Plateforme de Logistique RDC
+    </p>
+  </div>
+  
+  <script>
+    // Auto-reload when connection is restored
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+    
+    // Check every 5 seconds
+    setInterval(() => {
+      if (navigator.onLine) {
+        window.location.reload();
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

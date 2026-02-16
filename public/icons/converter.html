@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html><head><title>Nzela Icon Converter</title></head>
+<body style="font-family:sans-serif;padding:40px;background:#f5f5f5">
+<h1>Nzela PWA Icon Generator</h1>
+<p>Click the button to generate and download all PNG icons.</p>
+<button id="gen" style="padding:12px 24px;font-size:16px;background:#059669;color:white;border:none;border-radius:8px;cursor:pointer">Generate PNG Icons</button>
+<div id="status" style="margin-top:20px"></div>
+<script>
+const sizes = [72,96,128,144,152,192,384,512];
+document.getElementById('gen').onclick = async () => {
+  const status = document.getElementById('status');
+  for (const size of sizes) {
+    const resp = await fetch('/icons/icon-' + size + 'x' + size + '.svg');
+    const svgText = await resp.text();
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    const blob = new Blob([svgText], {type:'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    await new Promise(r => { img.onload = r; img.src = url; });
+    ctx.drawImage(img, 0, 0, size, size);
+    const link = document.createElement('a');
+    link.download = 'icon-' + size + 'x' + size + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    status.innerHTML += '<p>✓ icon-' + size + 'x' + size + '.png</p>';
+    URL.revokeObjectURL(url);
+  }
+  // Apple touch icon
+  {
+    const resp = await fetch('/icons/apple-touch-icon.svg');
+    const svgText = await resp.text();
+    const canvas = document.createElement('canvas');
+    canvas.width = 180; canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    const blob = new Blob([svgText], {type:'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    await new Promise(r => { img.onload = r; img.src = url; });
+    ctx.drawImage(img, 0, 0, 180, 180);
+    const link = document.createElement('a');
+    link.download = 'apple-touch-icon.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    status.innerHTML += '<p>✓ apple-touch-icon.png</p>';
+  }
+  status.innerHTML += '<p style="color:#059669;font-weight:bold">Done! Place the downloaded PNGs in public/icons/</p>';
+};
+</script>
+</body></html>

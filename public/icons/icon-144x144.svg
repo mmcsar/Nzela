@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.15" />
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="144" height="144" rx="26" fill="url(#bg)" />
+  
+  <!-- Subtle shine overlay -->
+  <rect width="144" height="144" rx="26" fill="url(#shine)" />
+  
+  <!-- Main letter N -->
+  <text x="72" y="79.2" 
+        font-family="Arial, Helvetica, sans-serif" 
+        font-size="60" 
+        font-weight="900" 
+        fill="#ffffff" 
+        text-anchor="middle" 
+        dominant-baseline="middle"
+        letter-spacing="-1">N</text>
+  
+  <!-- Road line under letter -->
+  <line x1="44.5" y1="91.2" 
+        x2="99.5" y2="91.2" 
+        stroke="#10b981" 
+        stroke-width="9" 
+        stroke-linecap="round" 
+        opacity="0.9"/>
+  
+  <!-- Small dashes on road -->
+  <line x1="63.2" y1="91.2" 
+        x2="80.8" y2="91.2" 
+        stroke="#ffffff" 
+        stroke-width="4" 
+        stroke-linecap="round"
+        stroke-dasharray="4 3"
+        opacity="0.7"/>
+  
+  
+  <!-- "NZELA" text below road for larger icons -->
+  <text x="72" y="116.4" 
+        font-family="Arial, Helvetica, sans-serif" 
+        font-size="14" 
+        font-weight="700" 
+        fill="#ffffff" 
+        text-anchor="middle" 
+        opacity="0.8"
+        letter-spacing="3">NZELA</text>
+  
+</svg>
