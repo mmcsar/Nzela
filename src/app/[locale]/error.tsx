@@ -24,8 +24,15 @@ export default function Error({
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Une erreur est survenue</h1>
         <p className="text-gray-500">
-          Quelque chose s&apos;est mal passé. Veuillez réessayer.
+          {error.message?.includes('Configuration Supabase')
+            ? error.message
+            : "Quelque chose s'est mal passé. Veuillez réessayer."}
         </p>
+        {error.message && !error.message.includes('Configuration Supabase') && (
+          <p className="text-xs text-left text-gray-400 font-mono break-all bg-gray-100 px-3 py-2 rounded max-h-24 overflow-y-auto" title="Détail pour diagnostic">
+            {error.message}
+          </p>
+        )}
         {error.digest && (
           <p className="text-xs text-gray-400 font-mono">Code: {error.digest}</p>
         )}

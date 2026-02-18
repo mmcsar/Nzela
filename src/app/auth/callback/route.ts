@@ -46,6 +46,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/fr/login?error=auth_failed', requestUrl.origin));
   }
 
-  // Redirection vers le dashboard apres confirmation reussie
+  // Si next= fourni (ex: reset password), rediriger vers cette page
+  const next = requestUrl.searchParams.get('next');
+  if (next && next.startsWith('/') && !next.startsWith('//')) {
+    return NextResponse.redirect(new URL(next, requestUrl.origin));
+  }
+
+  // Sinon : dashboard apres connexion / confirmation
   return NextResponse.redirect(new URL('/fr/dashboard', requestUrl.origin));
 }

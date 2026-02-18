@@ -71,6 +71,7 @@ const nextConfig = {
 
   // ─── EXPERIMENTAL ───
   experimental: {
+    webpackMemoryOptimizations: true,
     serverActions: {
       bodySizeLimit: '5mb',
     },

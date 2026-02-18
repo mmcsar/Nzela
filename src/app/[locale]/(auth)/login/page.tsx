@@ -137,16 +137,14 @@ export default function LoginPage() {
                 {t('register')}
               </Link>
             </div>
-            {t('forgotPassword') && (
-              <div className="text-sm">
-                <a
-                  href="#"
-                  className="font-medium text-primary-600 hover:text-primary-500"
-                >
-                  {t('forgotPassword')}
-                </a>
-              </div>
-            )}
+            <div className="text-sm">
+              <Link
+                href="/forgot-password"
+                className="font-medium text-primary-600 hover:text-primary-500"
+              >
+                {t('forgotPassword')}
+              </Link>
+            </div>
           </div>
           <div>
             <Button

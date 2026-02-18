@@ -1,5 +1,7 @@
 # Publier Nzela sur Vercel (production)
 
+**URL de production actuelle :** https://nzela-rdc.vercel.app
+
 ## Ce qu’il reste à faire avant / au moment du déploiement
 
 ### 1. Supabase (production)
@@ -20,7 +22,7 @@ Dans **Vercel** → ton projet → **Settings** → **Environment Variables**, a
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Settings → API | Oui |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Settings → API | Oui |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API (service_role) | Oui (notifications admin) |
-| `NEXT_PUBLIC_APP_URL` | URL de prod, ex. `https://nzela.vercel.app` ou ton domaine | Oui |
+| `NEXT_PUBLIC_APP_URL` | URL de prod : `https://nzela-rdc.vercel.app` | Oui |
 | `NEXT_PUBLIC_SUPPORT_PHONE` | Ex. `+243 995 547 081` | Recommandé |
 | `NEXT_PUBLIC_APP_NAME` | Ex. `Nzela` | Optionnel |
 | `NEXT_PUBLIC_APP_DESCRIPTION` | Courte description | Optionnel |
@@ -42,8 +44,8 @@ Dans **Vercel** → ton projet → **Settings** → **Environment Variables**, a
 ### 4. Supabase – Auth (URL de redirection)
 
 - [ ] Dans **Supabase** → **Authentication** → **URL Configuration** :
-  - **Site URL** : `https://VOTRE_DOMAINE_VERCEL` (ex. `https://nzela.vercel.app`).
-  - **Redirect URLs** : ajouter `https://VOTRE_DOMAINE_VERCEL/**` et `https://VOTRE_DOMAINE_VERCEL/auth/callback`.
+  - **Site URL** : `https://nzela-rdc.vercel.app`
+  - **Redirect URLs** : ajouter `https://nzela-rdc.vercel.app/**` et `https://nzela-rdc.vercel.app/auth/callback`
 
 ### 5. Vérifications techniques (déjà OK si vous les avez faites)
 

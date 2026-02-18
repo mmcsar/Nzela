@@ -55,7 +55,20 @@
     "emailNotConfirmedMessage": "Votre adresse email n'a pas ete confirmee. Verifiez votre boite de reception.",
     "resendConfirmation": "Renvoyer l'email de confirmation",
     "confirmationEmailSent": "Email de confirmation envoye ! Verifiez votre boite de reception.",
-    "invalidCredentials": "Email ou mot de passe incorrect"
+    "invalidCredentials": "Email ou mot de passe incorrect",
+    "forgotPasswordTitle": "Mot de passe oublie",
+    "forgotPasswordHint": "Entrez votre email pour recevoir un lien de reinitialisation.",
+    "sendResetLink": "Envoyer le lien",
+    "resetPasswordTitle": "Nouveau mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "resetPassword": "Reinitialiser le mot de passe",
+    "resetPasswordSuccess": "Mot de passe modifie. Vous pouvez vous connecter.",
+    "backToLogin": "Retour a la connexion",
+    "resetEmailSent": "Si un compte existe, un email de reinitialisation a ete envoye.",
+    "invalidOrExpiredLink": "Lien invalide ou expire. Demandez un nouveau lien.",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas.",
+    "passwordMinLength": "Le mot de passe doit contenir au moins 6 caracteres."
   },
   "roles": {
     "admin": "Administrateur",

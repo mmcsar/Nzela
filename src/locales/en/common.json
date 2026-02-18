@@ -55,7 +55,20 @@
     "emailNotConfirmedMessage": "Your email address has not been confirmed. Please check your inbox.",
     "resendConfirmation": "Resend confirmation email",
     "confirmationEmailSent": "Confirmation email sent! Please check your inbox.",
-    "invalidCredentials": "Invalid email or password"
+    "invalidCredentials": "Invalid email or password",
+    "forgotPasswordTitle": "Forgot password",
+    "forgotPasswordHint": "Enter your email to receive a reset link.",
+    "sendResetLink": "Send reset link",
+    "resetPasswordTitle": "New password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "resetPassword": "Reset password",
+    "resetPasswordSuccess": "Password updated. You can now sign in.",
+    "backToLogin": "Back to login",
+    "resetEmailSent": "If an account exists, a reset email has been sent.",
+    "invalidOrExpiredLink": "Invalid or expired link. Please request a new one.",
+    "passwordsDoNotMatch": "Passwords do not match.",
+    "passwordMinLength": "Password must be at least 6 characters."
   },
   "roles": {
     "admin": "Administrator",

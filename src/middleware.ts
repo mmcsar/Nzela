@@ -12,6 +12,8 @@ const PUBLIC_ROUTES = [
   '/register',
   '/register/company',
   '/register/broker',
+  '/forgot-password',
+  '/reset-password',
   '/auth/callback',
   '/pricing',
   '/about',
