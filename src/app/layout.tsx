@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     title: 'Nzela',
     startupImage: [
       {
-        url: '/icons/icon-512x512.png',
+        url: '/icons/icon-512x512.svg',
         media: '(device-width: 375px) and (device-height: 812px)',
       },
     ],
@@ -37,11 +37,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
     ],
     apple: [
-      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/apple-touch-icon.svg', sizes: '180x180', type: 'image/svg+xml' },
     ],
   },
 };
@@ -67,18 +66,17 @@ export default function RootLayout({
     <html suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="theme-color" content="#059669" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Nzela" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#059669" />
-        <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+        <meta name="msapplication-TileImage" content="/icons/icon-144x144.svg" />
         {/* Apple splash screens for iOS */}
-        <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" />
+        <link rel="apple-touch-startup-image" href="/icons/icon-512x512.svg" />
       </head>
       <body className={inter.className} suppressHydrationWarning>
         {children}

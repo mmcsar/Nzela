@@ -89,6 +89,14 @@ const nextConfig = {
       'zustand',
     ],
   },
+
+  // Éviter 404 : favicon.ico et apple-touch-icon demandés par les navigateurs
+  async redirects() {
+    return [
+      { source: '/favicon.ico', destination: '/favicon.svg', permanent: true },
+      { source: '/apple-touch-icon.png', destination: '/icons/apple-touch-icon.svg', permanent: true },
+    ];
+  },
 };
 
 // Wrapper: Serwist + next-intl
