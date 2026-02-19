@@ -26,11 +26,11 @@ body {
     rgb(var(--background-start-rgb));
 }
 
-/* Champs de formulaire toujours lisibles sur mobile et en mode sombre */
+/* Champs de formulaire toujours lisibles (BOL, messagerie, etc.) */
 input:not([type="checkbox"]):not([type="radio"]),
-textarea {
+textarea,
+select {
   color: #111827 !important;
-  background-color: #ffffff !important;
   -webkit-text-fill-color: #111827 !important;
 }
 input::placeholder,

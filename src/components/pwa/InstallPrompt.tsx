@@ -11,10 +11,14 @@ interface BeforeInstallPromptEvent extends Event {
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isIOS] = useState(() => typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+  // Set in useEffect to avoid hydration mismatch (navigator only on client)
+  const [isIOS, setIsIOS] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
 
   useEffect(() => {
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(isIOSDevice);
+
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       return; // Already installed, don't show
@@ -38,7 +42,7 @@ export function InstallPrompt() {
     window.addEventListener('beforeinstallprompt', handler);
 
     // iOS: show custom guide after delay
-    if (isIOS) {
+    if (isIOSDevice) {
       const isStandalone = (window.navigator as any).standalone;
       if (!isStandalone) {
         setTimeout(() => setShowPrompt(true), 5000);
@@ -48,7 +52,7 @@ export function InstallPrompt() {
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
-  }, [isIOS]);
+  }, []);
 
   const handleInstall = async () => {
     if (isIOS) {

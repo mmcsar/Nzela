@@ -21,7 +21,8 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
+  // Initial 0 so server and client match; set real time in useEffect to avoid hydration mismatch
+  const [now, setNow] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async () => {
@@ -54,6 +55,7 @@ export function NotificationBell() {
   }, []);
 
   useEffect(() => {
+    setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(t);
   }, []);

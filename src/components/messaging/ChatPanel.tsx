@@ -506,7 +506,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyPress}
                 placeholder="Ecrire un message..."
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 resize-none text-sm bg-gray-50 placeholder:text-gray-400 transition-all"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 resize-none text-sm text-gray-900 bg-gray-50 placeholder:text-gray-400 transition-all"
                 rows={1}
                 style={{ maxHeight: '120px' }}
               />
@@ -572,7 +572,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher une conversation..."
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all placeholder:text-gray-400"
+            className="w-full pl-9 pr-4 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all placeholder:text-gray-400"
           />
           {searchQuery && (
             <button
@@ -821,7 +821,7 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
             <select
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
-              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+              className="w-full text-sm text-gray-900 border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30"
             >
               <option value="">-- Choisir un utilisateur --</option>
               {users.map(u => (
@@ -838,7 +838,7 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
             <select
               value={selectedLoadId}
               onChange={(e) => setSelectedLoadId(e.target.value)}
-              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+              className="w-full text-sm text-gray-900 border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30"
             >
               <option value="">-- Aucun --</option>
               {loads.map(l => (

@@ -264,7 +264,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
 
   // ─── STYLE CLASSES ───
   const labelCls = 'block text-[11px] font-bold text-gray-700 uppercase tracking-wide mb-0.5';
-  const inputCls = 'w-full px-2 py-1.5 text-sm border border-gray-300 bg-white focus:ring-1 focus:ring-primary-500 focus:border-primary-500 outline-none';
+  const inputCls = 'w-full px-2 py-1.5 text-sm text-gray-900 border border-gray-300 bg-white focus:ring-1 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder:text-gray-500';
   const sectionTitle = 'bg-gray-800 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 text-center';
 
   return (
@@ -478,16 +478,16 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         {items.map((item, i) => (
           <div key={i} className="grid grid-cols-12 border-b border-gray-300 text-sm">
             <div className="col-span-2 border-r border-gray-300">
-              <input className="w-full px-2 py-1.5 text-xs outline-none" value={item.customerOrderNo || ''} onChange={(e) => updateItem(i, 'customerOrderNo', e.target.value)} placeholder="CMD-001" />
+              <input className="w-full px-2 py-1.5 text-xs text-gray-900 bg-white outline-none placeholder:text-gray-500" value={item.customerOrderNo || ''} onChange={(e) => updateItem(i, 'customerOrderNo', e.target.value)} placeholder="CMD-001" />
             </div>
             <div className="col-span-4 border-r border-gray-300">
-              <input className="w-full px-2 py-1.5 text-xs outline-none" value={item.description || ''} onChange={(e) => updateItem(i, 'description', e.target.value)} placeholder="Description de la marchandise" />
+              <input className="w-full px-2 py-1.5 text-xs text-gray-900 bg-white outline-none placeholder:text-gray-500" value={item.description || ''} onChange={(e) => updateItem(i, 'description', e.target.value)} placeholder="Description de la marchandise" />
             </div>
             <div className="col-span-1 border-r border-gray-300">
-              <input className="w-full px-2 py-1.5 text-xs text-center outline-none" type="number" min={1} value={item.quantity || 1} onChange={(e) => updateItem(i, 'quantity', Number(e.target.value))} />
+              <input className="w-full px-2 py-1.5 text-xs text-center text-gray-900 bg-white outline-none" type="number" min={1} value={item.quantity || 1} onChange={(e) => updateItem(i, 'quantity', Number(e.target.value))} />
             </div>
             <div className="col-span-1 border-r border-gray-300">
-              <select className="w-full px-1 py-1.5 text-[10px] outline-none bg-transparent" value={item.packageType || 'Palette'} onChange={(e) => updateItem(i, 'packageType', e.target.value)}>
+              <select className="w-full px-1 py-1.5 text-[10px] text-gray-900 bg-white outline-none" value={item.packageType || 'Palette'} onChange={(e) => updateItem(i, 'packageType', e.target.value)}>
                 <option>Palette</option>
                 <option>Carton</option>
                 <option>Sac</option>
@@ -497,13 +497,13 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
               </select>
             </div>
             <div className="col-span-1 border-r border-gray-300">
-              <input className="w-full px-2 py-1.5 text-xs text-center outline-none" type="number" min={0} value={item.weight || 0} onChange={(e) => updateItem(i, 'weight', Number(e.target.value))} />
+              <input className="w-full px-2 py-1.5 text-xs text-center text-gray-900 bg-white outline-none" type="number" min={0} value={item.weight || 0} onChange={(e) => updateItem(i, 'weight', Number(e.target.value))} />
             </div>
             <div className="col-span-1 border-r border-gray-300 flex items-center justify-center">
               <input type="checkbox" className="w-4 h-4" checked={item.palletSlip || false} onChange={(e) => updateItem(i, 'palletSlip', e.target.checked)} />
             </div>
             <div className="col-span-1 border-r border-gray-300">
-              <input className="w-full px-2 py-1.5 text-xs text-center outline-none" value={item.freightClass || '70'} onChange={(e) => updateItem(i, 'freightClass', e.target.value)} />
+              <input className="w-full px-2 py-1.5 text-xs text-center text-gray-900 bg-white outline-none" value={item.freightClass || '70'} onChange={(e) => updateItem(i, 'freightClass', e.target.value)} />
             </div>
             <div className="col-span-1 flex items-center justify-center">
               {items.length > 1 && (
