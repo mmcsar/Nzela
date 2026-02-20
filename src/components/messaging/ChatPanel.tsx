@@ -116,6 +116,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [messagingNotInstalled, setMessagingNotInstalled] = useState<{ detail: string } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -131,11 +132,17 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       const response = await fetch('/api/messages');
       const data = await response.json();
       if (response.ok) {
+        setMessagingNotInstalled(null);
         setConversations(data.conversations || []);
+      } else if (response.status === 503 && data?.error?.code === 'MESSAGING_NOT_INSTALLED') {
+        setMessagingNotInstalled({ detail: data.error.detail || data.error.message || '' });
+        setFetchError(null);
+        setConversations([]);
       } else {
+        setMessagingNotInstalled(null);
         const msg = [data?.error?.message, data?.error?.detail].filter(Boolean).join(' — ') || data?.error || (response.status === 401 ? 'Connectez-vous pour accéder aux messages.' : 'Impossible de charger les conversations.');
         setFetchError(msg);
-        if (!silent) setConversations([]);
+        setConversations([]);
       }
     } catch (error) {
       console.error('Erreur chargement conversations:', error);
@@ -359,6 +366,42 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   const height = embedded ? 'h-[600px]' : 'h-[calc(100vh-8rem)]';
+
+  // ══════════════════════════════════════════
+  // MODULE MESSAGERIE NON INSTALLÉ
+  // ══════════════════════════════════════════
+  if (messagingNotInstalled) {
+    return (
+      <div className={`flex flex-col ${height} bg-white rounded-xl border shadow-sm overflow-hidden ${className}`}>
+        <div className="flex flex-1 flex-col items-center justify-center p-6">
+          <div className="w-full max-w-md rounded-xl border border-amber-200 bg-amber-50 p-6 text-left shadow-sm">
+            <h3 className="text-lg font-semibold text-amber-900">Module messagerie non installé</h3>
+            <p className="mt-2 text-sm text-amber-800">
+              Les tables et politiques de messagerie sont absentes de votre base Supabase. Effectuez les étapes suivantes :
+            </p>
+            <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-amber-900">
+              <li>Ouvrez le <strong>tableau de bord Supabase</strong> du projet utilisé par cette application.</li>
+              <li>Allez dans <strong>SQL Editor</strong> et créez une nouvelle requête.</li>
+              <li>Copiez le contenu du fichier <code className="rounded bg-amber-100 px-1">supabase/messaging_install.sql</code> du dépôt, collez-le dans l’éditeur puis exécutez-le.</li>
+              <li>Vérifiez que les variables d’environnement Vercel incluent <code className="rounded bg-amber-100 px-1">SUPABASE_SERVICE_ROLE_KEY</code> (voir <code className="rounded bg-amber-100 px-1">docs/VERCEL-ENV.md</code>).</li>
+            </ol>
+            {messagingNotInstalled.detail && (
+              <p className="mt-4 rounded bg-amber-100/80 p-2 font-mono text-xs text-amber-900 break-all">
+                {messagingNotInstalled.detail}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => { setMessagingNotInstalled(null); fetchConversations(); }}
+              className="mt-5 w-full rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+            >
+              Réessayer après installation
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ══════════════════════════════════════════
   // VUE MESSAGES (conversation ouverte)

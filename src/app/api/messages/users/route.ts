@@ -15,7 +15,20 @@ export async function GET() {
     const auth = await requireAuth(supabase, ['broker', 'company', 'admin']);
     if (!auth.allowed) return auth.response!;
 
-    const serviceClient = createServiceRoleClient();
+    let serviceClient;
+    try {
+      serviceClient = createServiceRoleClient();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('SERVICE_ROLE') || msg.includes('requis')) {
+        return NextResponse.json({
+          users: [],
+          message: 'SUPABASE_SERVICE_ROLE_KEY non configurée. Liste des destinataires indisponible.',
+        });
+      }
+      throw e;
+    }
+
     const { data: users, error } = await serviceClient
       .from('users')
       .select('id, email, full_name, role')

@@ -4,6 +4,39 @@ import { requireAuth } from '@/lib/auth/checkRole';
 import { handleApiError } from '@/lib/api/error';
 import { messageLimiter } from '@/lib/api/rate-limit';
 
+/** Extrait le message d'erreur Supabase/Postgres */
+function getErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object') {
+    const e = error as Record<string, unknown>;
+    if (typeof e.message === 'string') return e.message;
+    if (typeof e.details === 'string') return e.details;
+  }
+  return '';
+}
+
+/** Réponse 503 module messagerie non installé (tables/fonctions manquantes) */
+function messagingNotInstalledResponse(detail: string) {
+  return NextResponse.json(
+    {
+      error: {
+        code: 'MESSAGING_NOT_INSTALLED',
+        message: 'Module messagerie non installé. Exécutez le script SQL dans Supabase (voir instructions ci-dessous).',
+        detail,
+      },
+    },
+    { status: 503 }
+  );
+}
+
+/** Vérifie que les tables messagerie existent ; sinon throw avec message Postgres */
+async function ensureMessagingTables(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { error } = await supabase
+    .from('conversation_participants')
+    .select('id')
+    .limit(1);
+  if (error) throw error;
+}
+
 // ══════════════════════════════════════════
 // GET - Liste des conversations OU messages d'une conversation
 // ══════════════════════════════════════════
@@ -15,6 +48,17 @@ export async function GET(request: Request) {
 
     const rateLimit = messageLimiter.check(auth.userId);
     if (!rateLimit.allowed) return rateLimit.response!;
+
+    // Vérifier tout de suite si le module messagerie est installé
+    try {
+      await ensureMessagingTables(supabase);
+    } catch (checkError) {
+      const msg = getErrorMessage(checkError);
+      if (msg && (msg.includes('does not exist') || msg.includes('relation "'))) {
+        return messagingNotInstalledResponse(msg);
+      }
+      throw checkError;
+    }
 
     const { searchParams } = new URL(request.url);
     const conversationId = searchParams.get('conversationId');
@@ -186,17 +230,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ conversations: enrichedConversations });
   } catch (error: unknown) {
-    const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : '';
-    if (message && (message.includes('does not exist') || message.includes('relation "'))) {
-      return NextResponse.json(
-        {
-          error: {
-            message: 'Module messagerie non installé. Exécutez supabase/messaging_install.sql dans Supabase → SQL Editor.',
-            detail: message,
-          },
-        },
-        { status: 503 }
-      );
+    const msg = getErrorMessage(error);
+    if (msg && (msg.includes('does not exist') || msg.includes('relation "'))) {
+      return messagingNotInstalledResponse(msg);
     }
     return handleApiError(error);
   }
@@ -213,6 +249,16 @@ export async function POST(request: Request) {
 
     const rateLimit = messageLimiter.check(auth.userId);
     if (!rateLimit.allowed) return rateLimit.response!;
+
+    try {
+      await ensureMessagingTables(supabase);
+    } catch (checkError) {
+      const msg = getErrorMessage(checkError);
+      if (msg && (msg.includes('does not exist') || msg.includes('relation "'))) {
+        return messagingNotInstalledResponse(msg);
+      }
+      throw checkError;
+    }
 
     const body = await request.json();
     const { action } = body;
@@ -365,17 +411,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: enrichedMessage }, { status: 201 });
   } catch (error: unknown) {
-    const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : '';
-    if (message && (message.includes('does not exist') || message.includes('relation "'))) {
-      return NextResponse.json(
-        {
-          error: {
-            message: 'Module messagerie non installé. Exécutez supabase/messaging_install.sql dans Supabase → SQL Editor.',
-            detail: message,
-          },
-        },
-        { status: 503 }
-      );
+    const msg = getErrorMessage(error);
+    if (msg && (msg.includes('does not exist') || msg.includes('relation "'))) {
+      return messagingNotInstalledResponse(msg);
     }
     return handleApiError(error);
   }

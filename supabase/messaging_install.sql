@@ -1,10 +1,23 @@
 -- ══════════════════════════════════════════════════════════════
 -- NZELA - INSTALLATION MESSAGERIE (script autonome)
 -- À exécuter dans Supabase → SQL Editor.
+-- Ce script SUPPRIME tout ancien code messagerie puis installe le nouveau.
 -- Prérequis : tables public.users et public.loads existent.
 -- ══════════════════════════════════════════════════════════════
 
--- 1. FONCTIONS REQUISES (créées si absentes)
+-- 0. SUPPRIMER TOUT L'ANCIEN CODE MESSAGERIE
+-- ══════════════════════════════════════════
+-- Tables (CASCADE supprime aussi triggers et politiques). Ordre : dépendances d’abord.
+DROP TABLE IF EXISTS public.messages CASCADE;
+DROP TABLE IF EXISTS public.conversation_participants CASCADE;
+DROP TABLE IF EXISTS public.conversations CASCADE;
+-- Ancien nom possible au singulier :
+DROP TABLE IF EXISTS public.message CASCADE;
+
+-- Fonction trigger (recréée plus bas)
+DROP FUNCTION IF EXISTS update_conversation_last_message() CASCADE;
+
+-- 1. FONCTIONS REQUISES (créées ou remplacées)
 -- ══════════════════════════════════════════
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -25,12 +38,6 @@ EXCEPTION WHEN OTHERS THEN
   RETURN FALSE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
-
--- 2. SUPPRESSION DES ANCIENNES TABLES (ordre à cause des FK)
--- ══════════════════════════════════════════
-DROP TABLE IF EXISTS public.messages CASCADE;
-DROP TABLE IF EXISTS public.conversation_participants CASCADE;
-DROP TABLE IF EXISTS public.conversations CASCADE;
 
 -- 3. TABLE CONVERSATIONS
 -- ══════════════════════════════════════════
