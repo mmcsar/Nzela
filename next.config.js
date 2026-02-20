@@ -97,6 +97,18 @@ const nextConfig = {
       { source: '/apple-touch-icon.png', destination: '/icons/apple-touch-icon.svg', permanent: true },
     ];
   },
+
+  // Éviter 404 : manifest et worker PWA demandés avec préfixe locale (/fr/manifest.json, /en/swe-worker-*.js)
+  async rewrites() {
+    return [
+      { source: '/fr/manifest.json', destination: '/manifest.json' },
+      { source: '/en/manifest.json', destination: '/manifest.json' },
+      { source: '/fr/sw.js', destination: '/sw.js' },
+      { source: '/en/sw.js', destination: '/sw.js' },
+      { source: '/fr/swe-worker-:path*', destination: '/swe-worker-:path*' },
+      { source: '/en/swe-worker-:path*', destination: '/swe-worker-:path*' },
+    ];
+  },
 };
 
 // Wrapper: Serwist + next-intl

@@ -25,23 +25,32 @@ export function NotificationBell() {
   const [now, setNow] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (): Promise<boolean> => {
     try {
       const response = await fetch('/api/notifications?limit=10');
+      if (response.status === 401) return false; // Non connecté : arrêter le polling
       const data = await response.json();
       if (response.ok) {
         setNotifications(data.notifications || []);
         setUnreadCount(data.unreadCount || 0);
+        return true;
       }
     } catch {
       // silently fail
     }
+    return false;
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => fetchNotifications());
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const run = async () => {
+      const ok = await fetchNotifications();
+      if (ok) intervalId = setInterval(() => fetchNotifications(), 30000);
+    };
+    run();
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [fetchNotifications]);
 
   useEffect(() => {

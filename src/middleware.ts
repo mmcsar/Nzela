@@ -81,11 +81,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - api (API routes - gérées par requireAuth côté serveur)
+     * - _next/static, _next/image, favicon.ico, api
+     * - manifest.json, /icons (PWA et assets)
+     * - extensions: svg, png, jpg, jpeg, gif, webp, js (sw.js, swe-worker)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api|manifest\\.json|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js)$).*)',
   ],
 };
