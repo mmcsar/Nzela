@@ -133,7 +133,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       if (response.ok) {
         setConversations(data.conversations || []);
       } else {
-        const msg = data?.error?.message || data?.error || (response.status === 401 ? 'Connectez-vous pour accéder aux messages.' : 'Impossible de charger les conversations.');
+        const msg = [data?.error?.message, data?.error?.detail].filter(Boolean).join(' — ') || data?.error || (response.status === 401 ? 'Connectez-vous pour accéder aux messages.' : 'Impossible de charger les conversations.');
         setFetchError(msg);
         if (!silent) setConversations([]);
       }
@@ -157,7 +157,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       if (response.ok) {
         setMessages(data.messages || []);
       } else {
-        setFetchError(data?.error?.message || data?.error || 'Impossible de charger les messages.');
+        setFetchError([data?.error?.message, data?.error?.detail].filter(Boolean).join(' — ') || data?.error || 'Impossible de charger les messages.');
         setMessages([]);
       }
     } catch (error) {
@@ -314,7 +314,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
         fetchConversations(true);
       } else {
         const data = await response.json().catch(() => ({}));
-        setFetchError(data?.error?.message || data?.error || 'Envoi impossible.');
+        setFetchError([data?.error?.message, data?.error?.detail].filter(Boolean).join(' — ') || data?.error || 'Envoi impossible.');
         setMessages(prev =>
           prev.map(m => m.id === tempMsg.id ? { ...m, type: 'error' } : m)
         );

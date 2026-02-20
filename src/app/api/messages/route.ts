@@ -189,7 +189,12 @@ export async function GET(request: Request) {
     const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : '';
     if (message && (message.includes('does not exist') || message.includes('relation "'))) {
       return NextResponse.json(
-        { error: { message: 'Module messagerie non installé. Dans Supabase → SQL Editor, exécutez le script supabase/messaging_install.sql (ou messaging_setup.sql).' } },
+        {
+          error: {
+            message: 'Module messagerie non installé. Exécutez supabase/messaging_install.sql dans Supabase → SQL Editor.',
+            detail: message,
+          },
+        },
         { status: 503 }
       );
     }
@@ -363,7 +368,12 @@ export async function POST(request: Request) {
     const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : '';
     if (message && (message.includes('does not exist') || message.includes('relation "'))) {
       return NextResponse.json(
-        { error: { message: 'Module messagerie non installé. Dans Supabase → SQL Editor, exécutez le script supabase/messaging_install.sql (ou messaging_setup.sql).' } },
+        {
+          error: {
+            message: 'Module messagerie non installé. Exécutez supabase/messaging_install.sql dans Supabase → SQL Editor.',
+            detail: message,
+          },
+        },
         { status: 503 }
       );
     }
