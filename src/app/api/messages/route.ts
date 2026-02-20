@@ -186,6 +186,13 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ conversations: enrichedConversations });
   } catch (error: unknown) {
+    const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : '';
+    if (message && (message.includes('does not exist') || message.includes('relation "'))) {
+      return NextResponse.json(
+        { error: { message: 'Module messagerie non installé. Exécutez le script supabase/messaging_setup.sql dans votre base Supabase.' } },
+        { status: 503 }
+      );
+    }
     return handleApiError(error);
   }
 }
@@ -353,6 +360,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: enrichedMessage }, { status: 201 });
   } catch (error: unknown) {
+    const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : '';
+    if (message && (message.includes('does not exist') || message.includes('relation "'))) {
+      return NextResponse.json(
+        { error: { message: 'Module messagerie non installé. Exécutez le script supabase/messaging_setup.sql dans votre base Supabase.' } },
+        { status: 503 }
+      );
+    }
     return handleApiError(error);
   }
 }

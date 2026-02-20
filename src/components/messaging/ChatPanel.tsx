@@ -115,6 +115,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
   const [showNewConv, setShowNewConv] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -125,14 +126,21 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
   // ── Fetch conversations ──
   const fetchConversations = useCallback(async (silent = false) => {
     try {
+      setFetchError(null);
       if (!silent) setIsLoading(true);
       const response = await fetch('/api/messages');
       const data = await response.json();
       if (response.ok) {
         setConversations(data.conversations || []);
+      } else {
+        const msg = data?.error?.message || data?.error || (response.status === 401 ? 'Connectez-vous pour accéder aux messages.' : 'Impossible de charger les conversations.');
+        setFetchError(msg);
+        if (!silent) setConversations([]);
       }
     } catch (error) {
       console.error('Erreur chargement conversations:', error);
+      setFetchError('Erreur réseau. Réessayez.');
+      if (!silent) setConversations([]);
     } finally {
       if (!silent) setIsLoading(false);
     }
@@ -142,14 +150,20 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
   const openConversation = useCallback(async (conv: ConversationItem) => {
     setSelectedConv(conv);
     setIsLoadingMessages(true);
+    setFetchError(null);
     try {
       const response = await fetch(`/api/messages?conversationId=${conv.id}`);
       const data = await response.json();
       if (response.ok) {
         setMessages(data.messages || []);
+      } else {
+        setFetchError(data?.error?.message || data?.error || 'Impossible de charger les messages.');
+        setMessages([]);
       }
     } catch (error) {
       console.error('Erreur chargement messages:', error);
+      setFetchError('Erreur réseau.');
+      setMessages([]);
     } finally {
       setIsLoadingMessages(false);
     }
@@ -299,7 +313,8 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
         // Refresh conversations pour mettre a jour le dernier message
         fetchConversations(true);
       } else {
-        // Marquer le message comme echoue
+        const data = await response.json().catch(() => ({}));
+        setFetchError(data?.error?.message || data?.error || 'Envoi impossible.');
         setMessages(prev =>
           prev.map(m => m.id === tempMsg.id ? { ...m, type: 'error' } : m)
         );
@@ -354,7 +369,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
         {/* Header */}
         <div className="px-4 py-3 bg-white border-b flex items-center gap-3 flex-shrink-0">
           <button
-            onClick={() => { setSelectedConv(null); fetchConversations(true); }}
+            onClick={() => { setSelectedConv(null); setFetchError(null); fetchConversations(true); }}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -384,6 +399,19 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
             <MoreVertical className="w-4 h-4 text-gray-400" />
           </button>
         </div>
+
+        {fetchError && (
+          <div className="mx-4 mt-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between gap-2">
+            <p className="text-sm text-red-800 flex-1">{fetchError}</p>
+            <button
+              type="button"
+              onClick={() => selectedConv && openConversation(selectedConv)}
+              className="text-xs font-medium text-red-700 hover:text-red-800 underline"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
 
         {/* Messages */}
         <div
@@ -583,6 +611,20 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
             </button>
           )}
         </div>
+
+        {/* Erreur chargement conversations */}
+        {fetchError && (
+          <div className="mt-3 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between gap-2">
+            <p className="text-sm text-red-800 flex-1">{fetchError}</p>
+            <button
+              type="button"
+              onClick={() => fetchConversations()}
+              className="text-xs font-medium text-red-700 hover:text-red-800 underline"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Formulaire nouvelle conversation (modal simple) */}
@@ -708,21 +750,11 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
 
   const loadData = useCallback(async () => {
     try {
-      // Charger les utilisateurs (sauf moi)
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: usersData } = await supabase
-        .from('users')
-        .select('id, email, full_name, role')
-        .neq('id', user?.id || '')
-        .order('full_name');
-
-      if (usersData) {
-        setUsers(usersData.map((u: any) => ({
-          id: u.id,
-          name: u.full_name || u.email?.split('@')[0] || '?',
-          email: u.email || '',
-          role: u.role || 'user',
-        })));
+      // Utilisateurs avec qui on peut discuter (via API pour contourner RLS)
+      const usersRes = await fetch('/api/messages/users');
+      const usersJson = await usersRes.json();
+      if (usersRes.ok && usersJson.users) {
+        setUsers(usersJson.users);
       }
 
       // Charger les loads actifs
