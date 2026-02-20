@@ -98,15 +98,13 @@ const nextConfig = {
     ];
   },
 
-  // Éviter 404 : manifest et worker PWA demandés avec préfixe locale (/fr/manifest.json, /en/swe-worker-*.js)
+  // Éviter 404 : manifest et worker PWA demandés avec préfixe locale (/fr/manifest.json, /en/sw.js)
   async rewrites() {
     return [
       { source: '/fr/manifest.json', destination: '/manifest.json' },
       { source: '/en/manifest.json', destination: '/manifest.json' },
       { source: '/fr/sw.js', destination: '/sw.js' },
       { source: '/en/sw.js', destination: '/sw.js' },
-      { source: '/fr/swe-worker-:path*', destination: '/swe-worker-:path*' },
-      { source: '/en/swe-worker-:path*', destination: '/swe-worker-:path*' },
     ];
   },
 };
