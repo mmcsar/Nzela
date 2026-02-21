@@ -8,6 +8,7 @@ import {
   ChevronDown, X,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { toErrorMessage } from '@/lib/api/error';
 
 // ══════════════════════════════════════════
 // INTERFACES
@@ -140,8 +141,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
         setConversations([]);
       } else {
         setMessagingNotInstalled(null);
-        const msg = [data?.error?.message, data?.error?.detail].filter(Boolean).join(' — ') || data?.error || (response.status === 401 ? 'Connectez-vous pour accéder aux messages.' : 'Impossible de charger les conversations.');
-        setFetchError(msg);
+        setFetchError(toErrorMessage(data?.error, response.status === 401 ? 'Connectez-vous pour accéder aux messages.' : 'Impossible de charger les conversations.'));
         setConversations([]);
       }
     } catch (error) {
@@ -164,7 +164,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       if (response.ok) {
         setMessages(data.messages || []);
       } else {
-        setFetchError([data?.error?.message, data?.error?.detail].filter(Boolean).join(' — ') || data?.error || 'Impossible de charger les messages.');
+        setFetchError(toErrorMessage(data?.error, 'Impossible de charger les messages.'));
         setMessages([]);
       }
     } catch (error) {
@@ -328,7 +328,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
         fetchConversations(true);
       } else {
         const data = await response.json().catch(() => ({}));
-        setFetchError([data?.error?.message, data?.error?.detail].filter(Boolean).join(' — ') || data?.error || 'Envoi impossible.');
+        setFetchError(toErrorMessage(data?.error, 'Envoi impossible.'));
         setMessages(prev =>
           prev.map(m => m.id === tempMsg.id ? { ...m, type: 'error' } : m)
         );
@@ -808,13 +808,12 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
       if (usersRes.ok) {
         setUsers(usersJson.users ?? []);
         if (!usersJson.users || usersJson.users.length === 0) {
-          setUsersError(usersJson.message || 'Aucun destinataire disponible (courtier, entreprise ou admin).');
+          setUsersError(toErrorMessage(usersJson.message, 'Aucun destinataire disponible (courtier, entreprise ou admin).'));
         } else {
           setUsersError(null);
         }
       } else {
-        const msg = usersJson?.message || usersJson?.error || `Erreur ${usersRes.status}`;
-        setUsersError(msg);
+        setUsersError(toErrorMessage(usersJson?.error ?? usersJson?.message, `Erreur ${usersRes.status}`));
         setUsers([]);
       }
 
