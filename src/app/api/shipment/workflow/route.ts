@@ -43,14 +43,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Chargement non trouvé' }, { status: 404 });
     }
 
-    // Générer la timeline basée sur le statut actuel
+    // Étape workflow réelle : colonne workflow_step si présente, sinon déduite du statut DB
+    const currentWorkflowStep = load.workflow_step ?? dbStatusToWorkflowStep(load.status);
+
+    // Générer la timeline basée sur l'étape workflow actuelle
     const timeline = generateTimeline(load);
 
     return NextResponse.json({
       load,
-      currentStatus: load.status,
+      currentStatus: currentWorkflowStep,
       timeline,
-      nextSteps: VALID_TRANSITIONS[load.status] || [],
+      nextSteps: VALID_TRANSITIONS[currentWorkflowStep] || [],
       workflow: Object.keys(VALID_TRANSITIONS),
     });
   } catch (error: any) {
@@ -83,13 +86,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Chargement non trouvé' }, { status: 404 });
     }
 
-    // Vérifier que la transition est valide
-    const currentStatus = load.status;
-    const allowedTransitions = VALID_TRANSITIONS[currentStatus] || [];
+    // Étape workflow actuelle (workflow_step ou déduite du statut DB)
+    const currentWorkflowStep = load.workflow_step ?? dbStatusToWorkflowStep(load.status);
+    const allowedTransitions = VALID_TRANSITIONS[currentWorkflowStep] || [];
 
     if (!allowedTransitions.includes(newStatus)) {
       return NextResponse.json({
-        error: `Transition invalide: ${currentStatus} → ${newStatus}. Transitions autorisées: ${allowedTransitions.join(', ')}`,
+        error: `Transition invalide: ${currentWorkflowStep} → ${newStatus}. Transitions autorisées: ${allowedTransitions.join(', ')}`,
       }, { status: 400 });
     }
 
@@ -111,12 +114,17 @@ export async function POST(request: Request) {
 
     const dbStatus = dbStatusMap[newStatus] || newStatus;
 
-    // Mettre à jour le statut
-    const { error: updateError } = await supabase
-      .from('loads')
-      .update({ status: dbStatus })
-      .eq('id', loadId);
+    // Mettre à jour le statut (et workflow_step si la colonne existe en base)
+    let updatePayload: Record<string, string> = { status: dbStatus };
+    if (newStatus !== 'cancelled' && newStatus !== 'disputed') {
+      updatePayload.workflow_step = newStatus;
+    }
 
+    let updateError = (await supabase.from('loads').update(updatePayload).eq('id', loadId)).error;
+    // Si la colonne workflow_step n'existe pas encore, mettre à jour uniquement status
+    if (updateError && (updateError.message?.includes('workflow_step') || updateError.message?.includes('column'))) {
+      updateError = (await supabase.from('loads').update({ status: dbStatus }).eq('id', loadId)).error;
+    }
     if (updateError) throw updateError;
 
     // Créer l'événement
@@ -135,13 +143,24 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       event,
-      previousStatus: currentStatus,
+      previousStatus: currentWorkflowStep,
       newStatus,
       dbStatus,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+/** Déduit l'étape workflow à partir du statut DB (sans colonne workflow_step). */
+function dbStatusToWorkflowStep(dbStatus: string): string {
+  const map: Record<string, string> = {
+    available: 'available',
+    booked: 'bid_accepted',
+    'in-transit': 'in_transit',
+    completed: 'completed',
+  };
+  return map[dbStatus] ?? dbStatus;
 }
 
 function generateTimeline(load: any) {
@@ -167,15 +186,8 @@ function generateTimeline(load: any) {
     disputed: 'Litige',
   };
 
-  // Map DB status to workflow status
-  const dbToWorkflow: Record<string, string> = {
-    available: 'available',
-    booked: 'bid_accepted',
-    'in-transit': 'in_transit',
-    completed: 'completed',
-  };
-
-  const currentWorkflowStatus = dbToWorkflow[load.status] || load.status;
+  // Utiliser workflow_step si présente (étape détaillée), sinon déduire du statut DB
+  const currentWorkflowStatus = load.workflow_step ?? dbStatusToWorkflowStep(load.status);
   const currentIdx = statusOrder.indexOf(currentWorkflowStatus);
 
   const baseTime = new Date(load.created_at || Date.now());

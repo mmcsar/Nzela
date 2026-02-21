@@ -233,6 +233,8 @@ export interface Database {
           delivery_date: string
           cargo_type: string | null
           status: 'available' | 'booked' | 'in-transit' | 'completed'
+          /** Étape détaillée du workflow (dispatché, en_route_pickup, at_pickup, …). Optionnel si migration non appliquée. */
+          workflow_step?: string | null
           created_at: string
           updated_at: string
         }
@@ -251,6 +253,7 @@ export interface Database {
           delivery_date: string
           cargo_type?: string | null
           status?: 'available' | 'booked' | 'in-transit' | 'completed'
+          workflow_step?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -269,6 +272,7 @@ export interface Database {
           delivery_date?: string
           cargo_type?: string | null
           status?: 'available' | 'booked' | 'in-transit' | 'completed'
+          workflow_step?: string | null
           created_at?: string
           updated_at?: string
         }

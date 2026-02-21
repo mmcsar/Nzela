@@ -246,6 +246,13 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
     };
   }, [fetchConversations]);
 
+  // ── Quand il n'y a aucune conversation, ouvrir le formulaire "Nouvelle conversation" pour afficher la liste des utilisateurs (broker, entreprise) ──
+  useEffect(() => {
+    if (!isLoading && conversations.length === 0 && !fetchError && !messagingNotInstalled) {
+      setShowNewConv(true);
+    }
+  }, [isLoading, conversations.length, fetchError, messagingNotInstalled]);
+
   // ── Si loadId/recipientId fournis, ouvrir ou creer la conversation ──
   useEffect(() => {
     if (loadId && recipientId && currentUserId) {
@@ -784,6 +791,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
 // ══════════════════════════════════════════
 function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCreated: (convId: string) => void }) {
   const [users, setUsers] = useState<{ id: string; name: string; email: string; role: string }[]>([]);
+  const [usersError, setUsersError] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [loads, setLoads] = useState<{ id: string; label: string }[]>([]);
   const [selectedLoadId, setSelectedLoadId] = useState('');
@@ -793,11 +801,21 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
 
   const loadData = useCallback(async () => {
     try {
+      setUsersError(null);
       // Utilisateurs avec qui on peut discuter (via API pour contourner RLS)
       const usersRes = await fetch('/api/messages/users');
-      const usersJson = await usersRes.json();
-      if (usersRes.ok && usersJson.users) {
-        setUsers(usersJson.users);
+      const usersJson = await usersRes.json().catch(() => ({}));
+      if (usersRes.ok) {
+        setUsers(usersJson.users ?? []);
+        if (!usersJson.users || usersJson.users.length === 0) {
+          setUsersError(usersJson.message || 'Aucun destinataire disponible (courtier, entreprise ou admin).');
+        } else {
+          setUsersError(null);
+        }
+      } else {
+        const msg = usersJson?.message || usersJson?.error || `Erreur ${usersRes.status}`;
+        setUsersError(msg);
+        setUsers([]);
       }
 
       // Charger les loads actifs
@@ -893,6 +911,18 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
           {/* Destinataire */}
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">Destinataire *</label>
+            {usersError && (
+              <div className="mb-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800 flex items-center justify-between gap-2">
+                <span>{usersError}</span>
+                <button
+                  type="button"
+                  onClick={() => { setUsersError(null); loadData(); }}
+                  className="text-amber-700 font-medium underline shrink-0"
+                >
+                  Réessayer
+                </button>
+              </div>
+            )}
             <select
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
@@ -901,10 +931,13 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
               <option value="">-- Choisir un utilisateur --</option>
               {users.map(u => (
                 <option key={u.id} value={u.id}>
-                  {u.name} ({u.email}) - {u.role}
+                  {u.name} {u.email ? `(${u.email})` : ''} — {u.role === 'broker' ? 'Courtier' : u.role === 'company' ? 'Entreprise' : u.role}
                 </option>
               ))}
             </select>
+            {!usersError && users.length === 0 && !isLoading && (
+              <p className="mt-1 text-xs text-gray-500">Aucun autre utilisateur (broker, entreprise ou admin) pour l’instant.</p>
+            )}
           </div>
 
           {/* Chargement lie (optionnel) */}

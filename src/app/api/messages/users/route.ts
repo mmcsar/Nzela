@@ -29,22 +29,28 @@ export async function GET() {
       throw e;
     }
 
+    // Colonnes minimales (full_name peut être absente selon le schéma)
     const { data: users, error } = await serviceClient
       .from('users')
-      .select('id, email, full_name, role')
+      .select('id, email, role')
       .in('role', ['broker', 'company', 'admin'])
       .neq('id', auth.userId)
-      .order('full_name');
+      .order('email');
 
     if (error) throw error;
 
+    const list = (users || []).map((u: { id: string; email?: string; role?: string }) => ({
+      id: u.id,
+      name: u.email?.split('@')[0] || 'Utilisateur',
+      email: u.email || '',
+      role: u.role || 'user',
+    }));
+
     return NextResponse.json({
-      users: (users || []).map((u: { id: string; email?: string; full_name?: string; role?: string }) => ({
-        id: u.id,
-        name: u.full_name || u.email?.split('@')[0] || 'Utilisateur',
-        email: u.email || '',
-        role: u.role || 'user',
-      })),
+      users: list,
+      ...(list.length === 0 && {
+        message: 'Aucun autre utilisateur (courtier, entreprise ou admin) enregistré. Créez des comptes ou connectez-vous avec un autre rôle pour voir les destinataires.',
+      }),
     });
   } catch (error: unknown) {
     return handleApiError(error);
