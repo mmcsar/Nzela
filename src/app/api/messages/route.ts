@@ -1,8 +1,20 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/checkRole';
 import { handleApiError } from '@/lib/api/error';
 import { messageLimiter } from '@/lib/api/rate-limit';
+
+/** Lit id + email des users (bypass RLS pour afficher les noms dans la messagerie) */
+async function getUsersEmails(userIds: string[]): Promise<Map<string, { email?: string }>> {
+  if (userIds.length === 0) return new Map();
+  try {
+    const service = createServiceRoleClient();
+    const { data } = await service.from('users').select('id, email').in('id', userIds);
+    return new Map((data || []).map((u: any) => [u.id, { email: u.email }]));
+  } catch {
+    return new Map();
+  }
+}
 
 /** Extrait le message d'erreur Supabase/Postgres */
 function getErrorMessage(error: unknown): string {
@@ -88,14 +100,9 @@ export async function GET(request: Request) {
 
       if (error) throw error;
 
-      // Enrichir avec le nom de l'expediteur
+      // Enrichir avec le nom de l'expediteur (service role pour contourner RLS sur users)
       const senderIds = [...new Set((messages || []).map((m: any) => m.sender_id))];
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, email, full_name')
-        .in('id', senderIds);
-
-      const userMap = new Map((users || []).map((u: any) => [u.id, u]));
+      const userMap = await getUsersEmails(senderIds);
 
       const enrichedMessages = (messages || []).map((msg: any) => {
         const sender = userMap.get(msg.sender_id);
@@ -103,7 +110,7 @@ export async function GET(request: Request) {
           id: msg.id,
           conversationId: msg.conversation_id,
           senderId: msg.sender_id,
-          senderName: sender?.full_name || sender?.email?.split('@')[0] || 'Utilisateur',
+          senderName: sender?.email?.split('@')[0] || 'Utilisateur',
           content: msg.content,
           type: msg.type,
           attachmentUrl: msg.attachment_url,
@@ -184,11 +191,8 @@ export async function GET(request: Request) {
         const otherUserIds = (otherParticipants || []).map((p: any) => p.user_id);
         let otherNames: string[] = [];
         if (otherUserIds.length > 0) {
-          const { data: otherUsers } = await supabase
-            .from('users')
-            .select('full_name, email')
-            .in('id', otherUserIds);
-          otherNames = (otherUsers || []).map((u: any) => u.full_name || u.email?.split('@')[0] || '?');
+          const otherUserMap = await getUsersEmails(otherUserIds);
+          otherNames = otherUserIds.map((id) => otherUserMap.get(id)?.email?.split('@')[0] || '?');
         }
 
         // Dernier expediteur
@@ -197,12 +201,8 @@ export async function GET(request: Request) {
           if (lastMsg.sender_id === auth.userId) {
             lastSenderName = 'Vous';
           } else {
-            const { data: senderData } = await supabase
-              .from('users')
-              .select('full_name, email')
-              .eq('id', lastMsg.sender_id)
-              .single();
-            lastSenderName = senderData?.full_name || senderData?.email?.split('@')[0] || '';
+            const senderData = (await getUsersEmails([lastMsg.sender_id])).get(lastMsg.sender_id);
+            lastSenderName = senderData?.email?.split('@')[0] || '';
           }
         }
 
@@ -274,7 +274,7 @@ export async function POST(request: Request) {
       // Verifier que le destinataire existe
       const { data: recipient } = await supabase
         .from('users')
-        .select('id, full_name, email')
+        .select('id, email')
         .eq('id', recipientId)
         .single();
 
@@ -315,7 +315,7 @@ export async function POST(request: Request) {
         }
       }
       if (!convTitle) {
-        convTitle = `Conversation avec ${recipient.full_name || recipient.email?.split('@')[0]}`;
+        convTitle = `Conversation avec ${recipient.email?.split('@')[0] || 'Utilisateur'}`;
       }
 
       // Creer la conversation
@@ -390,18 +390,14 @@ export async function POST(request: Request) {
 
     if (msgError) throw msgError;
 
-    // Recuperer le nom de l'expediteur
-    const { data: senderData } = await supabase
-      .from('users')
-      .select('full_name, email')
-      .eq('id', auth.userId)
-      .single();
+    // Recuperer le nom de l'expediteur (service role pour coherence)
+    const senderData = (await getUsersEmails([auth.userId])).get(auth.userId);
 
     const enrichedMessage = {
       id: message.id,
       conversationId: message.conversation_id,
       senderId: message.sender_id,
-      senderName: senderData?.full_name || senderData?.email?.split('@')[0] || 'Utilisateur',
+      senderName: senderData?.email?.split('@')[0] || 'Utilisateur',
       content: message.content,
       type: message.type,
       attachmentUrl: message.attachment_url,
