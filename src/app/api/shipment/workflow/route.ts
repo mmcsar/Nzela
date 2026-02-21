@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/checkRole';
 
@@ -69,7 +69,20 @@ export async function POST(request: Request) {
     if (!auth.allowed) return auth.response!;
 
     const body = await request.json();
-    const { loadId, newStatus, notes, photos, signature, location } = body;
+    const {
+      loadId,
+      newStatus,
+      notes,
+      photos,
+      signature,
+      location,
+      // Données optionnelles par étape (pour pré-remplir le POD)
+      receiverName,
+      receiverPhone,
+      deliveryTime,
+      pickupTime,
+      loadedAt,
+    } = body;
 
     if (!loadId || !newStatus) {
       return NextResponse.json({ error: 'loadId et newStatus requis' }, { status: 400 });
@@ -96,6 +109,20 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
+    // Droit de modifier : admin, courtier propriétaire du chargement, ou entreprise (transporteur)
+    const loadBrokerId = load.broker_id != null ? String(load.broker_id) : '';
+    const userBrokerId = auth.brokerId != null ? String(auth.brokerId) : '';
+    const canUpdate =
+      auth.role === 'admin' ||
+      (auth.role === 'broker' && userBrokerId && loadBrokerId === userBrokerId) ||
+      (auth.role === 'company');
+    if (!canUpdate) {
+      return NextResponse.json(
+        { error: 'Vous n’avez pas le droit de modifier l’étape de ce chargement.' },
+        { status: 403 }
+      );
+    }
+
     // Mapper le statut vers les statuts de la DB (qui utilise un format différent)
     const dbStatusMap: Record<string, string> = {
       bid_accepted: 'booked',
@@ -114,16 +141,39 @@ export async function POST(request: Request) {
 
     const dbStatus = dbStatusMap[newStatus] || newStatus;
 
-    // Mettre à jour le statut (et workflow_step si la colonne existe en base)
-    let updatePayload: Record<string, string> = { status: dbStatus };
+    // Données à enregistrer pour cette étape (pré-remplissage POD)
+    const stepData: Record<string, unknown> = {};
+    if (notes != null) stepData.notes = notes;
+    if (receiverName != null && String(receiverName).trim()) stepData.receiverName = String(receiverName).trim();
+    if (receiverPhone != null && String(receiverPhone).trim()) stepData.receiverPhone = String(receiverPhone).trim();
+    if (deliveryTime != null && String(deliveryTime).trim()) stepData.deliveryTime = String(deliveryTime).trim();
+    if (pickupTime != null && String(pickupTime).trim()) stepData.pickupTime = String(pickupTime).trim();
+    if (loadedAt != null && String(loadedAt).trim()) stepData.loadedAt = String(loadedAt).trim();
+    if (photos != null && Array.isArray(photos)) stepData.photos = photos;
+
+    const currentStepData = (load.workflow_step_data as Record<string, unknown>) || {};
+    const mergedStepData =
+      Object.keys(stepData).length > 0
+        ? { ...currentStepData, [newStatus]: { ...((currentStepData[newStatus] as object) || {}), ...stepData } }
+        : currentStepData;
+
+    // Mettre à jour le statut, workflow_step et workflow_step_data
+    const updatePayload: Record<string, unknown> = { status: dbStatus };
     if (newStatus !== 'cancelled' && newStatus !== 'disputed') {
       updatePayload.workflow_step = newStatus;
     }
+    if (Object.keys(mergedStepData).length > 0) {
+      updatePayload.workflow_step_data = mergedStepData;
+    }
 
-    let updateError = (await supabase.from('loads').update(updatePayload).eq('id', loadId)).error;
-    // Si la colonne workflow_step n'existe pas encore, mettre à jour uniquement status
+    // Mise à jour avec le client service role pour contourner la RLS
+    const serviceClient = createServiceRoleClient();
+    let updateError = (await serviceClient.from('loads').update(updatePayload).eq('id', loadId)).error;
+    // Si colonne workflow_step ou workflow_step_data absente, réessayer sans
     if (updateError && (updateError.message?.includes('workflow_step') || updateError.message?.includes('column'))) {
-      updateError = (await supabase.from('loads').update({ status: dbStatus }).eq('id', loadId)).error;
+      const fallbackPayload: Record<string, unknown> = { status: dbStatus };
+      if (newStatus !== 'cancelled' && newStatus !== 'disputed') fallbackPayload.workflow_step = newStatus;
+      updateError = (await serviceClient.from('loads').update(fallbackPayload).eq('id', loadId)).error;
     }
     if (updateError) throw updateError;
 

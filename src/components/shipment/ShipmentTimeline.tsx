@@ -43,6 +43,10 @@ export function ShipmentTimeline({ loadId, onStatusChange }: ShipmentTimelinePro
   const [isUpdating, setIsUpdating] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState('');
+  // Données optionnelles pour l’étape Livré (pré-remplissage POD)
+  const [deliveryReceiverName, setDeliveryReceiverName] = useState('');
+  const [deliveryReceiverPhone, setDeliveryReceiverPhone] = useState('');
+  const [deliveryTime, setDeliveryTime] = useState('');
 
   const fetchWorkflow = useCallback(async () => {
     try {
@@ -64,23 +68,41 @@ export function ShipmentTimeline({ loadId, onStatusChange }: ShipmentTimelinePro
     fetchWorkflow();
   }, [fetchWorkflow]);
 
-  const advanceStatus = async (newStatus: string) => {
+  const advanceStatus = async (newStatus: string, stepData?: Record<string, string>) => {
     setIsUpdating(true);
     try {
+      const payload: Record<string, unknown> = { loadId, newStatus, notes: notes || undefined };
+      if (stepData) {
+        if (stepData.receiverName) payload.receiverName = stepData.receiverName;
+        if (stepData.receiverPhone) payload.receiverPhone = stepData.receiverPhone;
+        if (stepData.deliveryTime) payload.deliveryTime = stepData.deliveryTime;
+        if (stepData.pickupTime) payload.pickupTime = stepData.pickupTime;
+        if (stepData.loadedAt) payload.loadedAt = stepData.loadedAt;
+      }
       const response = await fetch('/api/shipment/workflow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          loadId,
-          newStatus,
-          notes: notes || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      let data: { error?: unknown } = {};
+      try {
+        data = await response.json();
+      } catch {
+        if (!response.ok) {
+          alert(`Erreur ${response.status}: la réponse du serveur n’est pas valide. Vérifiez SUPABASE_SERVICE_ROLE_KEY sur Vercel.`);
+          return;
+        }
+      }
+
       if (response.ok) {
         setNotes('');
         setShowNotes(false);
+        if (newStatus === 'delivered') {
+          setDeliveryReceiverName('');
+          setDeliveryReceiverPhone('');
+          setDeliveryTime('');
+        }
         onStatusChange?.(newStatus);
         await fetchWorkflow();
       } else {
@@ -88,6 +110,8 @@ export function ShipmentTimeline({ loadId, onStatusChange }: ShipmentTimelinePro
       }
     } catch (error) {
       console.error('Error updating status:', error);
+      const msg = error instanceof Error ? error.message : 'Erreur réseau ou serveur. Réessayez.';
+      alert(msg);
     } finally {
       setIsUpdating(false);
     }
@@ -183,6 +207,36 @@ export function ShipmentTimeline({ loadId, onStatusChange }: ShipmentTimelinePro
         <div className="bg-white rounded-xl border p-4 space-y-3">
           <h4 className="text-sm font-semibold text-gray-700">Prochaine étape</h4>
 
+          {/* Champs optionnels pour Livré : pré-remplissent le POD */}
+          {nextSteps.includes('delivered') && (
+            <div className="rounded-lg bg-primary-50/50 border border-primary-100 p-3 space-y-2">
+              <p className="text-xs font-medium text-primary-800">Renseigner pour pré-remplir le POD (optionnel)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  value={deliveryReceiverName}
+                  onChange={(e) => setDeliveryReceiverName(e.target.value)}
+                  placeholder="Nom du destinataire"
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <input
+                  type="text"
+                  value={deliveryReceiverPhone}
+                  onChange={(e) => setDeliveryReceiverPhone(e.target.value)}
+                  placeholder="Téléphone destinataire"
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <input
+                  type="datetime-local"
+                  value={deliveryTime}
+                  onChange={(e) => setDeliveryTime(e.target.value)}
+                  placeholder="Heure livraison"
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+          )}
+
           {showNotes && (
             <textarea
               value={notes}
@@ -197,8 +251,11 @@ export function ShipmentTimeline({ loadId, onStatusChange }: ShipmentTimelinePro
             {nextSteps.filter(s => s !== 'cancelled').map((step) => (
               <Button
                 key={step}
+                type="button"
                 size="sm"
-                onClick={() => advanceStatus(step)}
+                onClick={() =>
+                  advanceStatus(step, step === 'delivered' ? { receiverName: deliveryReceiverName, receiverPhone: deliveryReceiverPhone, deliveryTime } : undefined)
+                }
                 disabled={isUpdating}
                 isLoading={isUpdating}
               >
@@ -208,6 +265,7 @@ export function ShipmentTimeline({ loadId, onStatusChange }: ShipmentTimelinePro
             ))}
             {nextSteps.includes('cancelled') && (
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 onClick={() => advanceStatus('cancelled')}

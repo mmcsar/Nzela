@@ -235,6 +235,8 @@ export interface Database {
           status: 'available' | 'booked' | 'in-transit' | 'completed'
           /** Étape détaillée du workflow (dispatché, en_route_pickup, at_pickup, …). Optionnel si migration non appliquée. */
           workflow_step?: string | null
+          /** Données saisies à chaque étape (receiverName, deliveryTime, etc.) pour pré-remplir le POD. */
+          workflow_step_data?: Record<string, unknown> | null
           created_at: string
           updated_at: string
         }
@@ -254,6 +256,7 @@ export interface Database {
           cargo_type?: string | null
           status?: 'available' | 'booked' | 'in-transit' | 'completed'
           workflow_step?: string | null
+          workflow_step_data?: Record<string, unknown> | null
           created_at?: string
           updated_at?: string
         }
@@ -273,6 +276,7 @@ export interface Database {
           cargo_type?: string | null
           status?: 'available' | 'booked' | 'in-transit' | 'completed'
           workflow_step?: string | null
+          workflow_step_data?: Record<string, unknown> | null
           created_at?: string
           updated_at?: string
         }

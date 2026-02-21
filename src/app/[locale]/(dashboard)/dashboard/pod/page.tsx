@@ -83,6 +83,7 @@ export default function PODPage() {
           delivery_date,
           weight,
           price,
+          workflow_step_data,
           broker:brokers(name, phone, address)
         `)
         .in('status', ['in-transit', 'delivered', 'completed', 'booked'])
@@ -106,8 +107,16 @@ export default function PODPage() {
     if (selectedLoadId) {
       const load = loads.find(l => l.id === selectedLoadId);
       setSelectedLoad(load || null);
-      if (load?.price) {
-        setForm(prev => ({ ...prev, freightCharges: String(load.price) }));
+      const updates: Partial<typeof form> = {};
+      if (load?.price) updates.freightCharges = String(load.price);
+      // Pré-remplir depuis les données saisies aux étapes du workflow (ex: Livré)
+      const stepData = load?.workflow_step_data as Record<string, { receiverName?: string; receiverPhone?: string; deliveryTime?: string; pickupTime?: string }> | undefined;
+      const delivered = stepData?.delivered;
+      if (delivered?.receiverName) updates.receiverName = delivered.receiverName;
+      if (delivered?.receiverPhone) updates.receiverPhone = delivered.receiverPhone;
+      if (delivered?.deliveryTime) updates.receiverTimeIn = delivered.deliveryTime;
+      if (Object.keys(updates).length > 0) {
+        setForm(prev => ({ ...prev, ...updates }));
       }
     } else {
       setSelectedLoad(null);
