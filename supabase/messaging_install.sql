@@ -14,8 +14,9 @@ DROP TABLE IF EXISTS public.conversations CASCADE;
 -- Ancien nom possible au singulier :
 DROP TABLE IF EXISTS public.message CASCADE;
 
--- Fonction trigger (recréée plus bas)
+-- Fonctions (recréées plus bas)
 DROP FUNCTION IF EXISTS update_conversation_last_message() CASCADE;
+DROP FUNCTION IF EXISTS public.user_conversation_ids() CASCADE;
 
 -- 1. FONCTIONS REQUISES (créées ou remplacées)
 -- ══════════════════════════════════════════
@@ -96,6 +97,20 @@ CREATE INDEX idx_messages_sender ON public.messages(sender_id);
 CREATE INDEX idx_messages_conversation_created ON public.messages(conversation_id, created_at DESC);
 CREATE INDEX idx_messages_created ON public.messages(created_at DESC);
 
+-- 6b. FONCTION HELPER RLS (évite récursion sur conversation_participants)
+-- ══════════════════════════════════════════
+-- Retourne les IDs de conversations dont l'utilisateur courant est participant.
+-- SECURITY DEFINER permet de lire conversation_participants sans déclencher la politique SELECT.
+CREATE OR REPLACE FUNCTION public.user_conversation_ids()
+RETURNS SETOF uuid
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid();
+$$;
+
 -- 7. TRIGGERS
 -- ══════════════════════════════════════════
 CREATE TRIGGER update_conversations_updated_at
@@ -128,23 +143,17 @@ ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
 -- Conversations
 CREATE POLICY "conversations_select_participant" ON public.conversations
-  FOR SELECT USING (
-    id IN (SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid())
-  );
+  FOR SELECT USING (id IN (SELECT public.user_conversation_ids()));
 CREATE POLICY "conversations_insert_auth" ON public.conversations
   FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "conversations_update_participant" ON public.conversations
-  FOR UPDATE USING (
-    id IN (SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid())
-  );
+  FOR UPDATE USING (id IN (SELECT public.user_conversation_ids()));
 CREATE POLICY "conversations_admin_all" ON public.conversations
   FOR ALL USING (public.is_admin());
 
 -- Participants
 CREATE POLICY "participants_select_own_conv" ON public.conversation_participants
-  FOR SELECT USING (
-    conversation_id IN (SELECT conversation_id FROM public.conversation_participants AS cp WHERE cp.user_id = auth.uid())
-  );
+  FOR SELECT USING (conversation_id IN (SELECT public.user_conversation_ids()));
 CREATE POLICY "participants_insert_auth" ON public.conversation_participants
   FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "participants_update_own" ON public.conversation_participants
@@ -156,13 +165,11 @@ CREATE POLICY "participants_admin_all" ON public.conversation_participants
 
 -- Messages
 CREATE POLICY "messages_select_participant" ON public.messages
-  FOR SELECT USING (
-    conversation_id IN (SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid())
-  );
+  FOR SELECT USING (conversation_id IN (SELECT public.user_conversation_ids()));
 CREATE POLICY "messages_insert_participant" ON public.messages
   FOR INSERT WITH CHECK (
     sender_id = auth.uid()
-    AND conversation_id IN (SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid())
+    AND conversation_id IN (SELECT public.user_conversation_ids())
   );
 CREATE POLICY "messages_update_own" ON public.messages
   FOR UPDATE USING (sender_id = auth.uid());

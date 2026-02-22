@@ -86,7 +86,7 @@ export default function RegisterBrokerPage() {
           phone,
           email: brokerEmail || email,
           owner_id: authData.user.id,
-          status: 'active', // pas de validation admin requise, l'admin peut suspendre si besoin
+          status: 'pending', // en attente de validation par l'admin (visible dans Dashboard > Courtiers)
         })
         .select()
         .single();
@@ -98,11 +98,15 @@ export default function RegisterBrokerPage() {
         .update({ broker_id: broker.id })
         .eq('id', authData.user.id);
 
-      // Notifier les admins pour validation
+      // Notifier les admins (token dans l'en-tête car la session peut ne pas être dans les cookies tout de suite)
       try {
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        if (authData.session?.access_token) {
+          headers['Authorization'] = `Bearer ${authData.session.access_token}`;
+        }
         await fetch('/api/auth/notify-signup', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             type: 'broker',
             entityId: broker.id,

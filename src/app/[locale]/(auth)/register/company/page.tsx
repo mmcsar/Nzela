@@ -89,7 +89,7 @@ export default function RegisterCompanyPage() {
           phone,
           email: companyEmail || email,
           owner_id: authData.user.id,
-          status: 'active', // pas de validation admin requise, l'admin peut suspendre si besoin
+          status: 'pending', // en attente de validation par l'admin (visible dans Dashboard > Entreprises)
         })
         .select()
         .single();
@@ -102,11 +102,15 @@ export default function RegisterCompanyPage() {
         .update({ company_id: company.id })
         .eq('id', authData.user.id);
 
-      // 5. Notifier les admins pour validation
+      // 5. Notifier les admins pour validation (token dans l'en-tête car la session peut ne pas être dans les cookies tout de suite)
       try {
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        if (authData.session?.access_token) {
+          headers['Authorization'] = `Bearer ${authData.session.access_token}`;
+        }
         await fetch('/api/auth/notify-signup', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             type: 'company',
             entityId: company.id,

@@ -46,9 +46,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/fr/login?error=auth_failed', requestUrl.origin));
   }
 
-  // Si next= fourni (ex: reset password), rediriger vers cette page
+  // Si next= fourni (ex: reset password), rediriger vers cette page (anti open-redirect)
   const next = requestUrl.searchParams.get('next');
-  if (next && next.startsWith('/') && !next.startsWith('//')) {
+  const allowedPrefixes = ['/fr/', '/en/'];
+  const safeNext =
+    next &&
+    next.startsWith('/') &&
+    !next.startsWith('//') &&
+    (next === '/' || allowedPrefixes.some((p) => next.startsWith(p)));
+  if (safeNext) {
     return NextResponse.redirect(new URL(next, requestUrl.origin));
   }
 

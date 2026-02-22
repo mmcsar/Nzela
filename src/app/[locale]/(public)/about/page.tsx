@@ -12,7 +12,7 @@ const stats = [
 ];
 
 const team = [
-  { name: 'Christian M.', role: 'CEO & Fondateur', desc: 'Expert en logistique avec 10+ ans d\'experience en RDC' },
+  { name: 'Christian M Kazadi', role: 'CEO & Fondateur', desc: 'Expert en logistique avec 10+ ans d\'experience en RDC' },
   { name: 'Equipe Technique', role: 'Developpement', desc: 'Ingenieurs specialises en applications web et mobile' },
   { name: 'Equipe Operations', role: 'Logistique', desc: 'Professionnels du transport et de la chaine d\'approvisionnement' },
 ];

@@ -93,9 +93,14 @@ export default function AdminKYCPage() {
   });
 
   const stats = {
-    pending: requests.filter(r => r.status === 'pending').length,
+    pending: requests.filter(r => r.status === 'pending' || r.status === 'more_info_needed').length,
     approved: requests.filter(r => r.status === 'approved').length,
     rejected: requests.filter(r => r.status === 'rejected').length,
+  };
+
+  const countByRole = {
+    broker: requests.filter(r => r.entity_type === 'broker').length,
+    company: requests.filter(r => r.entity_type === 'company').length,
   };
 
   const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all bg-white';
@@ -111,15 +116,25 @@ export default function AdminKYCPage() {
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
             <ShieldCheck className="w-5 h-5 text-white" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Verification KYC</h1>
-            <p className="text-sm text-gray-500">Gestion des demandes de verification</p>
+            <p className="text-sm text-gray-500">Courtiers et entreprises — valider toutes les demandes</p>
           </div>
+        </div>
+        <div className="flex items-center gap-3 text-sm">
+          <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+            <User className="w-4 h-4" />
+            <strong>Courtiers</strong> {countByRole.broker}
+          </span>
+          <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-50 text-purple-700 border border-purple-200">
+            <Building2 className="w-4 h-4" />
+            <strong>Entreprises</strong> {countByRole.company}
+          </span>
         </div>
       </div>
 
@@ -184,8 +199,8 @@ export default function AdminKYCPage() {
           <h3 className="text-lg font-bold text-gray-700 mb-2">Aucune demande</h3>
           <p className="text-sm text-gray-500">
             {statusFilter === 'all' && !entityTypeFilter
-              ? 'Aucune demande de verification dans le systeme.'
-              : `Aucune demande${entityTypeFilter ? ` ${entityTypeFilter === 'broker' ? 'courtier' : 'entreprise'}` : ''}${statusFilter !== 'all' ? ` avec le statut "${statusFilter === 'pending' ? 'en attente' : statusFilter === 'approved' ? 'approuvé' : statusFilter === 'rejected' ? 'rejeté' : statusFilter}"` : ''}.`}
+              ? 'Aucune demande de verification (courtiers et entreprises) dans le systeme.'
+              : `Aucune demande${entityTypeFilter ? ` ${entityTypeFilter === 'broker' ? 'courtier' : 'entreprise'}` : ' courtier ou entreprise'}${statusFilter !== 'all' ? ` avec le statut "${statusFilter === 'pending' ? 'en attente' : statusFilter === 'approved' ? 'approuvé' : statusFilter === 'rejected' ? 'rejeté' : statusFilter}"` : ''}.`}
           </p>
           {statusFilter === 'pending' && (
             <p className="text-sm text-amber-700 mt-3 max-w-md mx-auto">
@@ -240,7 +255,7 @@ export default function AdminKYCPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {req.status === 'pending' && (
+                  {(req.status === 'pending' || req.status === 'more_info_needed') && (
                     <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
                       <Button
                         size="sm"
@@ -303,7 +318,7 @@ export default function AdminKYCPage() {
                   </div>
 
                   {/* Review form (detail) */}
-                  {req.status === 'pending' && (
+                  {(req.status === 'pending' || req.status === 'more_info_needed') && (
                     <div>
                       <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">Decision</h4>
                       <textarea

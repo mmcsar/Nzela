@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/checkRole';
 
@@ -20,51 +20,62 @@ export async function GET(request: Request) {
     const entityType = searchParams.get('entityType');
     const entityId = searchParams.get('entityId');
 
-    // Admin: peut voir toutes les demandes (company + broker)
+    // Admin: voir toutes les demandes (on utilise le service role pour contourner tout RLS)
     if (auth.role === 'admin') {
       const status = searchParams.get('status') || 'pending';
-      const entityType = searchParams.get('entityType') || ''; // '' = tous, 'broker', 'company'
+      const entityTypeParam = searchParams.get('entityType') || '';
 
-      let query = supabase
+      const adminClient = createServiceRoleClient();
+      let query = adminClient
         .from('verification_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (status && status !== 'all') {
-        query = query.eq('status', status);
+        // "En attente" = pending + more_info_needed (toutes les demandes à traiter)
+        if (status === 'pending') {
+          query = query.in('status', ['pending', 'more_info_needed']);
+        } else {
+          query = query.eq('status', status);
+        }
       }
-      if (entityType && (entityType === 'broker' || entityType === 'company')) {
-        query = query.eq('entity_type', entityType);
+      if (entityTypeParam && (entityTypeParam === 'broker' || entityTypeParam === 'company')) {
+        query = query.eq('entity_type', entityTypeParam);
       }
 
       const { data: requests } = await query;
 
-      // Enrichir avec les documents et infos utilisateur
+      // Enrichir avec les documents et infos utilisateur (toujours en service role)
       const enriched = await Promise.all((requests || []).map(async (req: any) => {
-        const { data: docs } = await supabase
+        const { data: docs } = await adminClient
           .from('verification_documents')
           .select('*')
           .eq('entity_type', req.entity_type)
           .eq('entity_id', req.entity_id)
           .order('created_at', { ascending: false });
 
-        const { data: user } = await supabase
+        const { data: user } = await adminClient
           .from('users')
           .select('email, full_name')
           .eq('id', req.user_id)
           .single();
 
-        // Nom de l'entite
         let entityName = '';
         if (req.entity_type === 'company') {
-          const { data } = await supabase.from('companies').select('name').eq('id', req.entity_id).single();
+          const { data } = await adminClient.from('companies').select('name').eq('id', req.entity_id).single();
           entityName = data?.name || '';
         } else if (req.entity_type === 'broker') {
-          const { data } = await supabase.from('brokers').select('name').eq('id', req.entity_id).single();
+          const { data } = await adminClient.from('brokers').select('name').eq('id', req.entity_id).single();
           entityName = data?.name || '';
         }
 
-        return { ...req, documents: docs || [], user, entityName };
+        return {
+          ...req,
+          submitted_at: req.submitted_at ?? req.created_at,
+          documents: docs || [],
+          user,
+          entityName,
+        };
       }));
 
       return NextResponse.json({ requests: enriched });
@@ -195,18 +206,19 @@ export async function POST(request: Request) {
         await supabase.from('users').update({ kyc_status: 'pending' }).eq('id', entityId);
       }
 
-      // Notifier les admins
-      const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
-      if (admins) {
-        const notifications = admins.map((a: any) => ({
+      // Notifier les admins (service role pour contourner RLS : le soumetteur ne peut pas lire la liste des admins)
+      const adminClient = createServiceRoleClient();
+      const { data: admins } = await adminClient.from('users').select('id').eq('role', 'admin');
+      if (admins && admins.length > 0) {
+        const notifications = admins.map((a: { id: string }) => ({
           user_id: a.id,
-          type: 'kyc_submitted',
+          type: 'kyc_submitted' as const,
           title: 'Nouvelle demande KYC',
           body: `Une demande de verification ${entityType} a ete soumise.`,
           link: '/dashboard/admin/kyc',
           icon: 'ShieldCheck',
         }));
-        await supabase.from('notifications').insert(notifications);
+        await adminClient.from('notifications').insert(notifications);
       }
 
       return NextResponse.json({ request: data }, { status: 201 });
