@@ -32,9 +32,9 @@ export async function GET(request: Request) {
         .order('created_at', { ascending: false });
 
       if (status && status !== 'all') {
-        // "En attente" = pending + more_info_needed (toutes les demandes à traiter)
+        // "En attente" = toutes les demandes non finalisées (à traiter par l'admin)
         if (status === 'pending') {
-          query = query.in('status', ['pending', 'more_info_needed']);
+          query = query.in('status', ['pending', 'more_info_needed', 'in_review']);
         } else {
           query = query.eq('status', status);
         }

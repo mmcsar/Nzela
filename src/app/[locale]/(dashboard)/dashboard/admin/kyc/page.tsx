@@ -93,7 +93,7 @@ export default function AdminKYCPage() {
   });
 
   const stats = {
-    pending: requests.filter(r => r.status === 'pending' || r.status === 'more_info_needed').length,
+    pending: requests.filter(r => ['pending', 'more_info_needed', 'in_review'].includes(r.status)).length,
     approved: requests.filter(r => r.status === 'approved').length,
     rejected: requests.filter(r => r.status === 'rejected').length,
   };
@@ -123,7 +123,7 @@ export default function AdminKYCPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Verification KYC</h1>
-            <p className="text-sm text-gray-500">Courtiers et entreprises — valider toutes les demandes</p>
+            <p className="text-sm text-gray-500">Gestion des demandes de verification (documents soumis par courtiers et entreprises)</p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -136,6 +136,16 @@ export default function AdminKYCPage() {
             <strong>Entreprises</strong> {countByRole.company}
           </span>
         </div>
+      </div>
+
+      {/* ── Rappel : 2 types de validation ── */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+        <strong>Deux types de validation :</strong>{' '}
+        Les <strong>nouvelles inscriptions</strong> (compte créé, pas encore de documents KYC) se valident dans{' '}
+        <Link href="/dashboard/admin/companies" className="font-semibold text-amber-700 hover:underline">Gestion des Entreprises</Link>
+        {' '}ou{' '}
+        <Link href="/dashboard/admin/brokers" className="font-semibold text-amber-700 hover:underline">Gestion des Courtiers</Link>
+        {' '}→ filtre &quot;En attente&quot; → bouton &quot;Valider&quot;. Cette page affiche les demandes de <strong>verification KYC</strong> (documents déjà soumis).
       </div>
 
       {/* ── Filters ── */}
@@ -196,19 +206,25 @@ export default function AdminKYCPage() {
       ) : filteredRequests.length === 0 ? (
         <div className="bg-white rounded-xl border shadow-sm p-12 text-center">
           <ShieldCheck className="w-16 h-16 mx-auto mb-4 text-gray-200" />
-          <h3 className="text-lg font-bold text-gray-700 mb-2">Aucune demande</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="text-lg font-bold text-gray-700 mb-2">Aucune demande KYC</h3>
+          <p className="text-sm text-gray-500 max-w-md mx-auto">
             {statusFilter === 'all' && !entityTypeFilter
-              ? 'Aucune demande de verification (courtiers et entreprises) dans le systeme.'
-              : `Aucune demande${entityTypeFilter ? ` ${entityTypeFilter === 'broker' ? 'courtier' : 'entreprise'}` : ' courtier ou entreprise'}${statusFilter !== 'all' ? ` avec le statut "${statusFilter === 'pending' ? 'en attente' : statusFilter === 'approved' ? 'approuvé' : statusFilter === 'rejected' ? 'rejeté' : statusFilter}"` : ''}.`}
+              ? 'Aucune demande de verification KYC (courtiers et entreprises) dans le systeme.'
+              : statusFilter === 'pending'
+                ? entityTypeFilter === 'company'
+                  ? 'Aucune entreprise n\'a soumis de demande de verification KYC en attente. Les nouveaux comptes entreprise se valident dans Gestion des Entreprises.'
+                  : entityTypeFilter === 'broker'
+                    ? 'Aucun courtier n\'a soumis de demande de verification KYC en attente. Les nouveaux comptes courtier se valident dans Gestion des Courtiers.'
+                    : 'Aucune demande de verification KYC en attente. Les nouvelles inscriptions se valident dans Gestion des Entreprises ou des Courtiers.'
+                : `Aucune demande${entityTypeFilter ? ` ${entityTypeFilter === 'broker' ? 'courtier' : 'entreprise'}` : ' courtier ou entreprise'}${statusFilter !== 'all' ? ` avec le statut "${statusFilter === 'approved' ? 'approuvé' : statusFilter === 'rejected' ? 'rejeté' : statusFilter}"` : ''}.`}
           </p>
           {statusFilter === 'pending' && (
-            <p className="text-sm text-amber-700 mt-3 max-w-md mx-auto">
-              Pour valider les nouvelles inscriptions, allez dans{' '}
-              <Link href="/dashboard/admin/companies" className="font-semibold text-primary-600 hover:underline">Gestion des Entreprises</Link>
+            <p className="text-sm text-amber-700 mt-4 max-w-lg mx-auto">
+              <strong>Nouvelles inscriptions (compte sans KYC) :</strong>{' '}
+              <Link href="/dashboard/admin/companies" className="font-semibold text-primary-600 hover:underline">Entreprises</Link>
               {' '}ou{' '}
-              <Link href="/dashboard/admin/brokers" className="font-semibold text-primary-600 hover:underline">Gestion des Courtiers</Link>
-              {' '}→ filtre &quot;En attente&quot; → bouton &quot;Valider&quot;.
+              <Link href="/dashboard/admin/brokers" className="font-semibold text-primary-600 hover:underline">Courtiers</Link>
+              {' '}→ filtre &quot;En attente&quot; → &quot;Valider&quot;.
             </p>
           )}
           {(statusFilter === 'approved' || statusFilter === 'rejected') && (
@@ -255,7 +271,7 @@ export default function AdminKYCPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {(req.status === 'pending' || req.status === 'more_info_needed') && (
+                  {(req.status === 'pending' || req.status === 'more_info_needed' || req.status === 'in_review') && (
                     <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
                       <Button
                         size="sm"
@@ -318,7 +334,7 @@ export default function AdminKYCPage() {
                   </div>
 
                   {/* Review form (detail) */}
-                  {(req.status === 'pending' || req.status === 'more_info_needed') && (
+                  {(req.status === 'pending' || req.status === 'more_info_needed' || req.status === 'in_review') && (
                     <div>
                       <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">Decision</h4>
                       <textarea

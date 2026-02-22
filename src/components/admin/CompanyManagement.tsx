@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Company } from '@/types';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Building2, Search, BadgeCheck } from 'lucide-react';
 import { toErrorMessage } from '@/lib/api/error';
@@ -13,28 +12,20 @@ export function CompanyManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'pending'>('pending');
   const [validatingId, setValidatingId] = useState<string | null>(null);
-  const supabase = createClient();
 
   const loadCompanies = useCallback(async () => {
     try {
-      let query = supabase
-        .from('companies')
-        .select('*, owner:users!companies_owner_id_fkey(*)')
-        .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setCompanies((data || []) as Company[]);
+      const params = new URLSearchParams({ status: statusFilter });
+      const res = await fetch(`/api/admin/companies?${params.toString()}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur chargement');
+      setCompanies((data.companies || []) as Company[]);
     } catch (error) {
       console.error('Error loading companies:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, supabase]);
+  }, [statusFilter]);
 
   useEffect(() => {
     loadCompanies();
