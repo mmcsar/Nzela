@@ -78,14 +78,14 @@ export async function checkSubscriptionAccess(
     };
   }
 
-  // Compte validé par l'admin (status = active) → droit de publier même sans abonnement
   const entityStatus = (entity as { status?: string }).status;
-  if (entityStatus === 'active') {
+  // Seuls les comptes suspendus par l'admin ne peuvent pas publier. Pending ou active → peuvent publier.
+  if (entityStatus === 'suspended') {
     return {
-      hasAccess: true,
+      hasAccess: false,
       isTrial: false,
       trialEndsAt: null,
-      message: 'Compte validé par l\'administrateur.',
+      message: 'Compte suspendu par l\'administrateur. Vous ne pouvez pas publier.',
     };
   }
 
