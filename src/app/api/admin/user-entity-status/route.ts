@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     const { data: targetUser } = await db
       .from('users')
-      .select('id, role, company_id, broker_id')
+      .select('id, role, company_id, broker_id, email')
       .eq('id', userId)
       .maybeSingle();
 
@@ -106,15 +106,20 @@ export async function POST(request: Request) {
         }
         entityId = bodyEntityId;
       } else {
-        const { data: entity } = await db
-          .from(table)
-          .select('id')
-          .eq('owner_id', userId)
-          .maybeSingle();
+        let entity = (await db.from(table).select('id').eq('owner_id', userId).maybeSingle()).data;
+
+        // Si pas trouvé par owner_id : chercher par email (courtier/entreprise créé sans owner_id ou import)
+        if (!entity && targetUser.email) {
+          const byEmail = await db.from(table).select('id').eq('email', targetUser.email).limit(1);
+          entity = byEmail.data?.[0] ?? null;
+          if (entity) {
+            await db.from(table).update({ owner_id: userId }).eq('id', entity.id);
+          }
+        }
 
         if (!entity) {
           return NextResponse.json(
-            { error: `Aucune ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvée pour cet utilisateur (owner_id). Choisissez une ${entityType === 'company' ? 'entreprise' : 'courtier'} dans la liste déroulante puis cliquez Approuver.` },
+            { error: `Aucune ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvée pour cet utilisateur (owner_id ou email). Choisissez-en un dans la liste déroulante puis cliquez Approuver.` },
             { status: 404 }
           );
         }
