@@ -22,9 +22,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { userId, action } = body as {
+    const { userId, action, entityId: bodyEntityId } = body as {
       userId: string;
       action: 'approve' | 'suspend' | 'pending' | 'unlink';
+      entityId?: string;
     };
 
     if (!userId || !action || !['approve', 'suspend', 'pending', 'unlink'].includes(action)) {
@@ -88,22 +89,37 @@ export async function POST(request: Request) {
     const table = entityType === 'company' ? 'companies' : 'brokers';
     let entityId = role === 'company' ? targetUser.company_id : targetUser.broker_id;
 
-    // Si pas de lien, chercher l'entité par owner_id
+    // Si pas de lien : utiliser entityId fourni par l'admin (liste déroulante) ou chercher par owner_id
     if (!entityId) {
-      const { data: entity } = await db
-        .from(table)
-        .select('id')
-        .eq('owner_id', userId)
-        .maybeSingle();
+      if (bodyEntityId) {
+        // Vérifier que l'entité existe
+        const { data: entity } = await db
+          .from(table)
+          .select('id')
+          .eq('id', bodyEntityId)
+          .maybeSingle();
+        if (!entity) {
+          return NextResponse.json(
+            { error: `${entityType === 'company' ? 'Entreprise' : 'Courtier'} introuvable.` },
+            { status: 404 }
+          );
+        }
+        entityId = bodyEntityId;
+      } else {
+        const { data: entity } = await db
+          .from(table)
+          .select('id')
+          .eq('owner_id', userId)
+          .maybeSingle();
 
-      if (!entity) {
-        return NextResponse.json(
-          { error: `Aucune ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvée pour cet utilisateur. Associez-la manuellement.` },
-          { status: 404 }
-        );
+        if (!entity) {
+          return NextResponse.json(
+            { error: `Aucune ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvée pour cet utilisateur (owner_id). Choisissez une ${entityType === 'company' ? 'entreprise' : 'courtier'} dans la liste déroulante puis cliquez Approuver.` },
+            { status: 404 }
+          );
+        }
+        entityId = entity.id;
       }
-
-      entityId = entity.id;
 
       // Lier l'utilisateur à l'entité
       const col = entityType === 'company' ? 'company_id' : 'broker_id';

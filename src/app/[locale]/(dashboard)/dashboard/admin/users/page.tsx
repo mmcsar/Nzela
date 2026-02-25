@@ -49,6 +49,8 @@ export default function AdminUsersPage() {
     full_name?: string | null;
   }>>([]);
   const [dismissingRequestId, setDismissingRequestId] = useState<string | null>(null);
+  /** Sélection liste déroulante entreprise/courtier par user (pour Approuver sans owner_id) */
+  const [selectedEntityByUser, setSelectedEntityByUser] = useState<Record<string, string>>({});
 
   const supabase = createClient();
 
@@ -181,17 +183,20 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleEntityStatus = async (userId: string, action: 'approve' | 'suspend' | 'pending' | 'unlink') => {
+  const handleEntityStatus = async (userId: string, action: 'approve' | 'suspend' | 'pending' | 'unlink', entityId?: string) => {
     setStatusUserId(userId);
     try {
+      const body: { userId: string; action: string; entityId?: string } = { userId, action };
+      if (entityId) body.entityId = entityId;
       const res = await fetch('/api/admin/user-entity-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(toErrorMessage(data.error, 'Erreur'));
       await loadUsers();
+      setSelectedEntityByUser((prev) => { const next = { ...prev }; delete next[userId]; return next; });
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : 'Erreur');
@@ -374,7 +379,14 @@ export default function AdminUsersPage() {
             <li><strong>Associer manuellement</strong> — Si la liste déroulante affiche des sociétés, vous pouvez choisir une entreprise/courtier puis cliquer <strong>Approuver</strong>. Sinon, assurez-vous que <code className="bg-white/60 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code> est défini dans .env.local pour que la liste se charge.</li>
           </ol>
           {companies.length === 0 && brokers.length === 0 && (
-            <p className="mt-2 text-amber-700 font-medium">La liste des entreprises/courtiers est vide. Exécutez le script <code className="bg-white/60 px-1 rounded">supabase/a_ajouter_sur_supabase.sql</code> sur Supabase (SQL Editor) pour que l&apos;admin puisse les lire.</p>
+            <div className="mt-2 text-amber-800 space-y-2">
+              <p className="font-medium">La liste des entreprises/courtiers est vide. Pour qu&apos;elle s&apos;affiche, faites l&apos;un des deux :</p>
+              <ol className="list-decimal list-inside space-y-1 text-sm">
+                <li><strong>Sur Supabase</strong> — Dashboard Supabase → SQL Editor → New query → copiez le contenu de <code className="bg-amber-100 px-1 rounded">supabase/a_ajouter_sur_supabase.sql</code> → Run. Cela ajoute les policies RLS pour que l&apos;admin puisse lire et mettre à jour companies/brokers.</li>
+                <li><strong>Ou en local</strong> — Ajoutez <code className="bg-amber-100 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code> (clé service_role du projet Supabase) dans <code className="bg-amber-100 px-1 rounded">.env.local</code>, puis redémarrez le serveur.</li>
+              </ol>
+              <p className="text-xs text-amber-700">Si des utilisateurs se sont déjà inscrits, les lignes companies/brokers existent ; après le script ou la clé, la liste se chargera.</p>
+            </div>
           )}
         </div>
       </div>
@@ -460,9 +472,10 @@ export default function AdminUsersPage() {
                           })()}
                           <select
                             className="px-2 py-1 text-xs border rounded focus:ring-2 focus:ring-primary-500 min-w-[180px]"
-                            defaultValue=""
+                            value={selectedEntityByUser[user.id] ?? ''}
                             onChange={(e) => {
                               const id = e.target.value;
+                              setSelectedEntityByUser((prev) => ({ ...prev, [user.id]: id }));
                               if (id) handleLinkProfile(user.id, 'company', id);
                             }}
                             disabled={linkingUserId === user.id}
@@ -491,9 +504,10 @@ export default function AdminUsersPage() {
                           })()}
                           <select
                             className="px-2 py-1 text-xs border rounded focus:ring-2 focus:ring-primary-500 min-w-[180px]"
-                            defaultValue=""
+                            value={selectedEntityByUser[user.id] ?? ''}
                             onChange={(e) => {
                               const id = e.target.value;
+                              setSelectedEntityByUser((prev) => ({ ...prev, [user.id]: id }));
                               if (id) handleLinkProfile(user.id, 'broker', id);
                             }}
                             disabled={linkingUserId === user.id}
@@ -529,10 +543,10 @@ export default function AdminUsersPage() {
                           <div className="flex flex-wrap gap-1">
                             <Button
                               size="sm"
-                              onClick={() => handleEntityStatus(user.id, 'approve')}
+                              onClick={() => handleEntityStatus(user.id, 'approve', selectedEntityByUser[user.id])}
                               disabled={statusUserId !== null}
                               className="!py-0.5 !px-2 text-[11px] bg-emerald-600 hover:bg-emerald-700"
-                              title={!(user.company_id || user.broker_id) ? "Lie l'entité créée à l'inscription puis approuve" : undefined}
+                              title={!(user.company_id || user.broker_id) ? "Choisir une entreprise/courtier dans la liste puis cliquer Approuver, ou lier automatiquement si créé à l'inscription" : undefined}
                             >
                               {statusUserId === user.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <BadgeCheck className="w-2.5 h-2.5 mr-0.5" />}
                               Approuver
