@@ -370,8 +370,8 @@ export default function AdminUsersPage() {
         <div className="text-sm text-blue-900">
           <p className="font-semibold mb-1">En tant qu&apos;admin : comment approuver un utilisateur</p>
           <ol className="list-decimal list-inside space-y-1 text-blue-800">
-            <li><strong>Associer</strong> — Si la colonne « Profil » affiche « — Choisir une entreprise — » ou « — Choisir un courtier — » : cliquez sur le bouton vert <strong>Associer « Nom »</strong> (société créée par l&apos;utilisateur) ou choisissez dans la liste déroulante pour lier le compte.</li>
-            <li><strong>Approuver</strong> — Une fois le profil associé, les boutons <strong>Valider</strong> / <strong>Suspendre</strong> apparaissent dans la colonne Actions. Cliquez sur <strong>Approuver</strong> pour passer le statut à Actif.</li>
+            <li><strong>Approuver directement</strong> — Pour chaque entreprise ou courtier, le bouton <strong>Approuver</strong> dans la colonne Actions lie automatiquement le profil créé à l&apos;inscription (si existant) et active le compte. Utilisez-le même quand la colonne Profil affiche « — Aucune entreprise — ».</li>
+            <li><strong>Associer manuellement</strong> — Si la liste déroulante affiche des sociétés, vous pouvez choisir une entreprise/courtier puis cliquer <strong>Approuver</strong>. Sinon, assurez-vous que <code className="bg-white/60 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code> est défini dans .env.local pour que la liste se charge.</li>
           </ol>
           {companies.length === 0 && brokers.length === 0 && (
             <p className="mt-2 text-amber-700 font-medium">La liste des entreprises/courtiers est vide. Exécutez le script <code className="bg-white/60 px-1 rounded">supabase/a_ajouter_sur_supabase.sql</code> sur Supabase (SQL Editor) pour que l&apos;admin puisse les lire.</p>
@@ -525,13 +525,14 @@ export default function AdminUsersPage() {
                           <option value="company">{tRoles('company')}</option>
                           <option value="broker">{tRoles('broker')}</option>
                         </select>
-                        {(user.role === 'company' || user.role === 'broker') && (user.company_id || user.broker_id) && (
+                        {(user.role === 'company' || user.role === 'broker') && (
                           <div className="flex flex-wrap gap-1">
                             <Button
                               size="sm"
                               onClick={() => handleEntityStatus(user.id, 'approve')}
                               disabled={statusUserId !== null}
                               className="!py-0.5 !px-2 text-[11px] bg-emerald-600 hover:bg-emerald-700"
+                              title={!(user.company_id || user.broker_id) ? "Lie l'entité créée à l'inscription puis approuve" : undefined}
                             >
                               {statusUserId === user.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <BadgeCheck className="w-2.5 h-2.5 mr-0.5" />}
                               Approuver
