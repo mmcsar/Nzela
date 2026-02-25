@@ -65,7 +65,7 @@ export async function checkSubscriptionAccess(
 
   const { data: entity, error: entityError } = await supabase
     .from(table)
-    .select('created_at, subscription_id')
+    .select('created_at, subscription_id, status')
     .eq('id', entityId)
     .single();
 
@@ -75,6 +75,17 @@ export async function checkSubscriptionAccess(
       isTrial: false,
       trialEndsAt: null,
       message: 'Profil introuvable.',
+    };
+  }
+
+  // Compte validé par l'admin (status = active) → droit de publier même sans abonnement
+  const entityStatus = (entity as { status?: string }).status;
+  if (entityStatus === 'active') {
+    return {
+      hasAccess: true,
+      isTrial: false,
+      trialEndsAt: null,
+      message: 'Compte validé par l\'administrateur.',
     };
   }
 
