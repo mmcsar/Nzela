@@ -26,20 +26,23 @@ export async function POST() {
   let companyId = existing?.company_id ?? null;
   let brokerId = existing?.broker_id ?? null;
 
-  // Cas 1: Pas de ligne users -> creer le profil
+  // Cas 1: Pas de ligne users -> créer ou mettre à jour le profil (upsert évite duplicate key)
   if (!existing) {
     const fullName = (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || '';
 
-    const { error: insertError } = await supabase.from('users').insert({
-      id: user.id,
-      email: user.email || '',
-      full_name: fullName,
-      role,
-    });
+    const { error: upsertError } = await supabase.from('users').upsert(
+      {
+        id: user.id,
+        email: user.email || '',
+        full_name: fullName,
+        role,
+      },
+      { onConflict: 'id' }
+    );
 
-    if (insertError) {
-      console.error('[sync-profile] Erreur insert users:', insertError);
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    if (upsertError) {
+      console.error('[sync-profile] Erreur upsert users:', upsertError);
+      return NextResponse.json({ error: upsertError.message }, { status: 500 });
     }
   }
 

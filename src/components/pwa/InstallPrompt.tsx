@@ -17,18 +17,18 @@ export function InstallPrompt() {
 
   useEffect(() => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    setIsIOS(isIOSDevice);
+    const id = setTimeout(() => setIsIOS(isIOSDevice), 0);
 
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      return; // Already installed, don't show
+      return () => clearTimeout(id);
     }
 
     // Check if dismissed recently (7 days)
     const dismissed = localStorage.getItem('pwa-install-dismissed');
     if (dismissed) {
       const daysSince = (Date.now() - parseInt(dismissed)) / (1000 * 60 * 60 * 24);
-      if (daysSince < 7) return;
+      if (daysSince < 7) return () => clearTimeout(id);
     }
 
     // Android / Chrome: listen for beforeinstallprompt
@@ -50,6 +50,7 @@ export function InstallPrompt() {
     }
 
     return () => {
+      clearTimeout(id);
       window.removeEventListener('beforeinstallprompt', handler);
     };
   }, []);

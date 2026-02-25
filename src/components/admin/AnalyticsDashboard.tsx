@@ -9,6 +9,7 @@ import {
   DollarSign, Clock, CheckCircle2, XCircle, AlertTriangle,
   ChevronRight, Filter,
 } from 'lucide-react';
+import { PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
 
 // ── Types ──
 interface PeriodFilter {
@@ -115,34 +116,7 @@ const PERIODS: PeriodFilter[] = [
   { label: 'Tout', days: 9999 },
 ];
 
-const PROVINCE_NAMES: Record<string, string> = {
-  'haut-katanga': 'Haut-Katanga',
-  'lualaba': 'Lualaba',
-  'haut-lomami': 'Haut-Lomami',
-  'tanganyika': 'Tanganyika',
-  'kinshasa': 'Kinshasa',
-  'kongo-central': 'Kongo-Central',
-  'kasai': 'Kasai',
-  'kasai-central': 'Kasai-Central',
-  'kasai-oriental': 'Kasai-Oriental',
-  'lomami': 'Lomami',
-  'sankuru': 'Sankuru',
-  'maniema': 'Maniema',
-  'sud-kivu': 'Sud-Kivu',
-  'nord-kivu': 'Nord-Kivu',
-  'ituri': 'Ituri',
-  'tshopo': 'Tshopo',
-  'bas-uele': 'Bas-Uele',
-  'haut-uele': 'Haut-Uele',
-  'mongala': 'Mongala',
-  'nord-ubangi': 'Nord-Ubangi',
-  'sud-ubangi': 'Sud-Ubangi',
-  'equateur': 'Equateur',
-  'tshuapa': 'Tshuapa',
-  'kwango': 'Kwango',
-  'kwilu': 'Kwilu',
-  'mai-ndombe': 'Mai-Ndombe',
-};
+const PROVINCE_NAMES: Record<string, string> = PROVINCES_RDC_NAMES;
 
 const STATUS_COLORS: Record<string, string> = {
   available: '#10b981',

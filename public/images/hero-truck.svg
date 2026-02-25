@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 240" fill="none" aria-hidden="true">
+  <!-- Cargo truck silhouette - cab + trailer -->
+  <path fill="#ffffff" fillOpacity="0.14" d="M30 140h70v60H30v-60zm0-25v-35c0-14 11-25 25-25h95v90H30v-30zm120-65h150l50 50v95h-50v-25H150v25h-25V50zm25 25v95h125v-50l-37.5-37.5L175 75zm-145 65h20v30h-20v-30zm250 0h50v30h-50v-30zm-250 30v30h20v-30h-20zm270 0v30h50v-30h-50z"/>
+  <circle cx="65" cy="200" r="22" fill="#ffffff" fillOpacity="0.12"/>
+  <circle cx="265" cy="200" r="22" fill="#ffffff" fillOpacity="0.12"/>
+  <circle cx="365" cy="200" r="22" fill="#ffffff" fillOpacity="0.12"/>
+</svg>

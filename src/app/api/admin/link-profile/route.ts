@@ -81,6 +81,8 @@ export async function POST(request: Request) {
       if (error) throw error;
     }
 
+    await supabase.from('association_requests').delete().eq('user_id', userId);
+
     return NextResponse.json({ success: true, message: 'Profil associé' });
   } catch (error: unknown) {
     console.error('link-profile:', error);

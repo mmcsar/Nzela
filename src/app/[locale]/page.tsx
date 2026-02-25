@@ -3,7 +3,10 @@ import { Button } from '@/components/ui/Button';
 import { Link } from '@/lib/i18n/routing';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Globe, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, CheckCircle, Calculator, Fuel, FileCheck, Navigation } from 'lucide-react';
+
+const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80';
 
 export default async function HomePage() {
   const t = await getTranslations('common');
@@ -14,17 +17,31 @@ export default async function HomePage() {
 
       {/* Hero Section */}
       <main className="relative overflow-hidden bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white">
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10 z-0">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+        {/* Real truck image background - visible */}
+        <div className="absolute inset-0 z-[1] flex items-center justify-end pointer-events-none" aria-hidden>
+          <Image
+            src={HERO_TRUCK_IMAGE}
+            alt=""
+            width={800}
+            height={533}
+            className="h-[85vh] w-auto max-w-[75vw] object-contain object-right opacity-70 md:opacity-80"
+            priority
+            sizes="(max-width: 768px) 60vw, 520px"
+          />
+        </div>
+        {/* Overlay left pour garder le texte lisible */}
+        <div className="absolute inset-0 z-[2] bg-gradient-to-r from-primary-700/90 via-primary-700/40 to-transparent pointer-events-none" aria-hidden />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              Un Load Board avec tout ce dont vous avez besoin
+              Une bourse de fret avec tout ce dont vous avez besoin
             </h1>
             <p className="text-xl md:text-2xl mb-4 text-primary-100">
-              La plateforme logistique pour le Haut-Katanga et Lualaba
+              La plateforme logistique pour toute la RDC
             </p>
             <p className="text-lg mb-8 text-primary-200">
               Connectez transporteurs et courtiers. Trouvez du fret. Gardez vos roues en mouvement.
@@ -56,7 +73,7 @@ export default async function HomePage() {
               <div className="text-xs text-gray-500 mt-1">Chargements traites</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-primary-600">4</div>
+              <div className="text-2xl font-bold text-primary-600">26</div>
               <div className="text-xs text-gray-500 mt-1">Provinces couvertes</div>
             </div>
             <div>

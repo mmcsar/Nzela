@@ -215,8 +215,6 @@ export default function LoadBoardPage() {
           pickup_date,
           delivery_date,
           status,
-          description,
-          special_requirements,
           broker_id,
           broker:brokers(name, phone, email)
         `)

@@ -23,6 +23,24 @@ export default function PublishHubPage() {
   const [loadingSubscription, setLoadingSubscription] = useState(true);
 
   const needsSubscriptionCheck = (role === 'broker' && brokerId) || (role === 'company' && companyId);
+  const needsProfileLink = (role === 'company' && !companyId) || (role === 'broker' && !brokerId);
+
+  // Tenter un rattachement auto (sync-profile) si rôle company/broker sans profil lié
+  useEffect(() => {
+    if (!needsProfileLink) return;
+    let cancelled = false;
+    fetch('/api/auth/sync-profile', { method: 'POST', credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        if ((data.companyId && role === 'company') || (data.brokerId && role === 'broker')) {
+          router.refresh();
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [needsProfileLink, role, router]);
+
   useEffect(() => {
     if (!needsSubscriptionCheck) {
       setLoadingSubscription(false);
@@ -103,34 +121,76 @@ export default function PublishHubPage() {
 
       {role === 'company' && !hasCompanyProfile && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 space-y-3">
-          <p>Votre rôle est entreprise, mais aucun profil entreprise n&apos;est lié. L&apos;admin doit associer votre compte entreprise.</p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRequestValidation}
-            disabled={requestSent}
-            isLoading={requesting}
-            className="border-amber-300 text-amber-800 hover:bg-amber-100"
-          >
-            <Bell className="w-4 h-4 mr-1.5" />
-            {requestSent ? 'Demande envoyée' : 'Notifier l\'administrateur'}
-          </Button>
+          <p>Votre rôle est entreprise, mais aucun profil entreprise n&apos;est lié. Si vous vous êtes inscrit comme entreprise, cliquez sur &quot;Rattacher mon entreprise&quot;. Sinon, demandez à l&apos;admin de vous associer.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                setRequesting(true);
+                try {
+                  const res = await fetch('/api/auth/sync-profile', { method: 'POST', credentials: 'include' });
+                  const data = await res.json().catch(() => ({}));
+                  if (data?.companyId) router.refresh();
+                } finally {
+                  setRequesting(false);
+                }
+              }}
+              disabled={requestSent}
+              isLoading={requesting}
+              className="border-amber-300 text-amber-800 hover:bg-amber-100"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Rattacher mon entreprise
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRequestValidation}
+              disabled={requestSent}
+              className="border-amber-300 text-amber-800 hover:bg-amber-100"
+            >
+              <Bell className="w-4 h-4 mr-1.5" />
+              {requestSent ? 'Demande envoyée' : 'Notifier l\'administrateur'}
+            </Button>
+          </div>
         </div>
       )}
       {role === 'broker' && !hasBrokerProfile && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 space-y-3">
-          <p>Votre role est courtier, mais aucun profil broker n&apos;est lie. L&apos;admin doit associer votre compte broker.</p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRequestValidation}
-            disabled={requestSent}
-            isLoading={requesting}
-            className="border-amber-300 text-amber-800 hover:bg-amber-100"
-          >
-            <Bell className="w-4 h-4 mr-1.5" />
-            {requestSent ? 'Demande envoyée' : 'Notifier l\'administrateur'}
-          </Button>
+          <p>Votre rôle est courtier, mais aucun profil courtier n&apos;est lié. Si vous vous êtes inscrit comme courtier, cliquez sur &quot;Rattacher mon profil courtier&quot;. Sinon, demandez à l&apos;admin de vous associer.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                setRequesting(true);
+                try {
+                  const res = await fetch('/api/auth/sync-profile', { method: 'POST', credentials: 'include' });
+                  const data = await res.json().catch(() => ({}));
+                  if (data?.brokerId) router.refresh();
+                } finally {
+                  setRequesting(false);
+                }
+              }}
+              disabled={requestSent}
+              isLoading={requesting}
+              className="border-amber-300 text-amber-800 hover:bg-amber-100"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Rattacher mon profil courtier
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRequestValidation}
+              disabled={requestSent}
+              className="border-amber-300 text-amber-800 hover:bg-amber-100"
+            >
+              <Bell className="w-4 h-4 mr-1.5" />
+              {requestSent ? 'Demande envoyée' : 'Notifier l\'administrateur'}
+            </Button>
+          </div>
         </div>
       )}
       {role === 'admin' && (

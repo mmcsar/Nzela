@@ -178,8 +178,37 @@ ALTER TABLE public.bols ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
--- 4. POLICIES RLS
+-- 4. POLICIES RLS (DROP IF EXISTS pour ré-exécution)
 -- =====================================================
+DROP POLICY IF EXISTS "Users can read own data" ON public.users;
+DROP POLICY IF EXISTS "Users can update own data" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own data" ON public.users;
+DROP POLICY IF EXISTS "Admin can read all users" ON public.users;
+DROP POLICY IF EXISTS "Companies read own" ON public.companies;
+DROP POLICY IF EXISTS "Companies insert own" ON public.companies;
+DROP POLICY IF EXISTS "Companies update own" ON public.companies;
+DROP POLICY IF EXISTS "Admin can read all companies" ON public.companies;
+DROP POLICY IF EXISTS "Brokers read own" ON public.brokers;
+DROP POLICY IF EXISTS "Brokers insert own" ON public.brokers;
+DROP POLICY IF EXISTS "Brokers update own" ON public.brokers;
+DROP POLICY IF EXISTS "Admin can read all brokers" ON public.brokers;
+DROP POLICY IF EXISTS "Trucks are viewable by authenticated users" ON public.trucks;
+DROP POLICY IF EXISTS "Companies can insert own trucks" ON public.trucks;
+DROP POLICY IF EXISTS "Companies can update own trucks" ON public.trucks;
+DROP POLICY IF EXISTS "Companies can delete own trucks" ON public.trucks;
+DROP POLICY IF EXISTS "Loads are viewable by authenticated users" ON public.loads;
+DROP POLICY IF EXISTS "Brokers can insert own loads" ON public.loads;
+DROP POLICY IF EXISTS "Brokers can update own loads" ON public.loads;
+DROP POLICY IF EXISTS "Brokers can delete own loads" ON public.loads;
+DROP POLICY IF EXISTS "BOLs viewable by authenticated users" ON public.bols;
+DROP POLICY IF EXISTS "BOLs insert by authenticated users" ON public.bols;
+DROP POLICY IF EXISTS "BOLs update by authenticated users" ON public.bols;
+DROP POLICY IF EXISTS "Subscriptions read own" ON public.subscriptions;
+DROP POLICY IF EXISTS "Subscriptions insert own" ON public.subscriptions;
+DROP POLICY IF EXISTS "Admin can read all subscriptions" ON public.subscriptions;
+DROP POLICY IF EXISTS "Payments read own" ON public.payments;
+DROP POLICY IF EXISTS "Payments insert own" ON public.payments;
+DROP POLICY IF EXISTS "Admin can read all payments" ON public.payments;
 
 -- Users: lire ses propres données
 CREATE POLICY "Users can read own data" ON public.users

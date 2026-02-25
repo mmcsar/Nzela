@@ -257,16 +257,20 @@ export default function AdminKYCPage() {
                    <User className="w-5 h-5 text-gray-600" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900 text-sm truncate">{req.entityName || req.user?.full_name || 'N/A'}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-gray-900 text-sm truncate">{req.entityName || '—'}</span>
                     <span className="px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-500 uppercase">{req.entity_type}</span>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {req.user?.email || ''}
+                  <div className="text-xs text-gray-600 mt-0.5">
+                    <span className="font-medium text-gray-700">Demandeur :</span>{' '}
+                    {req.user?.full_name || req.user?.email || req.user_id || '—'}
+                    {req.user?.email && req.user?.full_name ? ` (${req.user.email})` : req.user?.email ? ` · ${req.user.email}` : ''}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">
                     {req.documents.length === 0 ? (
-                      <span className="ml-1 text-amber-600 font-medium">· Association de profil</span>
+                      <span className="text-amber-600 font-medium">Association de profil (aucun document KYC)</span>
                     ) : (
-                      <> · {req.documents.length} document(s)</>
+                      <>{req.documents.length} document(s) soumis</>
                     )}
                   </div>
                 </div>
@@ -302,6 +306,15 @@ export default function AdminKYCPage() {
               {/* Expanded detail */}
               {selectedRequest?.id === req.id && (
                 <div className="border-t bg-gray-50 p-4 space-y-4">
+                  {/* Demandeur (utilisateur à l'origine de la demande) */}
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">Demandeur</h4>
+                    <div className="text-sm text-gray-800 bg-white rounded-lg border border-gray-200 p-3">
+                      {req.user?.full_name && <div><span className="text-gray-500">Nom :</span> {req.user.full_name}</div>}
+                      {req.user?.email && <div><span className="text-gray-500">Email :</span> {req.user.email}</div>}
+                      {(!req.user?.full_name && !req.user?.email) && <span className="text-gray-500">Utilisateur id : {req.user_id}</span>}
+                    </div>
+                  </div>
                   {/* Documents ou info association */}
                   <div>
                     <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">

@@ -3,9 +3,19 @@
 -- A coller dans le SQL Editor de Supabase
 -- Admin: christian@maintenancemc.com
 -- =====================================================
+--
+-- ⚠️  ATTENTION : CE SCRIPT SUPPRIME TOUTES LES DONNÉES  ⚠️
+--     (DROP TABLE sur users, companies, brokers, loads, trucks, etc.)
+--     À utiliser UNIQUEMENT pour une NOUVELLE installation (base vide).
+--     Ne PAS exécuter sur une base qui contient déjà des données.
+--
+--     Pour une base existante, utiliser à la place :
+--     - supabase/a_coller_sur_supabase.sql (RLS, corrections)
+--     - supabase/migrations/20260224100000_provinces_toute_rdc.sql (provinces)
+-- =====================================================
 
 -- ─────────────────────────────────────────────────────
--- 1. NETTOYAGE (si re-exécution)
+-- 1. NETTOYAGE (si re-exécution) → EFFACE TOUTES LES DONNÉES
 -- ─────────────────────────────────────────────────────
 DROP TRIGGER IF EXISTS update_payments_updated_at ON payments;
 DROP TRIGGER IF EXISTS update_bols_updated_at ON bols;
@@ -253,34 +263,42 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON public.subscriptions(stat
 -- 6. TRIGGERS (updated_at automatique)
 -- ─────────────────────────────────────────────────────
 
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
 CREATE TRIGGER update_users_updated_at
   BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_companies_updated_at ON public.companies;
 CREATE TRIGGER update_companies_updated_at
   BEFORE UPDATE ON public.companies
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_brokers_updated_at ON public.brokers;
 CREATE TRIGGER update_brokers_updated_at
   BEFORE UPDATE ON public.brokers
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_subscriptions_updated_at ON public.subscriptions;
 CREATE TRIGGER update_subscriptions_updated_at
   BEFORE UPDATE ON public.subscriptions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_trucks_updated_at ON public.trucks;
 CREATE TRIGGER update_trucks_updated_at
   BEFORE UPDATE ON public.trucks
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_loads_updated_at ON public.loads;
 CREATE TRIGGER update_loads_updated_at
   BEFORE UPDATE ON public.loads
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_bols_updated_at ON public.bols;
 CREATE TRIGGER update_bols_updated_at
   BEFORE UPDATE ON public.bols
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_payments_updated_at ON public.payments;
 CREATE TRIGGER update_payments_updated_at
   BEFORE UPDATE ON public.payments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

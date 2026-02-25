@@ -78,83 +78,103 @@ export async function POST() {
       );
     }
 
-    // Service role pour contourner RLS : l'entreprise ne peut pas lire les admins
-    const adminClient = createServiceRoleClient();
-    const { data: admins } = await adminClient
-      .from('users')
-      .select('id')
-      .eq('role', 'admin');
-
-    if (!admins || admins.length === 0) {
-      return NextResponse.json({ success: true, notified: 0 });
-    }
-
-    const label = role === 'company' ? 'entreprise' : 'courtier';
-    const entityName = userData.full_name || userData.email || 'Utilisateur';
-
-    // Trouver la company ou broker (owner_id = user)
     const entityType = role === 'company' ? 'company' : 'broker';
-    const { data: entity } = await adminClient
-      .from(entityType === 'company' ? 'companies' : 'brokers')
-      .select('id, name')
-      .eq('owner_id', user.id)
-      .maybeSingle();
 
-    let verificationRequestId: string | null = null;
-    if (entity) {
-      const { data: existingReq } = await adminClient
-        .from('verification_requests')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('entity_type', entityType)
-        .eq('entity_id', entity.id)
-        .eq('status', 'pending')
-        .maybeSingle();
+    const hasServiceRole = !!(
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY !== 'your_service_role_key_here'
+    );
 
-      if (!existingReq) {
-        const { data: newReq, error: vreqErr } = await adminClient
-          .from('verification_requests')
-          .insert({
-            user_id: user.id,
-            entity_type: entityType,
-            entity_id: entity.id,
-            status: 'pending',
-            documents: [],
-          })
+    if (hasServiceRole) {
+      try {
+        // Avec SERVICE_ROLE_KEY : notifier les admins (notifications en temps réel)
+        const adminClient = createServiceRoleClient();
+        const { data: admins } = await adminClient
+          .from('users')
           .select('id')
-          .single();
-        if (!vreqErr) verificationRequestId = newReq?.id ?? null;
+          .eq('role', 'admin');
+
+        if (admins && admins.length > 0) {
+        const label = role === 'company' ? 'entreprise' : 'courtier';
+        const entityName = userData.full_name || userData.email || 'Utilisateur';
+
+        const { data: entity } = await adminClient
+          .from(entityType === 'company' ? 'companies' : 'brokers')
+          .select('id, name')
+          .eq('owner_id', user.id)
+          .maybeSingle();
+
+        let verificationRequestId: string | null = null;
+        if (entity) {
+          const { data: existingReq } = await adminClient
+            .from('verification_requests')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('entity_type', entityType)
+            .eq('entity_id', entity.id)
+            .eq('status', 'pending')
+            .maybeSingle();
+
+          if (!existingReq) {
+            const { data: newReq, error: vreqErr } = await adminClient
+              .from('verification_requests')
+              .insert({
+                user_id: user.id,
+                entity_type: entityType,
+                entity_id: entity.id,
+                status: 'pending',
+                documents: [],
+              })
+              .select('id')
+              .single();
+            if (!vreqErr) verificationRequestId = newReq?.id ?? null;
+          }
+        }
+
+        const notifications = admins.map((a: { id: string }) => ({
+          user_id: a.id,
+          type: 'system' as const,
+          title: `Demande d'association ${label}`,
+          body: verificationRequestId
+            ? `${entityName} demande l'association de son profil ${label}. Approuvez dans Vérification KYC.`
+            : `${entityName} demande l'association de son profil ${label}. Allez dans Gestion des utilisateurs.`,
+          link: verificationRequestId ? '/dashboard/admin/kyc' : '/dashboard/admin/users',
+          icon: role === 'company' ? 'Building2' : 'Users',
+          metadata: { userId: user.id, role, requestedAt: new Date().toISOString() },
+        }));
+
+        const { error } = await adminClient.from('notifications').insert(notifications);
+        if (!error) {
+          return NextResponse.json({ success: true, notified: admins.length });
+        }
+        }
+      } catch (_e) {
+        // Erreur service role : on passe au fallback
       }
     }
 
-    const notifications = admins.map((a: { id: string }) => ({
-      user_id: a.id,
-      type: 'system' as const,
-      title: `Demande d'association ${label}`,
-      body: verificationRequestId
-        ? `${entityName} demande l'association de son profil ${label}. Approuvez dans Vérification KYC.`
-        : `${entityName} demande l'association de son profil ${label}. Allez dans Gestion des utilisateurs.`,
-      link: verificationRequestId ? '/dashboard/admin/kyc' : '/dashboard/admin/users',
-      icon: role === 'company' ? 'Building2' : 'Users',
-      metadata: { userId: user.id, role, requestedAt: new Date().toISOString() },
-    }));
+    // Fallback sans SERVICE_ROLE : enregistrer dans association_requests (l'admin verra la liste dans Utilisateurs)
+    const { error: insertErr } = await supabase
+      .from('association_requests')
+      .insert({ user_id: user.id, entity_type: entityType });
 
-    const { error } = await adminClient.from('notifications').insert(notifications);
-    if (error) {
-      console.error('request-profile-link:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (insertErr) {
+      console.error('request-profile-link association_requests:', insertErr);
+      return NextResponse.json(
+        { error: 'La demande n\'a pas pu être enregistrée. Allez dans Dashboard > Admin > Utilisateurs et associez votre compte manuellement.' },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ success: true, notified: admins.length });
+    return NextResponse.json({
+      success: true,
+      requested: true,
+      message: 'Demande enregistrée. L\'admin la verra dans Dashboard > Admin > Utilisateurs.',
+    });
   } catch (error: unknown) {
     console.error('request-profile-link:', error);
     const msg = error instanceof Error ? error.message : 'Erreur serveur';
-    if (msg.includes('SUPABASE_SERVICE_ROLE_KEY')) {
-      return NextResponse.json(
-        { error: 'Configuration serveur incomplète. Contactez l\'administrateur.' },
-        { status: 503 }
-      );
-    }
     return NextResponse.json(
       { error: msg },
       { status: 500 }

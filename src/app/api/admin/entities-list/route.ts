@@ -21,25 +21,24 @@ export async function GET() {
       return NextResponse.json({ error: 'Admin requis' }, { status: 403 });
     }
 
-    let companies: { id: string; name: string }[] = [];
-    let brokers: { id: string; name: string }[] = [];
+    let companies: { id: string; name: string; owner_id?: string }[] = [];
+    let brokers: { id: string; name: string; owner_id?: string }[] = [];
 
     try {
       const db = createServiceRoleClient();
       const [companiesRes, brokersRes] = await Promise.all([
-        db.from('companies').select('id, name').order('name'),
-        db.from('brokers').select('id, name').order('name'),
+        db.from('companies').select('id, name, owner_id').order('name'),
+        db.from('brokers').select('id, name, owner_id').order('name'),
       ]);
-      companies = companiesRes.data || [];
-      brokers = brokersRes.data || [];
+      companies = (companiesRes.data || []).map((c: { id: string; name: string; owner_id?: string }) => ({ id: c.id, name: c.name, owner_id: c.owner_id }));
+      brokers = (brokersRes.data || []).map((b: { id: string; name: string; owner_id?: string }) => ({ id: b.id, name: b.name, owner_id: b.owner_id }));
     } catch (e) {
-      // Fallback: client standard si service role non configuré
       const [c, b] = await Promise.all([
-        supabase.from('companies').select('id, name').order('name'),
-        supabase.from('brokers').select('id, name').order('name'),
+        supabase.from('companies').select('id, name, owner_id').order('name'),
+        supabase.from('brokers').select('id, name, owner_id').order('name'),
       ]);
-      companies = c.data || [];
-      brokers = b.data || [];
+      companies = (c.data || []).map((x: { id: string; name: string; owner_id?: string }) => ({ id: x.id, name: x.name, owner_id: x.owner_id }));
+      brokers = (b.data || []).map((x: { id: string; name: string; owner_id?: string }) => ({ id: x.id, name: x.name, owner_id: x.owner_id }));
     }
 
     return NextResponse.json({ companies, brokers });

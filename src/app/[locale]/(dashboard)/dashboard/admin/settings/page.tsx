@@ -14,6 +14,7 @@ import {
   Table2, Key, Link2, Hash, BarChart3, Activity,
   ArrowUpRight, ArrowDownRight, Layers, GitBranch,
 } from 'lucide-react';
+import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
 
 // ── Toggle Switch Component ──
 function Toggle({ enabled, onChange, disabled = false }: { enabled: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -798,28 +799,11 @@ export default function AdminSettingsPage() {
   const [subscriptionGateLoading, setSubscriptionGateLoading] = useState(false);
   const [subscriptionGateSaving, setSubscriptionGateSaving] = useState(false);
 
-  // Provinces actives
-  const [activeProvinces, setActiveProvinces] = useState<string[]>([
-    'haut-katanga', 'lualaba', 'haut-lomami', 'tanganyika', 'kinshasa', 'kongo-central',
-  ]);
+  // Provinces actives (par défaut toute la RDC)
+  const [activeProvinces, setActiveProvinces] = useState<string[]>([...PROVINCES_RDC_IDS]);
 
-  const allProvinces = [
-    'haut-katanga', 'lualaba', 'haut-lomami', 'tanganyika', 'kinshasa', 'kongo-central',
-    'kasai', 'kasai-central', 'kasai-oriental', 'lomami', 'sankuru', 'maniema',
-    'sud-kivu', 'nord-kivu', 'ituri', 'tshopo', 'bas-uele', 'haut-uele',
-    'mongala', 'nord-ubangi', 'sud-ubangi', 'equateur', 'tshuapa', 'kwango', 'kwilu', 'mai-ndombe',
-  ];
-
-  const provinceNames: Record<string, string> = {
-    'haut-katanga': 'Haut-Katanga', 'lualaba': 'Lualaba', 'haut-lomami': 'Haut-Lomami',
-    'tanganyika': 'Tanganyika', 'kinshasa': 'Kinshasa', 'kongo-central': 'Kongo-Central',
-    'kasai': 'Kasai', 'kasai-central': 'Kasai-Central', 'kasai-oriental': 'Kasai-Oriental',
-    'lomami': 'Lomami', 'sankuru': 'Sankuru', 'maniema': 'Maniema',
-    'sud-kivu': 'Sud-Kivu', 'nord-kivu': 'Nord-Kivu', 'ituri': 'Ituri',
-    'tshopo': 'Tshopo', 'bas-uele': 'Bas-Uele', 'haut-uele': 'Haut-Uele',
-    'mongala': 'Mongala', 'nord-ubangi': 'Nord-Ubangi', 'sud-ubangi': 'Sud-Ubangi',
-    'equateur': 'Equateur', 'tshuapa': 'Tshuapa', 'kwango': 'Kwango', 'kwilu': 'Kwilu', 'mai-ndombe': 'Mai-Ndombe',
-  };
+  const allProvinces = [...PROVINCES_RDC_IDS];
+  const provinceNames = PROVINCES_RDC_NAMES;
 
   const supabase = createClient();
 

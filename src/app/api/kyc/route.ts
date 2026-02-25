@@ -58,7 +58,7 @@ export async function GET(request: Request) {
           .from('users')
           .select('email, full_name')
           .eq('id', req.user_id)
-          .single();
+          .maybeSingle();
 
         let entityName = '';
         if (req.entity_type === 'company') {

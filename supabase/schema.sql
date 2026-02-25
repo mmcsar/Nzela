@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.companies (
   registration_number TEXT NOT NULL UNIQUE,
   address TEXT NOT NULL,
   city TEXT NOT NULL,
-  province TEXT NOT NULL CHECK (province IN ('haut-katanga', 'lualaba')),
+  province TEXT NOT NULL,
   phone TEXT NOT NULL,
   email TEXT NOT NULL,
   owner_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS public.brokers (
   registration_number TEXT NOT NULL UNIQUE,
   address TEXT NOT NULL,
   city TEXT NOT NULL,
-  province TEXT NOT NULL CHECK (province IN ('haut-katanga', 'lualaba')),
+  province TEXT NOT NULL,
   phone TEXT NOT NULL,
   email TEXT NOT NULL,
   owner_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
@@ -130,6 +130,14 @@ CREATE TABLE IF NOT EXISTS public.payments (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Demandes d'association (entreprise/courtier) pour l'admin
+CREATE TABLE IF NOT EXISTS public.association_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  entity_type TEXT NOT NULL CHECK (entity_type IN ('company', 'broker')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
@@ -141,6 +149,8 @@ CREATE INDEX IF NOT EXISTS idx_loads_broker_id ON public.loads(broker_id);
 CREATE INDEX IF NOT EXISTS idx_loads_status ON public.loads(status);
 CREATE INDEX IF NOT EXISTS idx_bols_load_id ON public.bols(load_id);
 CREATE INDEX IF NOT EXISTS idx_bols_truck_id ON public.bols(truck_id);
+CREATE INDEX IF NOT EXISTS idx_association_requests_user_id ON public.association_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_association_requests_created_at ON public.association_requests(created_at DESC);
 
 -- Row Level Security (RLS) Policies
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -151,20 +161,25 @@ ALTER TABLE public.trucks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.loads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bols ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.association_requests ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own data
+DROP POLICY IF EXISTS "Users can read own data" ON public.users;
 CREATE POLICY "Users can read own data" ON public.users
   FOR SELECT USING (auth.uid() = id);
 
 -- Companies can read their own data
+DROP POLICY IF EXISTS "Companies can read own data" ON public.companies;
 CREATE POLICY "Companies can read own data" ON public.companies
   FOR SELECT USING (auth.uid() = owner_id);
 
 -- Brokers can read their own data
+DROP POLICY IF EXISTS "Brokers can read own data" ON public.brokers;
 CREATE POLICY "Brokers can read own data" ON public.brokers
   FOR SELECT USING (auth.uid() = owner_id);
 
 -- Admin can read all data
+DROP POLICY IF EXISTS "Admin can read all" ON public.users;
 CREATE POLICY "Admin can read all" ON public.users
   FOR SELECT USING (
     EXISTS (
@@ -182,22 +197,28 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Triggers for updated_at
+-- Triggers for updated_at (DROP IF EXISTS pour ré-exécution sans erreur)
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_companies_updated_at ON public.companies;
 CREATE TRIGGER update_companies_updated_at BEFORE UPDATE ON public.companies
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_brokers_updated_at ON public.brokers;
 CREATE TRIGGER update_brokers_updated_at BEFORE UPDATE ON public.brokers
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_trucks_updated_at ON public.trucks;
 CREATE TRIGGER update_trucks_updated_at BEFORE UPDATE ON public.trucks
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_loads_updated_at ON public.loads;
 CREATE TRIGGER update_loads_updated_at BEFORE UPDATE ON public.loads
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_bols_updated_at ON public.bols;
 CREATE TRIGGER update_bols_updated_at BEFORE UPDATE ON public.bols
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 

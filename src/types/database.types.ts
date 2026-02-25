@@ -45,7 +45,7 @@ export interface Database {
           registration_number: string
           address: string
           city: string
-          province: 'haut-katanga' | 'lualaba'
+          province: string
           phone: string
           email: string
           owner_id: string
@@ -60,7 +60,7 @@ export interface Database {
           registration_number: string
           address: string
           city: string
-          province: 'haut-katanga' | 'lualaba'
+          province: string
           phone: string
           email: string
           owner_id: string
@@ -75,7 +75,7 @@ export interface Database {
           registration_number?: string
           address?: string
           city?: string
-          province?: 'haut-katanga' | 'lualaba'
+          province?: string
           phone?: string
           email?: string
           owner_id?: string
@@ -92,7 +92,7 @@ export interface Database {
           registration_number: string
           address: string
           city: string
-          province: 'haut-katanga' | 'lualaba'
+          province: string
           phone: string
           email: string
           owner_id: string
@@ -107,7 +107,7 @@ export interface Database {
           registration_number: string
           address: string
           city: string
-          province: 'haut-katanga' | 'lualaba'
+          province: string
           phone: string
           email: string
           owner_id: string
@@ -122,7 +122,7 @@ export interface Database {
           registration_number?: string
           address?: string
           city?: string
-          province?: 'haut-katanga' | 'lualaba'
+          province?: string
           phone?: string
           email?: string
           owner_id?: string

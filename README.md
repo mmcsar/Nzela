@@ -1,6 +1,6 @@
 # Nzela - Plateforme de Logistique
 
-Plateforme de logistique pour le Haut-Katanga et Lualaba (RDC).
+Plateforme de logistique pour toute la RDC (26 provinces).
 
 ## Fonctionnalités
 
@@ -36,9 +36,8 @@ cp .env.local.example .env.local
 ```
 
 Remplir les valeurs dans `.env.local` :
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Dashboard Supabase > Settings > API
+- `SUPABASE_SERVICE_ROLE_KEY` — même page, clé **service_role** (secret). Requise pour l’admin (entreprises, courtiers, notifications).
 
 3. Lancer le serveur de développement :
 ```bash

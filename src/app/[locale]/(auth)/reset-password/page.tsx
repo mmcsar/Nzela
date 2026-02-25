@@ -24,7 +24,7 @@ export default function ResetPasswordPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setHasSession(!!session);
     });
-  }, []);
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

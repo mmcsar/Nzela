@@ -7,7 +7,7 @@ const newsItems = [
     title: 'Nzela leve des fonds pour son expansion en RDC',
     source: 'Presse locale',
     date: '2025-12-01',
-    excerpt: 'La startup Nzela a annonce une levee de fonds pour accelerer son deploiement dans les provinces du Haut-Katanga et Lualaba.',
+    excerpt: 'La startup Nzela a annonce une levee de fonds pour accelerer son deploiement sur toute la RDC (26 provinces).',
   },
   {
     title: 'Partenariat strategique avec les transporteurs du Katanga',

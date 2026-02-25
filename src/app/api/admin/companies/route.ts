@@ -25,25 +25,37 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'all';
 
-    const db = createServiceRoleClient();
-    let query = db
-      .from('companies')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (status !== 'all') {
-      query = query.eq('status', status);
+    let data: unknown[] = [];
+    try {
+      const db = createServiceRoleClient();
+      let query = db
+        .from('companies')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (status !== 'all') query = query.eq('status', status);
+      const res = await query;
+      if (res.error) throw res.error;
+      data = res.data || [];
+    } catch (e) {
+      // Fallback sans SERVICE_ROLE : l'admin lit via RLS (is_admin())
+      let query = supabase
+        .from('companies')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (status !== 'all') query = query.eq('status', status);
+      const { data: fallbackData, error } = await query;
+      if (error) throw error;
+      data = fallbackData || [];
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
-
-    return NextResponse.json({ companies: data || [] });
+    return NextResponse.json({ companies: data });
   } catch (error: unknown) {
     console.error('admin/companies:', error);
+    const message = error instanceof Error ? error.message : 'Erreur serveur';
+    const isConfigMissing = message.includes('SUPABASE_SERVICE_ROLE_KEY');
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erreur serveur' },
-      { status: 500 }
+      { error: isConfigMissing ? 'Configuration manquante : ajoutez SUPABASE_SERVICE_ROLE_KEY dans .env.local (voir Dashboard Supabase > Settings > API > service_role).' : message },
+      { status: isConfigMissing ? 503 : 500 }
     );
   }
 }

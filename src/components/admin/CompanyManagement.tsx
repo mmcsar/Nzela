@@ -3,25 +3,36 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Company } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Building2, Search, BadgeCheck } from 'lucide-react';
+import { Building2, Search, BadgeCheck, Ban } from 'lucide-react';
 import { toErrorMessage } from '@/lib/api/error';
 
 export function CompanyManagement() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [configError, setConfigError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'pending'>('pending');
   const [validatingId, setValidatingId] = useState<string | null>(null);
 
   const loadCompanies = useCallback(async () => {
+    setConfigError(null);
     try {
       const params = new URLSearchParams({ status: statusFilter });
       const res = await fetch(`/api/admin/companies?${params.toString()}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur chargement');
+      if (!res.ok) {
+        const msg = data.error || 'Erreur chargement';
+        if (res.status === 503 || msg.includes('SUPABASE_SERVICE_ROLE_KEY') || msg.includes('Configuration manquante')) {
+          setConfigError(msg);
+          setCompanies([]);
+          return;
+        }
+        throw new Error(msg);
+      }
       setCompanies((data.companies || []) as Company[]);
     } catch (error) {
       console.error('Error loading companies:', error);
+      setCompanies([]);
     } finally {
       setIsLoading(false);
     }
@@ -64,6 +75,19 @@ export function CompanyManagement() {
 
   return (
     <div className="space-y-6">
+      {configError && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+          <strong>Configuration requise</strong> — {configError}
+          <p className="mt-2 font-medium">À faire :</p>
+          <ol className="list-decimal list-inside mt-1 space-y-0.5 text-amber-900">
+            <li>Ouvrez le <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline">Dashboard Supabase</a> → votre projet</li>
+            <li>Settings → API → section <strong>Project API keys</strong></li>
+            <li>Copiez la clé <strong>service_role</strong> (secret, ne la partagez pas)</li>
+            <li>Dans le projet, créez ou éditez <code className="bg-amber-100 px-1 rounded">.env.local</code> et ajoutez : <code className="bg-amber-100 px-1 rounded block mt-1">SUPABASE_SERVICE_ROLE_KEY=votre_clé_copiée</code></li>
+            <li>Redémarrez le serveur (<code className="bg-amber-100 px-1 rounded">npm run dev</code>)</li>
+          </ol>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Gestion des Entreprises</h1>
@@ -137,7 +161,9 @@ export function CompanyManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredCompanies.map((company) => (
+                filteredCompanies.map((company) => {
+                  const status = (company as any).status ?? company.status ?? 'pending';
+                  return (
                   <tr key={company.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
@@ -159,11 +185,11 @@ export function CompanyManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
                         className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${
-                          company.status === 'active' ? 'bg-green-100 text-green-800' :
-                          company.status === 'suspended' ? 'bg-red-100 text-red-800' :
+                          status === 'active' ? 'bg-green-100 text-green-800' :
+                          status === 'suspended' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}
-                        value={company.status}
+                        value={status}
                         onChange={(e) => handleStatusChange(company.id, e.target.value as any)}
                       >
                         <option value="active">Actif</option>
@@ -172,24 +198,42 @@ export function CompanyManagement() {
                       </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {company.status === 'pending' ? (
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button
                           size="sm"
                           onClick={() => handleStatusChange(company.id, 'active')}
                           disabled={validatingId !== null}
-                          className="bg-emerald-600 hover:bg-emerald-700"
+                          className={status === 'pending' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                          variant={status === 'pending' ? undefined : 'outline'}
                         >
                           <BadgeCheck className="w-3.5 h-3.5 mr-1" />
                           Valider
                         </Button>
-                      ) : (
-                        <Button variant="outline" size="sm">
-                          Voir détails
-                        </Button>
-                      )}
+                        {status !== 'suspended' ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleStatusChange(company.id, 'suspended')}
+                            disabled={validatingId !== null}
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                          >
+                            <Ban className="w-3.5 h-3.5 mr-1" />
+                            Suspendre
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleStatusChange(company.id, 'pending')}
+                            disabled={validatingId !== null}
+                          >
+                            Remettre en attente
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))
+                );})
               )}
             </tbody>
           </table>

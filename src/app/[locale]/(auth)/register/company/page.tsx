@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
+import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES, type ProvinceId } from '@/lib/constants/rdc-provinces';
 import { Building2, ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -30,7 +31,7 @@ export default function RegisterCompanyPage() {
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('Lubumbashi');
-  const [province, setProvince] = useState<'haut-katanga' | 'lualaba'>('haut-katanga');
+  const [province, setProvince] = useState<ProvinceId>('haut-katanga');
   const [phone, setPhone] = useState('');
   const [companyEmail, setCompanyEmail] = useState('');
 
@@ -199,10 +200,11 @@ export default function RegisterCompanyPage() {
                 <select
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   value={province}
-                  onChange={(e) => setProvince(e.target.value as 'haut-katanga' | 'lualaba')}
+                  onChange={(e) => setProvince(e.target.value as ProvinceId)}
                 >
-                  <option value="haut-katanga">Haut-Katanga</option>
-                  <option value="lualaba">Lualaba</option>
+                  {PROVINCES_RDC_IDS.map((id) => (
+                    <option key={id} value={id}>{PROVINCES_RDC_NAMES[id]}</option>
+                  ))}
                 </select>
               </div>
             </div>

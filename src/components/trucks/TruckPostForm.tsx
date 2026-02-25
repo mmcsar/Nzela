@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Truck } from '@/types';
 import { toErrorMessage } from '@/lib/api/error';
+import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
 
 const truckSchema = z.object({
   type: z.string().min(1, 'Le type de camion est requis'),
@@ -16,7 +17,7 @@ const truckSchema = z.object({
   currentLocation: z.object({
     address: z.string().min(1, 'L\'adresse est requise'),
     city: z.string().min(1, 'La ville est requise'),
-    province: z.enum(['haut-katanga', 'lualaba']),
+    province: z.enum(PROVINCES_RDC_IDS as unknown as [string, ...string[]]),
     coordinates: z.object({
       lat: z.number().optional(),
       lng: z.number().optional(),
@@ -26,7 +27,7 @@ const truckSchema = z.object({
   destination: z.object({
     address: z.string().optional(),
     city: z.string().optional(),
-    province: z.enum(['haut-katanga', 'lualaba']).optional(),
+    province: z.enum(PROVINCES_RDC_IDS as unknown as [string, ...string[]]).optional(),
     coordinates: z.object({
       lat: z.number().optional(),
       lng: z.number().optional(),
@@ -188,8 +189,9 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('currentLocation.province')}
               >
-                <option value="haut-katanga">Haut-Katanga</option>
-                <option value="lualaba">Lualaba</option>
+                {PROVINCES_RDC_IDS.map((id) => (
+                  <option key={id} value={id}>{PROVINCES_RDC_NAMES[id]}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -211,8 +213,9 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
                 {...register('destination.province')}
               >
                 <option value="">Toute destination</option>
-                <option value="haut-katanga">Haut-Katanga</option>
-                <option value="lualaba">Lualaba</option>
+                {PROVINCES_RDC_IDS.map((id) => (
+                  <option key={id} value={id}>{PROVINCES_RDC_NAMES[id]}</option>
+                ))}
               </select>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Broker } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
-import { Users, Search, BadgeCheck } from 'lucide-react';
+import { Users, Search, BadgeCheck, Ban } from 'lucide-react';
 import { toErrorMessage } from '@/lib/api/error';
 
 export function BrokerManagement() {
@@ -146,7 +146,9 @@ export function BrokerManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredBrokers.map((broker) => (
+                filteredBrokers.map((broker) => {
+                  const status = (broker as any).status ?? broker.status ?? 'pending';
+                  return (
                   <tr key={broker.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
@@ -163,16 +165,16 @@ export function BrokerManagement() {
                       <div className="text-sm text-gray-500">{broker.province}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(broker.createdAt).toLocaleDateString('fr-FR')}
+                      {new Date((broker as any).created_at ?? broker.createdAt).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
                         className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${
-                          broker.status === 'active' ? 'bg-green-100 text-green-800' :
-                          broker.status === 'suspended' ? 'bg-red-100 text-red-800' :
+                          status === 'active' ? 'bg-green-100 text-green-800' :
+                          status === 'suspended' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}
-                        value={broker.status}
+                        value={status}
                         onChange={(e) => handleStatusChange(broker.id, e.target.value as any)}
                       >
                         <option value="active">Actif</option>
@@ -181,24 +183,42 @@ export function BrokerManagement() {
                       </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {broker.status === 'pending' ? (
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button
                           size="sm"
                           onClick={() => handleStatusChange(broker.id, 'active')}
                           disabled={validatingId !== null}
-                          className="bg-emerald-600 hover:bg-emerald-700"
+                          className={status === 'pending' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                          variant={status === 'pending' ? undefined : 'outline'}
                         >
                           <BadgeCheck className="w-3.5 h-3.5 mr-1" />
                           Valider
                         </Button>
-                      ) : (
-                        <Button variant="outline" size="sm">
-                          Voir détails
-                        </Button>
-                      )}
+                        {status !== 'suspended' ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleStatusChange(broker.id, 'suspended')}
+                            disabled={validatingId !== null}
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                          >
+                            <Ban className="w-3.5 h-3.5 mr-1" />
+                            Suspendre
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleStatusChange(broker.id, 'pending')}
+                            disabled={validatingId !== null}
+                          >
+                            Remettre en attente
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))
+                );})
               )}
             </tbody>
           </table>

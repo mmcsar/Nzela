@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 const stats = [
   { label: 'Utilisateurs actifs', value: '500+' },
   { label: 'Chargements traites', value: '10 000+' },
-  { label: 'Provinces couvertes', value: '4' },
+  { label: 'Provinces couvertes', value: '26' },
   { label: 'Disponibilite', value: '99.9%' },
 ];
 
@@ -21,7 +21,7 @@ const values = [
   { icon: Target, title: 'Innovation', desc: 'Nous utilisons la technologie pour revolutionner la logistique en RDC' },
   { icon: Users, title: 'Collaboration', desc: 'Nous connectons les acteurs du transport pour creer de la valeur' },
   { icon: Shield, title: 'Fiabilite', desc: 'Securite et transparence dans chaque transaction' },
-  { icon: Globe, title: 'Impact local', desc: 'Nous contribuons au developpement economique du Haut-Katanga et Lualaba' },
+  { icon: Globe, title: 'Impact local', desc: 'Nous contribuons au developpement economique sur toute la RDC' },
 ];
 
 export default function AboutPage() {

@@ -60,44 +60,46 @@ export async function POST(request: Request) {
       );
     }
 
-    const adminClient = createServiceRoleClient();
+    try {
+      const adminClient = createServiceRoleClient();
+      const table = type === 'company' ? 'companies' : 'brokers';
+      const { data: entity } = await adminClient
+        .from(table)
+        .select('owner_id')
+        .eq('id', entityId)
+        .maybeSingle();
+      if (!entity || entity.owner_id !== userId) {
+        return NextResponse.json({ error: 'Entité non trouvée ou non autorisée' }, { status: 403 });
+      }
 
-    // Vérifier que l'entité appartient bien à l'utilisateur (évite les abus si token passé à la main)
-    const table = type === 'company' ? 'companies' : 'brokers';
-    const { data: entity } = await adminClient
-      .from(table)
-      .select('owner_id')
-      .eq('id', entityId)
-      .maybeSingle();
-    if (!entity || entity.owner_id !== userId) {
-      return NextResponse.json({ error: 'Entité non trouvée ou non autorisée' }, { status: 403 });
-    }
+      const { data: admins } = await adminClient.from('users').select('id').eq('role', 'admin');
+      if (!admins || admins.length === 0) {
+        return NextResponse.json({ success: true, notified: 0 });
+      }
 
-    const { data: admins } = await adminClient.from('users').select('id').eq('role', 'admin');
-    if (!admins || admins.length === 0) {
+      const label = type === 'company' ? 'entreprise' : 'courtier';
+      const link = type === 'company' ? '/dashboard/admin/companies' : '/dashboard/admin/brokers';
+      const notifications = admins.map((a: { id: string }) => ({
+        user_id: a.id,
+        type: 'system' as const,
+        title: `Nouvelle inscription ${label}`,
+        body: `${entityName} demande une validation. Un administrateur doit approuver le compte.`,
+        link,
+        icon: type === 'company' ? 'Building2' : 'Users',
+        metadata: { entityType: type, entityId },
+      }));
+
+      const { error } = await adminClient.from('notifications').insert(notifications);
+      if (error) {
+        console.error('notify-signup insert:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ success: true, notified: admins.length });
+    } catch (e) {
+      // SERVICE_ROLE_KEY manquante ou erreur : on ne bloque pas l'inscription, les admins verront la liste dans Gestion Entreprises/Courtiers
+      console.warn('notify-signup (notifications non envoyées):', e);
       return NextResponse.json({ success: true, notified: 0 });
     }
-
-    const label = type === 'company' ? 'entreprise' : 'courtier';
-    const link = type === 'company' ? '/dashboard/admin/companies' : '/dashboard/admin/brokers';
-
-    const notifications = admins.map((a: { id: string }) => ({
-      user_id: a.id,
-      type: 'system' as const,
-      title: `Nouvelle inscription ${label}`,
-      body: `${entityName} demande une validation. Un administrateur doit approuver le compte.`,
-      link,
-      icon: type === 'company' ? 'Building2' : 'Users',
-      metadata: { entityType: type, entityId },
-    }));
-
-    const { error } = await adminClient.from('notifications').insert(notifications);
-    if (error) {
-      console.error('Error notifying admins:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true, notified: admins.length });
   } catch (error: unknown) {
     console.error('notify-signup:', error);
     return NextResponse.json(

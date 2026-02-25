@@ -6,13 +6,13 @@ import { Footer } from '@/components/layout/Footer';
 import { ChevronDown } from 'lucide-react';
 
 const faqs = [
-  { q: 'Qu\'est-ce que Nzela ?', a: 'Nzela est une plateforme logistique qui connecte les transporteurs et les courtiers en fret en Republique Democratique du Congo, specifiquement dans les provinces du Haut-Katanga et Lualaba.' },
+  { q: 'Qu\'est-ce que Nzela ?', a: 'Nzela est une plateforme logistique qui connecte les transporteurs et les courtiers en fret en Republique Democratique du Congo, sur toute la RDC (26 provinces).' },
   { q: 'Nzela est-il gratuit ?', a: 'L\'inscription et l\'acces au Load Board de base sont gratuits. Des fonctionnalites avancees sont disponibles via nos plans d\'abonnement Standard, Enhanced, Pro, Select et Office.' },
   { q: 'Comment publier un chargement ?', a: 'Connectez-vous en tant que courtier, accedez au tableau de bord, et cliquez sur "Publier un chargement". Remplissez les details (origine, destination, type, poids, prix) et publiez.' },
   { q: 'Comment trouver des chargements ?', a: 'En tant que transporteur, accedez au Load Board depuis votre tableau de bord. Utilisez les filtres pour trouver les chargements qui correspondent a vos routes et capacites.' },
   { q: 'Le suivi GPS est-il inclus ?', a: 'Oui, le suivi GPS en temps reel est inclus dans les plans Enhanced et superieurs. Il permet aux courtiers de suivre la position des vehicules pendant le transport.' },
   { q: 'Quels modes de paiement sont acceptes ?', a: 'Nous acceptons le Mobile Money (M-Pesa, Airtel Money), les virements bancaires et les paiements en especes pour les abonnements.' },
-  { q: 'Nzela couvre quelles regions ?', a: 'Actuellement, Nzela couvre les provinces du Haut-Katanga et Lualaba, avec des plans d\'expansion vers d\'autres provinces de la RDC.' },
+  { q: 'Nzela couvre quelles regions ?', a: 'Nzela couvre toute la RDC : les 26 provinces sont disponibles (Haut-Katanga, Lualaba, Kinshasa, Kivu, Kasai, Equateur, etc.).' },
   { q: 'Comment fonctionne le matching ?', a: 'Notre algorithme analyse la proximite geographique, la capacite, le type de marchandise et la reputation pour proposer les meilleures correspondances entre chargements et camions.' },
   { q: 'Mes donnees sont-elles en securite ?', a: 'Oui, nous utilisons le chiffrement SSL/TLS, le controle d\'acces base sur les roles (RBAC) et le Row Level Security (RLS) pour proteger toutes les donnees.' },
   { q: 'Comment contacter le support ?', a: 'Vous pouvez nous contacter via la page Contact, par email a contact@nzela.cd, ou par telephone. Les abonnes Pro et Select beneficient d\'un support prioritaire.' },

@@ -44,19 +44,27 @@ export async function POST(request: Request) {
     }
 
     const table = entityType === 'company' ? 'companies' : 'brokers';
-    const db = createServiceRoleClient();
+    const payload = { status, updated_at: new Date().toISOString() };
 
-    const { error } = await db
-      .from(table)
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', entityId);
+    let err: unknown = null;
+    try {
+      const db = createServiceRoleClient();
+      const res = await db.from(table).update(payload).eq('id', entityId);
+      if (res.error) err = res.error;
+    } catch (e) {
+      err = e;
+    }
 
-    if (error) {
-      console.error('entity-status:', error);
-      return NextResponse.json(
-        { error: error.message || 'Erreur lors de la mise à jour' },
-        { status: 500 }
-      );
+    if (err) {
+      // Fallback sans SERVICE_ROLE : l'admin met à jour via RLS
+      const { error } = await supabase.from(table).update(payload).eq('id', entityId);
+      if (error) {
+        console.error('entity-status:', error);
+        return NextResponse.json(
+          { error: error.message || 'Erreur lors de la mise à jour' },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({

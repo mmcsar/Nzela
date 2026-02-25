@@ -64,9 +64,13 @@ export function NotificationBell() {
   }, []);
 
   useEffect(() => {
-    setNow(Date.now());
-    const t = setInterval(() => setNow(Date.now()), 60000);
-    return () => clearInterval(t);
+    const tick = () => setNow(Date.now());
+    const id = setTimeout(tick, 0);
+    const t = setInterval(tick, 60000);
+    return () => {
+      clearTimeout(id);
+      clearInterval(t);
+    };
   }, []);
 
   const getIcon = (type: string, iconName?: string) => {

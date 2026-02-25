@@ -50,13 +50,13 @@ export async function POST(request: Request) {
       broker_id: broker.id,
       origin: JSON.stringify({
         city: body.from,
-        address: '',
-        province: 'haut-katanga',
+        address: body.origin?.address ?? '',
+        province: body.origin?.province ?? 'haut-katanga',
       }),
       destination: JSON.stringify({
         city: body.to,
-        address: '',
-        province: 'haut-katanga',
+        address: body.destination?.address ?? '',
+        province: body.destination?.province ?? 'haut-katanga',
       }),
       distance: route ? parseInt(route.distance.replace(' km', '')) : 0,
       duration: route ? route.duration : '',

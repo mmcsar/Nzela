@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
-import { Users, Search, BadgeCheck, Ban, Clock, Loader2, Trash2 } from 'lucide-react';
+import { Users, Search, BadgeCheck, Ban, Clock, Loader2, Trash2, Info, Bell, CheckCircle2, XCircle, Filter, Building2 } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { toErrorMessage } from '@/lib/api/error';
 
@@ -30,14 +30,25 @@ export default function AdminUsersPage() {
   const tAdmin = useTranslations('admin.users');
 
   const [users, setUsers] = useState<UserWithDetails[]>([]);
-  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
-  const [brokers, setBrokers] = useState<{ id: string; name: string }[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; name: string; owner_id?: string }[]>([]);
+  const [brokers, setBrokers] = useState<{ id: string; name: string; owner_id?: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
+  const [entityStatusFilter, setEntityStatusFilter] = useState<'all' | 'pending' | 'active' | 'suspended'>('all');
+  const [entityTypeFilter, setEntityTypeFilter] = useState<string>(''); // '' = Tous types, 'company', 'broker'
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [linkingUserId, setLinkingUserId] = useState<string | null>(null);
   const [statusUserId, setStatusUserId] = useState<string | null>(null);
+  const [associationRequests, setAssociationRequests] = useState<Array<{
+    id: string;
+    user_id: string;
+    entity_type: 'company' | 'broker';
+    created_at: string;
+    email?: string | null;
+    full_name?: string | null;
+  }>>([]);
+  const [dismissingRequestId, setDismissingRequestId] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -78,6 +89,9 @@ export default function AdminUsersPage() {
       });
 
       setUsers(usersWithNames);
+      const res = await fetch('/api/admin/association-requests');
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.requests)) setAssociationRequests(data.requests);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
@@ -99,17 +113,35 @@ export default function AdminUsersPage() {
           setBrokers(data.brokers || []);
         }
       } catch {
-        // fallback: requête directe si l'API échoue
         const [c, b] = await Promise.all([
-          supabase.from('companies').select('id, name').order('name'),
-          supabase.from('brokers').select('id, name').order('name'),
+          supabase.from('companies').select('id, name, owner_id').order('name'),
+          supabase.from('brokers').select('id, name, owner_id').order('name'),
         ]);
-        setCompanies((c.data || []) as { id: string; name: string }[]);
-        setBrokers((b.data || []) as { id: string; name: string }[]);
+        setCompanies((c.data || []) as { id: string; name: string; owner_id?: string }[]);
+        setBrokers((b.data || []) as { id: string; name: string; owner_id?: string }[]);
       }
     }
     loadEntities();
   }, [supabase]);
+
+
+  const dismissAssociationRequest = async (requestId: string) => {
+    setDismissingRequestId(requestId);
+    try {
+      const res = await fetch('/api/admin/association-requests', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: requestId }),
+      });
+      if (res.ok) {
+        setAssociationRequests((prev) => prev.filter((r) => r.id !== requestId));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setDismissingRequestId(null);
+    }
+  };
 
   const handleLinkProfile = async (userId: string, entityType: 'company' | 'broker', entityId: string) => {
     if (!entityId) return;
@@ -123,6 +155,7 @@ export default function AdminUsersPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(toErrorMessage(data.error, 'Erreur'));
       await loadUsers();
+      setAssociationRequests((prev) => prev.filter((r) => r.user_id !== userId));
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : 'Erreur lors de l\'association');
@@ -173,9 +206,22 @@ export default function AdminUsersPage() {
     return '—';
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    if (!user.email.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (entityTypeFilter === 'company' && user.role !== 'company') return false;
+    if (entityTypeFilter === 'broker' && user.role !== 'broker') return false;
+    if (entityStatusFilter !== 'all') {
+      const status = user.entityStatus ?? null;
+      if (entityStatusFilter === 'pending') {
+        if (status === 'pending') return true;
+        if (status === null && (user.role === 'company' || user.role === 'broker')) return true;
+        return false;
+      }
+      if (entityStatusFilter === 'active' && status !== 'active') return false;
+      if (entityStatusFilter === 'suspended' && status !== 'suspended') return false;
+    }
+    return true;
+  });
 
   if (authLoading || !isAuthorized || isLoading) {
     return (
@@ -202,29 +248,134 @@ export default function AdminUsersPage() {
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder={tAdmin('searchPlaceholder')}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+            <select
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white min-w-[160px]"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as 'all' | UserRole)}
+            >
+              <option value="all">{tAdmin('allRoles')}</option>
+              <option value="admin">{tRoles('admin')}</option>
+              <option value="company">{tRoles('company')}</option>
+              <option value="broker">{tRoles('broker')}</option>
+            </select>
           </div>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white min-w-[180px]"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as 'all' | UserRole)}
-          >
-            <option value="all">{tAdmin('allRoles')}</option>
-            <option value="admin">{tRoles('admin')}</option>
-            <option value="company">{tRoles('company')}</option>
-            <option value="broker">{tRoles('broker')}</option>
-          </select>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold text-gray-500 uppercase mr-1">Statut :</span>
+            {[
+              { value: 'pending', label: 'En attente', icon: Clock, color: 'amber' },
+              { value: 'active', label: 'Approuvés', icon: CheckCircle2, color: 'emerald' },
+              { value: 'suspended', label: 'Rejetés', icon: XCircle, color: 'red' },
+              { value: 'all', label: 'Tous', icon: Filter, color: 'gray' },
+            ].map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setEntityStatusFilter(f.value as typeof entityStatusFilter)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition-colors ${
+                  entityStatusFilter === f.value
+                    ? f.value === 'pending'
+                      ? 'bg-amber-50 border-amber-300 text-amber-700'
+                      : f.value === 'active'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                        : f.value === 'suspended'
+                          ? 'bg-red-50 border-red-300 text-red-700'
+                          : 'bg-gray-100 border-gray-300 text-gray-700'
+                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                <f.icon className="w-3.5 h-3.5" />
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold text-gray-500 uppercase mr-1">Type :</span>
+            {[
+              { value: '', label: 'Tous types' },
+              { value: 'broker', label: 'Courtiers' },
+              { value: 'company', label: 'Entreprises' },
+            ].map((f) => (
+              <button
+                key={f.value || 'all'}
+                type="button"
+                onClick={() => setEntityTypeFilter(f.value)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition-colors ${
+                  entityTypeFilter === f.value
+                    ? 'bg-blue-50 border-blue-300 text-blue-700'
+                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                {f.value === 'broker' && <Users className="w-3.5 h-3.5" />}
+                {f.value === 'company' && <Building2 className="w-3.5 h-3.5" />}
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Demandes d'association (Notifier l'admin) */}
+      {associationRequests.length > 0 && (
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
+          <p className="font-semibold text-amber-900 flex items-center gap-2 mb-2">
+            <Bell className="w-5 h-5 text-amber-600" />
+            {associationRequests.length} demande(s) d&apos;association
+          </p>
+          <p className="text-sm text-amber-800 mb-3">
+            Ces utilisateurs ont cliqué sur &quot;Notifier l&apos;administrateur&quot;. Associez leur profil ci-dessous puis cliquez sur &quot;Traiter&quot; pour retirer la demande.
+          </p>
+          <ul className="space-y-2">
+            {associationRequests.map((req) => (
+              <li
+                key={req.id}
+                className="flex flex-wrap items-center justify-between gap-2 py-2 px-3 bg-white rounded-lg border border-amber-100 text-sm"
+              >
+                <span className="text-gray-700">
+                  <strong>{req.email ?? req.full_name ?? req.user_id}</strong>
+                  {' — '}
+                  {req.entity_type === 'company' ? 'Entreprise' : 'Courtier'}
+                  {' · '}
+                  {new Date(req.created_at).toLocaleString()}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => dismissAssociationRequest(req.id)}
+                  disabled={dismissingRequestId !== null}
+                  className="!py-1 !px-2 text-xs text-amber-700 border-amber-300 hover:bg-amber-100"
+                >
+                  {dismissingRequestId === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Traiter'}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Guide : associer puis approuver */}
+      <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 flex gap-3">
+        <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+        <div className="text-sm text-blue-900">
+          <p className="font-semibold mb-1">En tant qu&apos;admin : comment approuver un utilisateur</p>
+          <ol className="list-decimal list-inside space-y-1 text-blue-800">
+            <li><strong>Associer</strong> — Si la colonne « Profil » affiche « — Choisir une entreprise — » ou « — Choisir un courtier — » : cliquez sur le bouton vert <strong>Associer « Nom »</strong> (société créée par l&apos;utilisateur) ou choisissez dans la liste déroulante pour lier le compte.</li>
+            <li><strong>Approuver</strong> — Une fois le profil associé, les boutons <strong>Valider</strong> / <strong>Suspendre</strong> apparaissent dans la colonne Actions. Cliquez sur <strong>Approuver</strong> pour passer le statut à Actif.</li>
+          </ol>
+          {companies.length === 0 && brokers.length === 0 && (
+            <p className="mt-2 text-amber-700 font-medium">La liste des entreprises/courtiers est vide. Exécutez le script <code className="bg-white/60 px-1 rounded">supabase/a_ajouter_sur_supabase.sql</code> sur Supabase (SQL Editor) pour que l&apos;admin puisse les lire.</p>
+          )}
         </div>
       </div>
 
@@ -292,35 +443,67 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                       ) : user.role === 'company' ? (
-                        <select
-                          className="px-2 py-1 text-xs border rounded focus:ring-2 focus:ring-primary-500"
-                          defaultValue=""
-                          onChange={(e) => {
-                            const id = e.target.value;
-                            if (id) handleLinkProfile(user.id, 'company', id);
-                          }}
-                          disabled={linkingUserId === user.id}
-                        >
-                          <option value="">— Associer entreprise —</option>
-                          {companies.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {(() => {
+                            const ownedCompany = companies.find((c) => c.owner_id === user.id);
+                            return ownedCompany ? (
+                              <Button
+                                size="sm"
+                                onClick={() => handleLinkProfile(user.id, 'company', ownedCompany.id)}
+                                disabled={linkingUserId === user.id}
+                                className="bg-emerald-600 hover:bg-emerald-700 !py-1 !px-2 text-xs"
+                              >
+                                {linkingUserId === user.id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                Associer « {ownedCompany.name} »
+                              </Button>
+                            ) : null;
+                          })()}
+                          <select
+                            className="px-2 py-1 text-xs border rounded focus:ring-2 focus:ring-primary-500 min-w-[180px]"
+                            defaultValue=""
+                            onChange={(e) => {
+                              const id = e.target.value;
+                              if (id) handleLinkProfile(user.id, 'company', id);
+                            }}
+                            disabled={linkingUserId === user.id}
+                          >
+                            <option value="">{companies.length ? '— Choisir une entreprise —' : '— Aucune entreprise —'}</option>
+                            {companies.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
                       ) : user.role === 'broker' ? (
-                        <select
-                          className="px-2 py-1 text-xs border rounded focus:ring-2 focus:ring-primary-500"
-                          defaultValue=""
-                          onChange={(e) => {
-                            const id = e.target.value;
-                            if (id) handleLinkProfile(user.id, 'broker', id);
-                          }}
-                          disabled={linkingUserId === user.id}
-                        >
-                          <option value="">— Associer courtier —</option>
-                          {brokers.map((b) => (
-                            <option key={b.id} value={b.id}>{b.name}</option>
-                          ))}
-                        </select>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {(() => {
+                            const ownedBroker = brokers.find((b) => b.owner_id === user.id);
+                            return ownedBroker ? (
+                              <Button
+                                size="sm"
+                                onClick={() => handleLinkProfile(user.id, 'broker', ownedBroker.id)}
+                                disabled={linkingUserId === user.id}
+                                className="bg-emerald-600 hover:bg-emerald-700 !py-1 !px-2 text-xs"
+                              >
+                                {linkingUserId === user.id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                Associer « {ownedBroker.name} »
+                              </Button>
+                            ) : null;
+                          })()}
+                          <select
+                            className="px-2 py-1 text-xs border rounded focus:ring-2 focus:ring-primary-500 min-w-[180px]"
+                            defaultValue=""
+                            onChange={(e) => {
+                              const id = e.target.value;
+                              if (id) handleLinkProfile(user.id, 'broker', id);
+                            }}
+                            disabled={linkingUserId === user.id}
+                          >
+                            <option value="">{brokers.length ? '— Choisir un courtier —' : '— Aucun courtier —'}</option>
+                            {brokers.map((b) => (
+                              <option key={b.id} value={b.id}>{b.name}</option>
+                            ))}
+                          </select>
+                        </div>
                       ) : (
                         '—'
                       )}

@@ -9,6 +9,7 @@ import { Car, ArrowLeft, Check } from 'lucide-react';
 import { Link } from '@/lib/i18n/routing';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { toErrorMessage } from '@/lib/api/error';
+import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
 
 export default function PostVehiclePage() {
   const { isLoading: authLoading, isAuthorized } = useRequireRole(['company', 'admin']);
@@ -142,8 +143,9 @@ export default function PostVehiclePage() {
               value={province}
               onChange={(e) => setProvince(e.target.value)}
             >
-              <option value="haut-katanga">Haut-Katanga</option>
-              <option value="lualaba">Lualaba</option>
+              {PROVINCES_RDC_IDS.map((id) => (
+                <option key={id} value={id}>{PROVINCES_RDC_NAMES[id]}</option>
+              ))}
             </select>
           </div>
         </div>
