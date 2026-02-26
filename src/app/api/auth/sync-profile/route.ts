@@ -80,10 +80,15 @@ export async function POST() {
         const db = createServiceRoleClient();
         const prefix = user.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
         if (prefix.length >= 2) {
-          const { data: unlinked } = await db.from(table).select('id').is('owner_id', null).or(`name.ilike.%${prefix}%,email.ilike.%${prefix}%`).limit(1);
-          const row = Array.isArray(unlinked) ? unlinked[0] : unlinked;
-          if (row?.id) {
-            entityId = row.id;
+          const { data: unlinked } = await db.from(table).select('id, name, email').is('owner_id', null).limit(50);
+          const list = Array.isArray(unlinked) ? unlinked : unlinked ? [unlinked] : [];
+          const match = list.find(
+            (r: { id: string; name?: string | null; email?: string | null }) =>
+              (r.name && r.name.toLowerCase().includes(prefix.toLowerCase())) ||
+              (r.email && r.email.toLowerCase().includes(prefix.toLowerCase()))
+          );
+          if (match?.id) {
+            entityId = match.id;
             await db.from(table).update({ owner_id: user.id }).eq('id', entityId);
           }
         }

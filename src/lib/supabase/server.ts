@@ -67,20 +67,67 @@ export const getAuthUser = cache(async () => {
     let companyId = userData?.company_id ?? null;
     let brokerId = userData?.broker_id ?? null;
 
-    // Si company_id/broker_id manquant, recuperer depuis companies/brokers (owner_id = user) et persister
+    // Rattacher broker/company si manquant : owner_id, puis email, puis préfixe nom/email, puis (service role) non liés
     if ((role === 'broker' || role === 'company') && (!companyId || !brokerId)) {
+      const table = role === 'broker' ? 'brokers' : 'companies';
+      const col = role === 'broker' ? 'broker_id' : 'company_id';
+      let entityId: string | null = null;
+
       if (role === 'broker' && !brokerId) {
         const { data: broker } = await supabase.from('brokers').select('id').eq('owner_id', user.id).maybeSingle();
-        if (broker) {
-          brokerId = broker.id;
-          await supabase.from('users').update({ broker_id: broker.id }).eq('id', user.id);
-        }
+        entityId = broker?.id ?? null;
       } else if (role === 'company' && !companyId) {
         const { data: company } = await supabase.from('companies').select('id').eq('owner_id', user.id).maybeSingle();
-        if (company) {
-          companyId = company.id;
-          await supabase.from('users').update({ company_id: company.id }).eq('id', user.id);
+        entityId = company?.id ?? null;
+      }
+
+      if (!entityId && user.email) {
+        const { data: byEmailData } = await supabase.from(table).select('id').eq('email', user.email).limit(1);
+        const byEmailRow = Array.isArray(byEmailData) ? byEmailData[0] : byEmailData;
+        if (byEmailRow?.id) entityId = byEmailRow.id;
+      }
+      if (!entityId && user.email) {
+        const prefix = user.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
+        if (prefix.length >= 2) {
+          const { data: byNameData } = await supabase.from(table).select('id').ilike('name', `%${prefix}%`).limit(1);
+          const byNameRow = Array.isArray(byNameData) ? byNameData[0] : byNameData;
+          if (byNameRow?.id) entityId = byNameRow.id;
+          if (!entityId) {
+            const { data: byEmailPrefixData } = await supabase.from(table).select('id').ilike('email', `%${prefix}%`).limit(1);
+            const byEmailPrefixRow = Array.isArray(byEmailPrefixData) ? byEmailPrefixData[0] : byEmailPrefixData;
+            if (byEmailPrefixRow?.id) entityId = byEmailPrefixRow.id;
+          }
         }
+      }
+      if (!entityId && user.email) {
+        try {
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          if (key && key !== 'your_service_role_key_here') {
+            const db = createServiceRoleClient();
+            const prefix = user.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
+            if (prefix.length >= 2) {
+              const { data: unlinked } = await db.from(table).select('id, name, email').is('owner_id', null).limit(50);
+              const list = Array.isArray(unlinked) ? unlinked : unlinked ? [unlinked] : [];
+              const match = list.find(
+                (r: { id: string; name?: string | null; email?: string | null }) =>
+                  (r.name && r.name.toLowerCase().includes(prefix.toLowerCase())) ||
+                  (r.email && r.email.toLowerCase().includes(prefix.toLowerCase()))
+              );
+              if (match?.id) {
+                entityId = match.id;
+                await db.from(table).update({ owner_id: user.id }).eq('id', entityId);
+              }
+            }
+          }
+        } catch {
+          // SERVICE_ROLE_KEY absente ou erreur : on garde entityId tel quel
+        }
+      }
+
+      if (entityId) {
+        if (role === 'broker') brokerId = entityId;
+        else companyId = entityId;
+        await supabase.from('users').update({ [col]: entityId }).eq('id', user.id);
       }
     }
 
