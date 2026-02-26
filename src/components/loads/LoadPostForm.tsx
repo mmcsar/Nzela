@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/lib/i18n/routing';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -132,56 +132,39 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
     setError('');
 
     try {
-      // Get current user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error('Vous devez être connecté');
-      }
-
-      // Get user's broker
-      const { data: userData } = await supabase
-        .from('users')
-        .select('broker_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!userData?.broker_id) {
-        throw new Error('Vous devez avoir un compte broker associé');
-      }
-
-      // Create load
-      const { data: load, error: loadError } = await supabase
-        .from('loads')
-        .insert({
-          broker_id: userData.broker_id,
+      const res = await fetch('/api/loads/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           origin: data.origin,
           destination: data.destination,
+          cargoType: data.cargoType || null,
+          trailerType: data.trailerType,
+          weight: data.weight,
           distance: data.distance,
           duration: data.duration,
-          trailer_type: data.trailerType,
-          weight: data.weight,
           price: data.price,
-          price_per_km: data.pricePerKm,
-          pickup_date: data.pickupDate,
-          delivery_date: data.deliveryDate,
-          cargo_type: data.cargoType || null,
-          status: 'available',
-        })
-        .select()
-        .single();
+          pricePerKm: data.pricePerKm,
+          pickupDate: data.pickupDate,
+          deliveryDate: data.deliveryDate,
+        }),
+      });
 
-      if (loadError) throw loadError;
+      const json = await res.json().catch(() => ({}));
 
+      if (!res.ok) {
+        setError(json.error || (res.status === 403 ? 'Profil courtier requis ou abonnement expiré.' : 'Une erreur est survenue'));
+        return;
+      }
+
+      const load = json.load as Load;
       if (onSuccess) {
-        onSuccess(load as Load);
+        onSuccess(load);
       } else {
         router.push(`/dashboard/broker/loads/${load.id}`);
       }
-    } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }

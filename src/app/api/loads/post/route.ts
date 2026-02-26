@@ -1,24 +1,25 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { ROUTES_RDC } from '@/lib/constants/rdc-routes';
 import { checkSubscriptionAccess } from '@/lib/subscription-access';
+import { ROUTES_RDC } from '@/lib/constants/rdc-routes';
 
+/**
+ * POST - Publier un chargement (courtier uniquement).
+ * Body: même format que LoadPostForm (origin, destination, cargoType, trailerType, weight, distance, duration, price, pricePerKm, pickupDate, deliveryDate).
+ */
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const body = await request.json();
 
-    // Vérifier l'authentification
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
-
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // Broker : priorité users.broker_id (lien admin), sinon owner_id
     const { data: userData } = await supabase
       .from('users')
       .select('role, broker_id')
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
       const { data } = await db.from('brokers').select('created_at, subscription_id, status').eq('id', brokerId).maybeSingle();
       preFetchedBroker = data ?? null;
     } catch {
-      // Sans service role, checkSubscriptionAccess lira avec le client utilisateur
+      // Sans service role : checkSubscriptionAccess lira avec le client utilisateur
     }
 
     const access = await checkSubscriptionAccess(supabase, user.id, 'broker', null, brokerId, preFetchedBroker);
@@ -59,50 +60,62 @@ export async function POST(request: Request) {
       );
     }
 
-    // Trouver la route correspondante pour calculer distance et durée
-    const route = ROUTES_RDC.find(
-      (r) => r.from.toLowerCase() === body.from.toLowerCase() && r.to.toLowerCase() === body.to.toLowerCase()
-    );
+    const origin = body.origin ?? {};
+    const destination = body.destination ?? {};
+    const fromCity = (origin.city || body.from || '').trim();
+    const toCity = (destination.city || body.to || '').trim();
 
-    // Préparer les données
+    let distance = Number(body.distance) || 0;
+    let duration = (body.duration || '').trim();
+    if (fromCity && toCity && (!distance || !duration)) {
+      const route = ROUTES_RDC.find(
+        (r) => r.from.toLowerCase() === fromCity.toLowerCase() && r.to.toLowerCase() === toCity.toLowerCase()
+      );
+      if (route) {
+        if (!distance) distance = parseInt(route.distance.replace(/\s*km\s*/i, ''), 10) || 0;
+        if (!duration) duration = route.duration;
+      }
+    }
+
+    const price = parseFloat(body.price) ?? 0;
+    const pricePerKm = Number(body.pricePerKm) ?? (distance > 0 ? Math.round(price / distance) : 0);
+
     const loadData = {
       broker_id: brokerId,
-      origin: JSON.stringify({
-        city: body.from,
-        address: body.origin?.address ?? '',
-        province: body.origin?.province ?? 'haut-katanga',
-      }),
-      destination: JSON.stringify({
-        city: body.to,
-        address: body.destination?.address ?? '',
-        province: body.destination?.province ?? 'haut-katanga',
-      }),
-      distance: route ? parseInt(route.distance.replace(' km', '')) : 0,
-      duration: route ? route.duration : '',
-      trailer_type: body.truck || body.cargo,
+      origin: {
+        address: origin.address ?? '',
+        city: origin.city ?? fromCity,
+        province: origin.province ?? 'haut-katanga',
+        coordinates: origin.coordinates,
+      },
+      destination: {
+        address: destination.address ?? '',
+        city: destination.city ?? toCity,
+        province: destination.province ?? 'haut-katanga',
+        coordinates: destination.coordinates,
+      },
+      distance,
+      duration: duration || '',
+      trailer_type: body.trailerType || body.truck || body.cargo || 'flatbed',
       weight: parseFloat(body.weight) || 0,
-      price: parseFloat(body.price) || 0,
-      price_per_km: route && route.distance
-        ? Math.round((parseFloat(body.price) || 0) / parseInt(route.distance.replace(' km', '')))
-        : 0,
+      price,
+      price_per_km: pricePerKm,
       pickup_date: body.pickupDate || new Date().toISOString(),
       delivery_date: body.deliveryDate || new Date().toISOString(),
+      cargo_type: body.cargoType || null,
       status: 'available',
     };
 
-    // Insérer le chargement
-    const { data, error } = await supabase.from('loads').insert(loadData).select().single();
+    const { data: load, error } = await supabase.from('loads').insert(loadData).select().single();
 
     if (error) {
       console.error('Error creating load:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, load: data }, { status: 201 });
+    return NextResponse.json({ success: true, load }, { status: 201 });
   } catch (error) {
     console.error('Error in POST /api/loads/post:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
-
-
