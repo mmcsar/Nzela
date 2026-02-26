@@ -106,29 +106,50 @@ export async function POST(request: Request) {
         }
         entityId = bodyEntityId;
       } else {
+        // 1) Par owner_id
         const { data: byOwner } = await db.from(table).select('id').eq('owner_id', userId).maybeSingle();
         let entity = byOwner ?? null;
 
-        // Si pas trouvé par owner_id : chercher par email exact
+        // 2) Par email exact (courtier/entreprise)
         if (!entity && targetUser.email) {
-          const { data: byEmailList } = await db.from(table).select('id').eq('email', targetUser.email).limit(1);
-          entity = byEmailList?.[0] ?? null;
+          const { data: byEmailRows } = await db.from(table).select('id').eq('email', targetUser.email).limit(1);
+          entity = Array.isArray(byEmailRows) ? byEmailRows[0] ?? null : byEmailRows ?? null;
           if (entity) {
             await db.from(table).update({ owner_id: userId }).eq('id', entity.id);
           }
         }
 
-        // Fallback : chercher par préfixe email (ex. "mmc" pour mmc@...) dans name puis email
+        // 3) Par préfixe email dans name (ex. "mmc" ou "MMC" pour mmc@...)
         if (!entity && targetUser.email) {
-          const prefix = targetUser.email.split('@')[0]?.trim().replace(/[%_\\]/g, '');
-          if (prefix && prefix.length >= 2) {
-            const { data: byName } = await db.from(table).select('id').ilike('name', `%${prefix}%`).limit(1).maybeSingle();
-            if (byName) entity = byName;
+          const prefix = targetUser.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
+          if (prefix.length >= 2) {
+            const { data: byNameRows } = await db.from(table).select('id').ilike('name', `%${prefix}%`).limit(2);
+            const first = Array.isArray(byNameRows) ? byNameRows[0] : byNameRows;
+            if (first) entity = first;
             if (!entity) {
-              const { data: byEmailPrefix } = await db.from(table).select('id').ilike('email', `%${prefix}%`).limit(1).maybeSingle();
-              if (byEmailPrefix) entity = byEmailPrefix;
+              const { data: byEmailPrefixRows } = await db.from(table).select('id').ilike('email', `%${prefix}%`).limit(1);
+              const firstEmail = Array.isArray(byEmailPrefixRows) ? byEmailPrefixRows[0] : byEmailPrefixRows;
+              if (firstEmail) entity = firstEmail;
             }
             if (entity) {
+              await db.from(table).update({ owner_id: userId }).eq('id', entity.id);
+            }
+          }
+        }
+
+        // 4) Dernier recours : courtier/entreprise sans owner_id dont le nom ou email contient le préfixe
+        if (!entity && targetUser.email) {
+          const prefix = targetUser.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
+          if (prefix.length >= 2) {
+            const { data: unlinked } = await db
+              .from(table)
+              .select('id')
+              .is('owner_id', null)
+              .or(`name.ilike.%${prefix}%,email.ilike.%${prefix}%`)
+              .limit(1);
+            const first = Array.isArray(unlinked) ? unlinked[0] : unlinked;
+            if (first) {
+              entity = first;
               await db.from(table).update({ owner_id: userId }).eq('id', entity.id);
             }
           }
@@ -137,7 +158,7 @@ export async function POST(request: Request) {
         if (!entity) {
           return NextResponse.json(
             {
-              error: `Aucun ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvé pour cet utilisateur. Choisissez-en un dans la liste déroulante (colonne Profil) puis cliquez Approuver. Si le courtier existe (ex. "Entreprise mmc"), vérifiez dans Supabase que la ligne correspondante a bien owner_id = cet utilisateur.`,
+              error: `Aucun ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvé pour cet utilisateur. Choisissez-en un dans la liste déroulante (colonne Profil) puis cliquez Approuver. Si la liste est vide, ajoutez SUPABASE_SERVICE_ROLE_KEY dans les variables d'environnement (Vercel).`,
             },
             { status: 404 }
           );
