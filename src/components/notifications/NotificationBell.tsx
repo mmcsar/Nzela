@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
-import { Bell, Package, Truck, CreditCard, Info, Building2, Users } from 'lucide-react';
+import { Bell, Package, Truck, CreditCard, Info, Building2, Users, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -13,7 +13,7 @@ interface Notification {
   created_at: string;
   link?: string;
   icon?: string;
-  data?: any;
+  data?: { entityType?: string; entityId?: string };
 }
 
 export function NotificationBell() {
@@ -21,6 +21,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [activatingId, setActivatingId] = useState<string | null>(null);
   // Initial 0 so server and client match; set real time in useEffect to avoid hydration mismatch
   const [now, setNow] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
@@ -106,6 +107,36 @@ export function NotificationBell() {
     }
   };
 
+  const handleActivateEntity = async (e: React.MouseEvent, notif: Notification) => {
+    e.stopPropagation();
+    const entityType = notif.data?.entityType;
+    const entityId = notif.data?.entityId;
+    if (!entityType || !entityId || !['company', 'broker'].includes(entityType)) return;
+    setActivatingId(notif.id);
+    try {
+      const res = await fetch('/api/admin/entity-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entityType, entityId, status: 'active' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Erreur lors de l\'activation');
+        return;
+      }
+      await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId: notif.id }),
+      });
+      fetchNotifications();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erreur réseau');
+    } finally {
+      setActivatingId(null);
+    }
+  };
+
   const getTimeAgo = (dateString: string) => {
     const diff = now - new Date(dateString).getTime();
     const minutes = Math.floor(diff / 60000);
@@ -145,30 +176,48 @@ export function NotificationBell() {
                 Aucune notification
               </div>
             ) : (
-              notifications.map((notif) => (
-                <div
-                  key={notif.id}
-                  onClick={() => handleNotificationClick(notif)}
-                  className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
-                    !notif.read ? 'bg-blue-50/50' : ''
-                  }`}
-                >
-                  <div className="flex gap-3">
-                    <div className={`mt-0.5 p-1.5 rounded-lg ${
-                      !notif.read ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {getIcon(notif.type, notif.icon)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900 truncate">{notif.title}</p>
-                        <span className="text-xs text-gray-400 ml-2 flex-shrink-0">{getTimeAgo(notif.created_at)}</span>
+              notifications.map((notif) => {
+                const canActivate = notif.data?.entityType && notif.data?.entityId && ['company', 'broker'].includes(notif.data.entityType);
+                return (
+                  <div
+                    key={notif.id}
+                    onClick={() => handleNotificationClick(notif)}
+                    className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
+                      !notif.read ? 'bg-blue-50/50' : ''
+                    }`}
+                  >
+                    <div className="flex gap-3">
+                      <div className={`mt-0.5 p-1.5 rounded-lg flex-shrink-0 ${
+                        !notif.read ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {getIcon(notif.type, notif.icon)}
                       </div>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-gray-900 truncate">{notif.title}</p>
+                          <span className="text-xs text-gray-400 flex-shrink-0">{getTimeAgo(notif.created_at)}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
+                        {canActivate && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleActivateEntity(e, notif)}
+                            disabled={activatingId === notif.id}
+                            className="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 disabled:pointer-events-none"
+                          >
+                            {activatingId === notif.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-3 h-3" />
+                            )}
+                            {activatingId === notif.id ? 'En cours…' : 'Valider'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
