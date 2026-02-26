@@ -33,6 +33,13 @@ export async function GET() {
       companies = (companiesRes.data || []).map((c: { id: string; name: string; owner_id?: string }) => ({ id: c.id, name: c.name, owner_id: c.owner_id }));
       brokers = (brokersRes.data || []).map((b: { id: string; name: string; owner_id?: string }) => ({ id: b.id, name: b.name, owner_id: b.owner_id }));
     } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('SUPABASE_SERVICE_ROLE_KEY')) {
+        return NextResponse.json(
+          { error: 'Configuration manquante : ajoutez SUPABASE_SERVICE_ROLE_KEY dans .env.local (Dashboard Supabase > Settings > API > service_role) pour afficher les listes entreprise/courtier.' },
+          { status: 503 }
+        );
+      }
       const [c, b] = await Promise.all([
         supabase.from('companies').select('id, name, owner_id').order('name'),
         supabase.from('brokers').select('id, name, owner_id').order('name'),
@@ -44,9 +51,11 @@ export async function GET() {
     return NextResponse.json({ companies, brokers });
   } catch (error: unknown) {
     console.error('entities-list:', error);
+    const message = error instanceof Error ? error.message : 'Erreur serveur';
+    const isConfigMissing = message.includes('SUPABASE_SERVICE_ROLE_KEY');
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erreur serveur' },
-      { status: 500 }
+      { error: isConfigMissing ? 'Configuration manquante : ajoutez SUPABASE_SERVICE_ROLE_KEY dans .env.local' : message },
+      { status: isConfigMissing ? 503 : 500 }
     );
   }
 }

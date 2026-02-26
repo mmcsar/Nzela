@@ -51,6 +51,8 @@ export default function AdminUsersPage() {
   const [dismissingRequestId, setDismissingRequestId] = useState<string | null>(null);
   /** Sélection liste déroulante entreprise/courtier par user (pour Approuver sans owner_id) */
   const [selectedEntityByUser, setSelectedEntityByUser] = useState<Record<string, string>>({});
+  /** Erreur chargement listes entreprise/courtier (ex. SERVICE_ROLE_KEY manquante) */
+  const [entitiesListError, setEntitiesListError] = useState<string | null>(null);
 
   const supabase = createClient();
 

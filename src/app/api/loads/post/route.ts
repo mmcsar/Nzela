@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { ROUTES_RDC } from '@/lib/constants/rdc-routes';
 import { checkSubscriptionAccess } from '@/lib/subscription-access';
@@ -18,21 +18,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // Récupérer le broker de l'utilisateur
-    const { data: broker, error: brokerError } = await supabase
-      .from('brokers')
-      .select('id')
-      .eq('owner_id', user.id)
-      .single();
+    // Broker : priorité users.broker_id (lien admin), sinon owner_id
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role, broker_id')
+      .eq('id', user.id)
+      .maybeSingle();
 
-    if (brokerError || !broker) {
+    let brokerId = userData?.broker_id ?? null;
+    if (!brokerId && userData?.role === 'broker') {
+      const { data: broker } = await supabase
+        .from('brokers')
+        .select('id')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+      brokerId = broker?.id ?? null;
+    }
+
+    if (!brokerId) {
       return NextResponse.json(
-        { error: 'Vous devez être un broker pour publier un chargement' },
+        { error: 'Aucun profil courtier lié. Contactez l\'admin ou rattachez votre compte.' },
         { status: 403 }
       );
     }
 
-    const access = await checkSubscriptionAccess(supabase, user.id, 'broker', null, broker.id);
+    let preFetchedBroker: { created_at: string | null; subscription_id: string | null; status?: string } | null = null;
+    try {
+      const db = createServiceRoleClient();
+      const { data } = await db.from('brokers').select('created_at, subscription_id, status').eq('id', brokerId).maybeSingle();
+      preFetchedBroker = data ?? null;
+    } catch {
+      // Sans service role, checkSubscriptionAccess lira avec le client utilisateur
+    }
+
+    const access = await checkSubscriptionAccess(supabase, user.id, 'broker', null, brokerId, preFetchedBroker);
     if (!access.hasAccess) {
       return NextResponse.json(
         { error: access.message, code: 'SUBSCRIPTION_REQUIRED' },
@@ -47,7 +66,7 @@ export async function POST(request: Request) {
 
     // Préparer les données
     const loadData = {
-      broker_id: broker.id,
+      broker_id: brokerId,
       origin: JSON.stringify({
         city: body.from,
         address: body.origin?.address ?? '',

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireCompany, requireCompanyOnly } from '@/lib/auth/checkRole';
 import { checkSubscriptionAccess } from '@/lib/subscription-access';
@@ -67,7 +67,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const access = await checkSubscriptionAccess(supabase, auth.userId, 'company', companyId, null);
+    let preFetchedCompany: { created_at: string | null; subscription_id: string | null; status?: string } | null = null;
+    try {
+      const db = createServiceRoleClient();
+      const { data } = await db.from('companies').select('created_at, subscription_id, status').eq('id', companyId).maybeSingle();
+      preFetchedCompany = data ?? null;
+    } catch {
+      // Sans service role, checkSubscriptionAccess lira avec le client utilisateur
+    }
+
+    const access = await checkSubscriptionAccess(supabase, auth.userId, 'company', companyId, null, preFetchedCompany);
     if (!access.hasAccess) {
       return withTiming(
         NextResponse.json(

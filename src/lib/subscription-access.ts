@@ -24,18 +24,27 @@ export interface SubscriptionAccessResult {
   message: string;
 }
 
+/** Données minimales de l'entité (company ou broker) pour le calcul d'accès. */
+export interface EntityForAccess {
+  created_at: string | null;
+  subscription_id: string | null;
+  status?: string;
+}
+
 /**
  * Vérifie si l'utilisateur (company ou broker) a le droit de publier :
  * - soit il est en période gratuite (created_at + TRIAL_DAYS),
  * - soit il a un abonnement actif (status = active, end_date > now).
  * Admin : toujours accès.
+ * @param preFetchedEntity - Si fourni, évite la lecture Supabase (utile côté API avec service role pour contourner RLS).
  */
 export async function checkSubscriptionAccess(
   supabase: SupabaseClient,
   userId: string,
   role: string,
   companyId: string | null,
-  brokerId: string | null
+  brokerId: string | null,
+  preFetchedEntity?: EntityForAccess | null
 ): Promise<SubscriptionAccessResult> {
   if (role === 'admin') {
     return { hasAccess: true, isTrial: false, trialEndsAt: null, message: 'Admin' };
@@ -63,19 +72,22 @@ export async function checkSubscriptionAccess(
     };
   }
 
-  const { data: entity, error: entityError } = await supabase
-    .from(table)
-    .select('created_at, subscription_id, status')
-    .eq('id', entityId)
-    .single();
-
-  if (entityError || !entity) {
-    return {
-      hasAccess: false,
-      isTrial: false,
-      trialEndsAt: null,
-      message: 'Profil introuvable.',
-    };
+  let entity: EntityForAccess | null = preFetchedEntity ?? null;
+  if (!entity) {
+    const { data, error: entityError } = await supabase
+      .from(table)
+      .select('created_at, subscription_id, status')
+      .eq('id', entityId)
+      .single();
+    if (entityError || !data) {
+      return {
+        hasAccess: false,
+        isTrial: false,
+        trialEndsAt: null,
+        message: 'Profil introuvable.',
+      };
+    }
+    entity = data as EntityForAccess;
   }
 
   const entityStatus = (entity as { status?: string }).status;
