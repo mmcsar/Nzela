@@ -21,25 +21,33 @@ export default function PublishHubPage() {
   const [requestSent, setRequestSent] = useState(false);
   const [subscriptionAccess, setSubscriptionAccess] = useState<SubscriptionAccess | null>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(true);
+  /** Ids profil rafraîchis depuis l'API (évite contexte layout périmé après lien admin) */
+  const [profileFromApi, setProfileFromApi] = useState<{ companyId: string | null; brokerId: string | null } | null>(null);
 
-  const needsSubscriptionCheck = (role === 'broker' && brokerId) || (role === 'company' && companyId);
-  const needsProfileLink = (role === 'company' && !companyId) || (role === 'broker' && !brokerId);
+  const effectiveBrokerId = brokerId ?? profileFromApi?.brokerId ?? null;
+  const effectiveCompanyId = companyId ?? profileFromApi?.companyId ?? null;
+  const needsSubscriptionCheck = (role === 'broker' && effectiveBrokerId) || (role === 'company' && effectiveCompanyId);
+  const needsProfileLink = (role === 'company' && !effectiveCompanyId) || (role === 'broker' && !effectiveBrokerId);
 
-  // Tenter un rattachement auto (sync-profile) si rôle company/broker sans profil lié
+  // Rafraîchir les ids profil depuis l'API (courtier/entreprise) pour débloquer le formulaire après lien admin
   useEffect(() => {
-    if (!needsProfileLink) return;
+    if (role !== 'broker' && role !== 'company') return;
     let cancelled = false;
     fetch('/api/auth/sync-profile', { method: 'POST', credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled || !data) return;
+        setProfileFromApi({
+          companyId: data.companyId ?? null,
+          brokerId: data.brokerId ?? null,
+        });
         if ((data.companyId && role === 'company') || (data.brokerId && role === 'broker')) {
           router.refresh();
         }
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [needsProfileLink, role, router]);
+  }, [role, router]);
 
   useEffect(() => {
     if (!needsSubscriptionCheck) {
@@ -87,8 +95,8 @@ export default function PublishHubPage() {
 
   const canPublishLoad = role === 'broker';
   const canPublishTruck = role === 'company';
-  const hasBrokerProfile = Boolean(brokerId);
-  const hasCompanyProfile = Boolean(companyId);
+  const hasBrokerProfile = Boolean(effectiveBrokerId);
+  const hasCompanyProfile = Boolean(effectiveCompanyId);
   const hasSubscriptionAccess = !needsSubscriptionCheck || subscriptionAccess?.hasAccess === true;
   const subscriptionUrl = role === 'company' ? '/dashboard/company/subscription' : '/dashboard/broker/subscription';
 
