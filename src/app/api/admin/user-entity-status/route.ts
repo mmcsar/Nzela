@@ -106,20 +106,39 @@ export async function POST(request: Request) {
         }
         entityId = bodyEntityId;
       } else {
-        let entity = (await db.from(table).select('id').eq('owner_id', userId).maybeSingle()).data;
+        const { data: byOwner } = await db.from(table).select('id').eq('owner_id', userId).maybeSingle();
+        let entity = byOwner ?? null;
 
-        // Si pas trouvé par owner_id : chercher par email (courtier/entreprise créé sans owner_id ou import)
+        // Si pas trouvé par owner_id : chercher par email exact
         if (!entity && targetUser.email) {
-          const byEmail = await db.from(table).select('id').eq('email', targetUser.email).limit(1);
-          entity = byEmail.data?.[0] ?? null;
+          const { data: byEmailList } = await db.from(table).select('id').eq('email', targetUser.email).limit(1);
+          entity = byEmailList?.[0] ?? null;
           if (entity) {
             await db.from(table).update({ owner_id: userId }).eq('id', entity.id);
           }
         }
 
+        // Fallback : chercher par préfixe email (ex. "mmc" pour mmc@...) dans name puis email
+        if (!entity && targetUser.email) {
+          const prefix = targetUser.email.split('@')[0]?.trim().replace(/[%_\\]/g, '');
+          if (prefix && prefix.length >= 2) {
+            const { data: byName } = await db.from(table).select('id').ilike('name', `%${prefix}%`).limit(1).maybeSingle();
+            if (byName) entity = byName;
+            if (!entity) {
+              const { data: byEmailPrefix } = await db.from(table).select('id').ilike('email', `%${prefix}%`).limit(1).maybeSingle();
+              if (byEmailPrefix) entity = byEmailPrefix;
+            }
+            if (entity) {
+              await db.from(table).update({ owner_id: userId }).eq('id', entity.id);
+            }
+          }
+        }
+
         if (!entity) {
           return NextResponse.json(
-            { error: `Aucune ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvée pour cet utilisateur (owner_id ou email). Choisissez-en un dans la liste déroulante puis cliquez Approuver.` },
+            {
+              error: `Aucun ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvé pour cet utilisateur. Choisissez-en un dans la liste déroulante (colonne Profil) puis cliquez Approuver. Si le courtier existe (ex. "Entreprise mmc"), vérifiez dans Supabase que la ligne correspondante a bien owner_id = cet utilisateur.`,
+            },
             { status: 404 }
           );
         }
