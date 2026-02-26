@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Broker } from '@/types';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Users, Search, BadgeCheck, Ban } from 'lucide-react';
 import { toErrorMessage } from '@/lib/api/error';
@@ -10,31 +9,34 @@ import { toErrorMessage } from '@/lib/api/error';
 export function BrokerManagement() {
   const [brokers, setBrokers] = useState<Broker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [configError, setConfigError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'pending'>('pending');
   const [validatingId, setValidatingId] = useState<string | null>(null);
-  const supabase = createClient();
 
   const loadBrokers = useCallback(async () => {
+    setConfigError(null);
     try {
-      let query = supabase
-        .from('brokers')
-        .select('*, owner:users!brokers_owner_id_fkey(*)')
-        .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+      const params = new URLSearchParams({ status: statusFilter });
+      const res = await fetch(`/api/admin/brokers?${params.toString()}`);
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = data.error || 'Erreur chargement';
+        if (res.status === 503 || msg.includes('SUPABASE_SERVICE_ROLE_KEY') || msg.includes('Configuration manquante')) {
+          setConfigError(msg);
+          setBrokers([]);
+          return;
+        }
+        throw new Error(msg);
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setBrokers((data || []) as Broker[]);
+      setBrokers((data.brokers || []) as Broker[]);
     } catch (error) {
       console.error('Error loading brokers:', error);
+      setBrokers([]);
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, supabase]);
+  }, [statusFilter]);
 
   useEffect(() => {
     loadBrokers();
@@ -73,6 +75,19 @@ export function BrokerManagement() {
 
   return (
     <div className="space-y-6">
+      {configError && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+          <strong>Configuration requise</strong> — {configError}
+          <p className="mt-2 font-medium">À faire :</p>
+          <ol className="list-decimal list-inside mt-1 space-y-0.5 text-amber-900">
+            <li>Ouvrez le <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline">Dashboard Supabase</a> → votre projet</li>
+            <li>Settings → API → section <strong>Project API keys</strong></li>
+            <li>Copiez la clé <strong>service_role</strong> (secret, ne la partagez pas)</li>
+            <li>Dans le projet, créez ou éditez <code className="bg-amber-100 px-1 rounded">.env.local</code> et ajoutez : <code className="bg-amber-100 px-1 rounded block mt-1">SUPABASE_SERVICE_ROLE_KEY=votre_clé_copiée</code></li>
+            <li>Redémarrez le serveur (<code className="bg-amber-100 px-1 rounded">npm run dev</code>)</li>
+          </ol>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Gestion des Courtiers</h1>

@@ -45,31 +45,46 @@ export async function POST(request: Request) {
 
     const table = entityType === 'company' ? 'companies' : 'brokers';
     const payload = { status, updated_at: new Date().toISOString() };
+    const entityLabel = entityType === 'company' ? 'Entreprise' : 'Courtier';
 
+    let updated = false;
     let err: unknown = null;
     try {
       const db = createServiceRoleClient();
-      const res = await db.from(table).update(payload).eq('id', entityId);
+      const res = await db.from(table).update(payload).eq('id', entityId).select('id');
       if (res.error) err = res.error;
+      else if (res.data && res.data.length > 0) updated = true;
     } catch (e) {
       err = e;
     }
 
-    if (err) {
+    if (!updated && err) {
       // Fallback sans SERVICE_ROLE : l'admin met à jour via RLS
-      const { error } = await supabase.from(table).update(payload).eq('id', entityId);
+      const { data: fallbackData, error } = await supabase.from(table).update(payload).eq('id', entityId).select('id');
       if (error) {
         console.error('entity-status:', error);
+        const msg = error.message || 'Erreur lors de la mise à jour';
+        const hint = error.code === 'PGRST301' || msg.includes('row-level') || msg.includes('policy')
+          ? ' Ajoutez SUPABASE_SERVICE_ROLE_KEY dans .env.local ou exécutez les politiques RLS admin (voir supabase/a_ajouter_sur_supabase.sql).'
+          : '';
         return NextResponse.json(
-          { error: error.message || 'Erreur lors de la mise à jour' },
+          { error: msg + hint },
           { status: 500 }
         );
       }
+      if (fallbackData && fallbackData.length > 0) updated = true;
+    }
+
+    if (!updated) {
+      return NextResponse.json(
+        { error: `${entityLabel} introuvable (id invalide ou supprimé).` },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      message: status === 'active' ? 'Compte validé' : status === 'suspended' ? 'Compte suspendu' : 'Compte en attente',
+      message: status === 'active' ? 'Compte validé — le courtier/entreprise peut maintenant publier.' : status === 'suspended' ? 'Compte suspendu' : 'Compte en attente',
     });
   } catch (error: unknown) {
     console.error('entity-status:', error);
