@@ -21,6 +21,7 @@ export default function PublishHubPage() {
   const [requestSent, setRequestSent] = useState(false);
   const [subscriptionAccess, setSubscriptionAccess] = useState<SubscriptionAccess | null>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
   /** Ids profil rafraîchis depuis l'API (évite contexte layout périmé après lien admin) */
   const [profileFromApi, setProfileFromApi] = useState<{ companyId: string | null; brokerId: string | null } | null>(null);
 
@@ -55,8 +56,11 @@ export default function PublishHubPage() {
       return;
     }
     let cancelled = false;
-    fetch('/api/subscription/access')
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Erreur accès'))))
+    fetch('/api/subscription/access', { credentials: 'include' })
+      .then((res) => {
+        if (res.status === 401 && !cancelled) setSessionExpired(true);
+        return res.ok ? res.json() : Promise.reject(new Error(res.status === 401 ? 'Session expirée. Reconnectez-vous.' : 'Erreur accès'));
+      })
       .then((data: SubscriptionAccess) => {
         if (!cancelled) setSubscriptionAccess(data);
       })
@@ -104,7 +108,7 @@ export default function PublishHubPage() {
     setRequesting(true);
     setRequestSent(false);
     try {
-      const res = await fetch('/api/auth/request-profile-link', { method: 'POST' });
+      const res = await fetch('/api/auth/request-profile-link', { method: 'POST', credentials: 'include' });
       const data = await res.json();
       if (!res.ok) throw new Error(toErrorMessage(data.error, 'Erreur'));
       setRequestSent(true);
@@ -201,6 +205,15 @@ export default function PublishHubPage() {
           </div>
         </div>
       )}
+      {sessionExpired && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p className="font-medium">Session expirée ou absente. Reconnectez-vous pour publier.</p>
+          <Button size="sm" onClick={() => router.push('/login')} className="shrink-0">
+            Se reconnecter
+          </Button>
+        </div>
+      )}
+
       {role === 'admin' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
           Le role admin ne publie pas directement. Utilisez un compte courtier pour les loads et un compte entreprise pour les trucks.

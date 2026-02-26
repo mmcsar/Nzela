@@ -153,7 +153,8 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError(json.error || (res.status === 403 ? 'Profil courtier requis ou abonnement expiré.' : 'Une erreur est survenue'));
+        const msg = json.error || (res.status === 403 ? 'Profil courtier requis ou abonnement expiré.' : res.status === 401 ? 'Session expirée ou absente. Reconnectez-vous.' : 'Une erreur est survenue');
+        setError(msg);
         return;
       }
 
@@ -173,8 +174,13 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded flex flex-col gap-2">
+          <span>{error}</span>
+          {(error.includes('Session') || error.includes('Reconnectez')) && (
+            <button type="button" onClick={() => router.push('/login')} className="text-sm font-medium underline hover:no-underline text-left">
+              Se reconnecter
+            </button>
+          )}
         </div>
       )}
 

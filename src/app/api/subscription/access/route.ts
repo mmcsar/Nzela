@@ -15,7 +15,10 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Session expirée ou absente. Reconnectez-vous.' },
+        { status: 401 }
+      );
     }
 
     const { data: userData } = await supabase
