@@ -377,8 +377,9 @@ export default function AdminUsersPage() {
         <div className="text-sm text-blue-900">
           <p className="font-semibold mb-1">En tant qu&apos;admin : comment approuver un utilisateur</p>
           <ol className="list-decimal list-inside space-y-1 text-blue-800">
-            <li><strong>Approuver directement</strong> — Pour chaque entreprise ou courtier, le bouton <strong>Approuver</strong> dans la colonne Actions lie automatiquement le profil créé à l&apos;inscription (si existant) et active le compte. Utilisez-le même quand la colonne Profil affiche « — Aucune entreprise — ».</li>
-            <li><strong>Associer manuellement</strong> — Si la liste déroulante affiche des sociétés, vous pouvez choisir une entreprise/courtier puis cliquer <strong>Approuver</strong>. Sinon, assurez-vous que <code className="bg-white/60 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code> est défini dans .env.local pour que la liste se charge.</li>
+            <li><strong>Approuver directement</strong> — Cliquez sur <strong>Approuver</strong> dans la colonne Actions. Le système lie automatiquement le profil (par email, nom ou owner_id) et active le compte. Utilisez-le même quand la colonne Profil affiche « — Aucune entreprise — » ou « — Aucun courtier — ».</li>
+            <li><strong>Associer manuellement</strong> — Si la liste déroulante (colonne Profil) affiche des sociétés ou courtiers, choisissez-en un puis cliquez <strong>Approuver</strong>. Pour que la liste se charge : ajoutez <code className="bg-white/60 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code> dans .env.local (ou variables d&apos;environnement Vercel), puis redémarrez.</li>
+            <li><strong>Si « Aucun courtier trouvé »</strong> — Exécutez une fois le script <code className="bg-white/60 px-1 rounded">supabase/lier_courtier_utilisateur.sql</code> dans Supabase (SQL Editor) pour lier en base les courtiers/entreprises aux utilisateurs. Ensuite, réessayez Approuver ou demandez à l&apos;utilisateur d&apos;ouvrir la page Publier (le profil se rattache aussi automatiquement).</li>
           </ol>
           {companies.length === 0 && brokers.length === 0 && (
             <div className="mt-2 text-amber-800 space-y-2">
