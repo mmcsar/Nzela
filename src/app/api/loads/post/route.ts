@@ -68,6 +68,7 @@ export async function POST(request: Request) {
     const fromCity = (origin.city || body.from || '').trim();
     const toCity = (destination.city || body.to || '').trim();
 
+    // Distance/durée depuis ROUTES_RDC (Haut-Katanga, Lualaba) quand villes connues
     let distance = Number(body.distance) || 0;
     let duration = (body.duration || '').trim();
     if (fromCity && toCity && (!distance || !duration)) {
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
     const price = parseFloat(body.price) ?? 0;
     const pricePerKm = Number(body.pricePerKm) ?? (distance > 0 ? Math.round(price / distance) : 0);
 
+    // Défauts Haut-Katanga / Lualaba (flux classique Lubumbashi ↔ Kolwezi)
     const loadData = {
       broker_id: brokerId,
       origin: {
@@ -94,7 +96,7 @@ export async function POST(request: Request) {
       destination: {
         address: destination.address ?? '',
         city: destination.city ?? toCity,
-        province: destination.province ?? 'haut-katanga',
+        province: destination.province ?? 'lualaba',
         coordinates: destination.coordinates,
       },
       distance,

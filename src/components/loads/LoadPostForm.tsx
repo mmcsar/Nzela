@@ -88,12 +88,8 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
     resolver: zodResolver(loadSchema),
     defaultValues: {
       cargoType: '',
-      origin: {
-        province: 'haut-katanga',
-      },
-      destination: {
-        province: 'haut-katanga',
-      },
+      origin: { province: 'haut-katanga' },
+      destination: { province: 'lualaba' },
     },
   });
 

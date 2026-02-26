@@ -2,6 +2,8 @@
 -- Nzela : étendre province à toute la RDC (26 provinces)
 -- À exécuter dans Supabase > SQL Editor (ou via supabase db push)
 -- Supprime la contrainte CHECK qui limitait à Haut-Katanga et Lualaba.
+-- Sans cette migration, companies et brokers n'acceptent que ces 2 provinces.
+-- Les tables loads et trucks (origin/destination en JSONB) acceptent déjà toute province.
 -- ============================================================
 
 -- Companies : autoriser toutes les provinces RDC

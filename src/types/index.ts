@@ -1,3 +1,5 @@
+import type { ProvinceId } from '@/lib/constants/rdc-provinces';
+
 // User Types
 export type UserRole = 'admin' | 'company' | 'broker';
 
@@ -10,14 +12,14 @@ export interface User {
   createdAt: Date;
 }
 
-// Company Types
+// Company Types (province: 26 provinces RDC; défaut historique Haut-Katanga / Lualaba)
 export interface Company {
   id: string;
   name: string;
   registrationNumber: string;
   address: string;
   city: string;
-  province: 'haut-katanga' | 'lualaba';
+  province: ProvinceId;
   phone: string;
   email: string;
   ownerId: string;
@@ -26,14 +28,14 @@ export interface Company {
   createdAt: Date;
 }
 
-// Broker Types
+// Broker Types (province: 26 provinces RDC; défaut historique Haut-Katanga / Lualaba)
 export interface Broker {
   id: string;
   name: string;
   registrationNumber: string;
   address: string;
   city: string;
-  province: 'haut-katanga' | 'lualaba';
+  province: ProvinceId;
   phone: string;
   email: string;
   ownerId: string;
@@ -42,11 +44,11 @@ export interface Broker {
   createdAt: Date;
 }
 
-// Location Types
+// Location Types (origin/destination loads et trucks; défaut haut-katanga / lualaba)
 export interface Location {
   address: string;
   city: string;
-  province: 'haut-katanga' | 'lualaba';
+  province: ProvinceId;
   coordinates?: {
     lat: number;
     lng: number;

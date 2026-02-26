@@ -35,6 +35,7 @@ function getNavLinks(role: string) {
     return [
       { href: '/dashboard/company', icon: Home, label: 'Dashboard' },
       { href: '/dashboard/publish', icon: Plus, label: 'Publier' },
+      { href: '/dashboard/company/trucks/post', icon: Truck, label: 'Publier un camion' },
       { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
       { href: '/dashboard/company/trucks/search', icon: Truck, label: 'Camions' },
       { href: '/dashboard/company/vehicles', icon: Car, label: 'Vehicules' },
@@ -57,6 +58,7 @@ function getNavLinks(role: string) {
     return [
       { href: '/dashboard/broker', icon: Home, label: 'Dashboard' },
       { href: '/dashboard/publish', icon: Plus, label: 'Publier' },
+      { href: '/dashboard/broker/loads/post', icon: Package, label: 'Publier un chargement' },
       { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
       { href: '/dashboard/broker/loads/search', icon: Navigation, label: 'Recherche Loads' },
       { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },

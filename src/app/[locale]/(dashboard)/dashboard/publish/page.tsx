@@ -244,16 +244,20 @@ export default function PublishHubPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {canPublishLoad && (
-          <div className="bg-white border rounded-xl p-5">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard/broker/loads/post')}
+            className="bg-white border rounded-xl p-5 text-left w-full hover:border-primary-300 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2"
+          >
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-semibold text-gray-900 flex items-center gap-2">
                   <Package className="w-4 h-4 text-primary-600" />
                   Publier un chargement
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">Reserve aux comptes courtier (broker).</p>
+                <p className="text-sm text-gray-600 mt-1">Réservé aux comptes courtier (broker).</p>
               </div>
-              {hasBrokerProfile ? (
+              {hasBrokerProfile && hasSubscriptionAccess ? (
                 <span className="inline-flex items-center gap-1 text-emerald-700 text-xs font-medium bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
                   <CheckCircle2 className="w-3 h-3" />
                   Actif
@@ -261,24 +265,24 @@ export default function PublishHubPage() {
               ) : (
                 <span className="inline-flex items-center gap-1 text-amber-700 text-xs font-medium bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
                   <AlertTriangle className="w-3 h-3" />
-                  Inactif
+                  À activer
                 </span>
               )}
             </div>
             <div className="mt-4">
-              <Button
-                onClick={() => router.push('/dashboard/broker/loads/post')}
-                disabled={!hasBrokerProfile || !hasSubscriptionAccess}
-                className="w-full"
-              >
-                Ouvrir formulaire Load
-              </Button>
+              <span className="inline-flex items-center justify-center w-full rounded-lg bg-primary-600 text-white font-medium py-2.5 px-4">
+                Ouvrir le formulaire
+              </span>
             </div>
-          </div>
+          </button>
         )}
 
         {canPublishTruck && (
-          <div className="bg-white border rounded-xl p-5">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard/company/trucks/post')}
+            className="bg-white border rounded-xl p-5 text-left w-full hover:border-primary-300 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2"
+          >
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -287,7 +291,7 @@ export default function PublishHubPage() {
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">Réservé aux comptes entreprise (company).</p>
               </div>
-              {hasCompanyProfile ? (
+              {hasCompanyProfile && hasSubscriptionAccess ? (
                 <span className="inline-flex items-center gap-1 text-emerald-700 text-xs font-medium bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
                   <CheckCircle2 className="w-3 h-3" />
                   Actif
@@ -295,20 +299,16 @@ export default function PublishHubPage() {
               ) : (
                 <span className="inline-flex items-center gap-1 text-amber-700 text-xs font-medium bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
                   <AlertTriangle className="w-3 h-3" />
-                  Inactif
+                  À activer
                 </span>
               )}
             </div>
             <div className="mt-4">
-              <Button
-                onClick={() => router.push('/dashboard/company/trucks/post')}
-                disabled={!hasCompanyProfile || !hasSubscriptionAccess}
-                className="w-full"
-              >
-                Ouvrir formulaire Truck
-              </Button>
+              <span className="inline-flex items-center justify-center w-full rounded-lg bg-primary-600 text-white font-medium py-2.5 px-4">
+                Ouvrir le formulaire
+              </span>
             </div>
-          </div>
+          </button>
         )}
       </div>
     </div>
