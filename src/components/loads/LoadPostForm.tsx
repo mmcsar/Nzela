@@ -212,7 +212,9 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
             </div>
             <div>
               <span className="text-sm font-medium text-gray-500">RCCM</span>
-              <p className="font-medium">{broker.registration_number}</p>
+              <p className="font-medium">
+                {(broker.registration_number?.startsWith('BR-') ? PLATFORM_RCCM : broker.registration_number) || PLATFORM_RCCM}
+              </p>
             </div>
             <div className="sm:col-span-2 pt-2 border-t border-gray-100">
               <span className="text-xs text-gray-500">Plateforme</span>
