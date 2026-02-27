@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     const { data: targetUser } = await db
       .from('users')
-      .select('id, role, company_id, broker_id, email')
+      .select('id, role, company_id, broker_id, email, full_name')
       .eq('id', userId)
       .maybeSingle();
 
@@ -141,29 +141,52 @@ export async function POST(request: Request) {
         if (!entity && targetUser.email) {
           const prefix = targetUser.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
           if (prefix.length >= 2) {
-            const { data: unlinked } = await db
-              .from(table)
-              .select('id')
-              .is('owner_id', null)
-              .or(`name.ilike.%${prefix}%,email.ilike.%${prefix}%`)
-              .limit(1);
-            const first = Array.isArray(unlinked) ? unlinked[0] : unlinked;
-            if (first) {
-              entity = first;
+            const { data: unlinked } = await db.from(table).select('id, name, email').is('owner_id', null).limit(50);
+            const list = Array.isArray(unlinked) ? unlinked : unlinked ? [unlinked] : [];
+            const match = list.find(
+              (r: { id: string; name?: string | null; email?: string | null }) =>
+                (r.name && r.name.toLowerCase().includes(prefix.toLowerCase())) ||
+                (r.email && r.email.toLowerCase().includes(prefix.toLowerCase()))
+            );
+            if (match) {
+              entity = match;
               await db.from(table).update({ owner_id: userId }).eq('id', entity.id);
             }
           }
         }
 
+        // 5) Aucun trouvé : créer une fiche courtier/entreprise minimale (inscription peut avoir échoué côté RLS)
         if (!entity) {
-          return NextResponse.json(
-            {
-              error: `Aucun ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvé pour cet utilisateur. Choisissez-en un dans la liste déroulante (colonne Profil) puis cliquez Approuver. Si la liste est vide, ajoutez SUPABASE_SERVICE_ROLE_KEY dans les variables d'environnement (Vercel).`,
-            },
-            { status: 404 }
-          );
+          const displayName = (targetUser as { full_name?: string }).full_name?.trim() || targetUser.email?.split('@')[0] || 'Profil';
+          const uniqueReg = `${entityType === 'company' ? 'CO' : 'BR'}-${userId.substring(0, 8)}-${Date.now().toString(36)}`;
+          const { data: created, error: createErr } = await db
+            .from(table)
+            .insert({
+              name: displayName,
+              registration_number: uniqueReg,
+              address: '',
+              city: 'Lubumbashi',
+              province: 'haut-katanga',
+              phone: '',
+              email: targetUser.email || '',
+              owner_id: userId,
+              status: newStatus,
+            })
+            .select('id')
+            .single();
+          if (createErr) {
+            console.error('user-entity-status: create entity', createErr);
+            return NextResponse.json(
+              {
+                error: `Aucun ${entityType === 'company' ? 'entreprise' : 'courtier'} trouvé. Créez-en un dans Supabase ou ajoutez SUPABASE_SERVICE_ROLE_KEY (Vercel). Détail: ${createErr.message}`,
+              },
+              { status: 404 }
+            );
+          }
+          entityId = created.id;
+        } else {
+          entityId = entity.id;
         }
-        entityId = entity.id;
       }
 
       // Lier l'utilisateur à l'entité
