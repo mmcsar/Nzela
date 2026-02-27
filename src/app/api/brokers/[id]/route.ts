@@ -54,13 +54,14 @@ export async function PUT(
     const body = await request.json();
     const updates: Record<string, any> = {};
 
-    if (body.name) updates.name = body.name;
-    if (body.address) updates.address = body.address;
-    if (body.city) updates.city = body.city;
-    if (body.province) updates.province = body.province;
-    if (body.phone) updates.phone = body.phone;
-    if (body.email) updates.email = body.email;
-    if (body.status) updates.status = body.status;
+    if (body.name !== undefined) updates.name = body.name;
+    if (body.address !== undefined) updates.address = body.address;
+    if (body.city !== undefined) updates.city = body.city;
+    if (body.province !== undefined) updates.province = body.province;
+    if (body.phone !== undefined) updates.phone = body.phone;
+    if (body.email !== undefined) updates.email = body.email;
+    if (body.registration_number !== undefined) updates.registration_number = body.registration_number;
+    if (body.status !== undefined) updates.status = body.status;
 
     const { data, error } = await supabase
       .from('brokers')

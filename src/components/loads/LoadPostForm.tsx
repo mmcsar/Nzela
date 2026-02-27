@@ -5,7 +5,7 @@ import { useRouter } from '@/lib/i18n/routing';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Info, Building2 } from 'lucide-react';
+import { Info, Building2, Pencil, X, Check } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
@@ -81,6 +81,10 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [broker, setBroker] = useState<BrokerInfo | null>(null);
+  const [isEditingBroker, setIsEditingBroker] = useState(false);
+  const [brokerEdit, setBrokerEdit] = useState({ name: '', registration_number: '', phone: '', email: '', city: '' });
+  const [savingBroker, setSavingBroker] = useState(false);
+  const [brokerEditError, setBrokerEditError] = useState('');
 
   const {
     register,
@@ -108,10 +112,58 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
         .select('id, name, phone, email, city, registration_number')
         .eq('id', userData.broker_id)
         .single();
-      if (brokerData) setBroker(brokerData as BrokerInfo);
+      if (brokerData) {
+        const b = brokerData as BrokerInfo;
+        setBroker(b);
+        setBrokerEdit({
+          name: b.name || '',
+          registration_number: b.registration_number || '',
+          phone: b.phone || '',
+          email: b.email || '',
+          city: b.city || '',
+        });
+      }
     };
     fetchBroker();
   }, [supabase]);
+
+  const handleSaveBroker = async () => {
+    if (!broker) return;
+    setBrokerEditError('');
+    setSavingBroker(true);
+    try {
+      const res = await fetch(`/api/brokers/${broker.id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: brokerEdit.name || broker.name,
+          registration_number: brokerEdit.registration_number || broker.registration_number,
+          phone: brokerEdit.phone ?? broker.phone,
+          email: brokerEdit.email ?? broker.email,
+          city: brokerEdit.city ?? broker.city,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setBrokerEditError(data.error || 'Erreur lors de l\'enregistrement');
+        return;
+      }
+      if (data.broker) {
+        setBroker(data.broker as BrokerInfo);
+        setBrokerEdit({
+          name: data.broker.name ?? '',
+          registration_number: data.broker.registration_number ?? '',
+          phone: data.broker.phone ?? '',
+          email: data.broker.email ?? '',
+          city: data.broker.city ?? '',
+        });
+      }
+      setIsEditingBroker(false);
+    } finally {
+      setSavingBroker(false);
+    }
+  };
 
   const origin = watch('origin');
   const destination = watch('destination');
@@ -200,37 +252,118 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
 
       {broker && (
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-primary-600" />
-            Détails du courtier
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">Ces informations seront affichées aux transporteurs pour les mises en contact.</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-primary-600" />
+                Détails du courtier
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">Ces informations seront affichées aux transporteurs pour les mises en contact.</p>
+            </div>
+            {!isEditingBroker ? (
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingBroker(true)} className="gap-1.5">
+                <Pencil className="w-4 h-4" />
+                Modifier
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingBroker(false)} className="gap-1.5" disabled={savingBroker}>
+                  <X className="w-4 h-4" />
+                  Annuler
+                </Button>
+                <Button type="button" size="sm" onClick={handleSaveBroker} isLoading={savingBroker} className="gap-1.5">
+                  <Check className="w-4 h-4" />
+                  Enregistrer
+                </Button>
+              </div>
+            )}
+          </div>
+          {brokerEditError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{brokerEditError}</div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <span className="text-sm font-medium text-gray-500">Entreprise</span>
-              <p className="font-medium">{broker.name}</p>
-            </div>
-            <div>
-              <span className="text-sm font-medium text-gray-500">RCCM</span>
-              <p className="font-medium">
-                {(broker.registration_number?.startsWith('BR-') ? PLATFORM_RCCM : broker.registration_number) || PLATFORM_RCCM}
-              </p>
-            </div>
+            {isEditingBroker ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Entreprise</label>
+                  <input
+                    type="text"
+                    value={brokerEdit.name}
+                    onChange={(e) => setBrokerEdit((p) => ({ ...p, name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Nom du cabinet / courtier"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">RCCM</label>
+                  <input
+                    type="text"
+                    value={brokerEdit.registration_number}
+                    onChange={(e) => setBrokerEdit((p) => ({ ...p, registration_number: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Ex: LSHI 17-B-6981"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone</label>
+                  <input
+                    type="text"
+                    value={brokerEdit.phone}
+                    onChange={(e) => setBrokerEdit((p) => ({ ...p, phone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="+243 ..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={brokerEdit.email}
+                    onChange={(e) => setBrokerEdit((p) => ({ ...p, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="email@exemple.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Ville</label>
+                  <input
+                    type="text"
+                    value={brokerEdit.city}
+                    onChange={(e) => setBrokerEdit((p) => ({ ...p, city: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Ex: Lubumbashi"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Entreprise</span>
+                  <p className="font-medium">{broker.name || '—'}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">RCCM</span>
+                  <p className="font-medium">
+                    {(broker.registration_number?.startsWith('BR-') ? PLATFORM_RCCM : broker.registration_number) || PLATFORM_RCCM}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Téléphone</span>
+                  <p className="font-medium">{broker.phone || '—'}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Email</span>
+                  <p className="font-medium">{broker.email || '—'}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Ville</span>
+                  <p className="font-medium">{broker.city || '—'}</p>
+                </div>
+              </>
+            )}
             <div className="sm:col-span-2 pt-2 border-t border-gray-100">
               <span className="text-xs text-gray-500">Plateforme</span>
               <p className="text-sm font-medium text-gray-700">{PLATFORM_LEGAL} — RCCM {PLATFORM_RCCM}</p>
-            </div>
-            <div>
-              <span className="text-sm font-medium text-gray-500">Téléphone</span>
-              <p className="font-medium">{broker.phone}</p>
-            </div>
-            <div>
-              <span className="text-sm font-medium text-gray-500">Email</span>
-              <p className="font-medium">{broker.email}</p>
-            </div>
-            <div>
-              <span className="text-sm font-medium text-gray-500">Ville</span>
-              <p className="font-medium">{broker.city || '—'}</p>
             </div>
           </div>
         </div>
