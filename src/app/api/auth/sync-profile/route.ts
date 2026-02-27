@@ -17,7 +17,7 @@ export async function POST() {
 
   const { data: existing } = await supabase
     .from('users')
-    .select('id, role, company_id, broker_id')
+    .select('id, role, company_id, broker_id, full_name')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -94,6 +94,35 @@ export async function POST() {
         }
       } catch {
         // SERVICE_ROLE_KEY absente : on garde les résultats déjà trouvés
+      }
+    }
+
+    // Aucune fiche trouvée : en créer une (inscription peut avoir échoué côté RLS)
+    if (!entityId) {
+      try {
+        const db = createServiceRoleClient();
+        const displayName = (existing?.full_name as string)?.trim() || (user.user_metadata?.full_name as string)?.trim() || user.email?.split('@')[0] || 'Profil';
+        const uniqueReg = `${role === 'company' ? 'CO' : 'BR'}-${user.id.substring(0, 8)}-${Date.now().toString(36)}`;
+        const { data: created, error: createErr } = await db
+          .from(table)
+          .insert({
+            name: displayName,
+            registration_number: uniqueReg,
+            address: '',
+            city: 'Lubumbashi',
+            province: 'haut-katanga',
+            phone: '',
+            email: user.email || '',
+            owner_id: user.id,
+            status: 'pending',
+          })
+          .select('id')
+          .single();
+        if (!createErr && created?.id) {
+          entityId = created.id;
+        }
+      } catch {
+        // ignore
       }
     }
 
