@@ -260,7 +260,15 @@ export async function POST(request: Request) {
       throw checkError;
     }
 
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Body JSON invalide ou manquant' }, { status: 400 });
+    }
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Body invalide' }, { status: 400 });
+    }
     const { action } = body;
 
     // ── Creer une nouvelle conversation ──

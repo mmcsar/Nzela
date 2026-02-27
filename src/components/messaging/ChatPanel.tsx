@@ -977,7 +977,8 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
           )}
 
           <button
-            onClick={handleCreate}
+            type="button"
+            onClick={(e) => { e.preventDefault(); handleCreate(); }}
             disabled={!selectedUserId || isCreating}
             className="w-full py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
