@@ -57,7 +57,7 @@ export default function TermsPage() {
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Contact</h2>
           <p className="text-gray-600 mb-6">
-            Pour toute question concernant ces conditions, contactez-nous a contact@nzela.cd.
+            Pour toute question concernant ces conditions, contactez-nous a info@nzelaa.com.
           </p>
         </div>
       </section>

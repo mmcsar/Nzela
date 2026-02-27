@@ -11,7 +11,7 @@ const supportPhone = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 995 547 081'
 const contactInfo = [
   { icon: MapPin, label: 'Adresse', value: 'Lubumbashi, Haut-Katanga, RDC' },
   { icon: Phone, label: 'Téléphone', value: supportPhone },
-  { icon: Mail, label: 'Email', value: 'contact@nzela.cd' },
+  { icon: Mail, label: 'Email', value: 'info@nzelaa.com' },
   { icon: Clock, label: 'Heures', value: 'Lun - Ven : 8h00 - 17h00' },
 ];
 

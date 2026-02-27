@@ -192,11 +192,11 @@ export default async function DashboardLayout({
                     <h3 className="font-semibold text-gray-800 mb-3">Contactez-nous pour resoudre ce probleme :</h3>
                     <div className="space-y-2">
                       <a
-                        href="mailto:support@nzela.cd"
+                        href="mailto:info@nzelaa.com"
                         className="flex items-center gap-3 text-sm text-gray-600 hover:text-primary-600 transition-colors"
                       >
                         <Mail className="w-4 h-4" />
-                        <span>support@nzela.cd</span>
+                        <span>info@nzelaa.com</span>
                       </a>
                       <a
                         href="tel:+243970000000"

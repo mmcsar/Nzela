@@ -153,8 +153,8 @@ export default function VerificationPage() {
         <p className="text-amber-700 mb-4">
           Votre profil {role === 'broker' ? 'courtier' : 'entreprise'} n&apos;est pas encore complet. Contactez le support pour finaliser l&apos;inscription avant de soumettre une verification.
         </p>
-        <a href="mailto:support@nzela.cd" className="text-primary-600 font-semibold hover:underline">
-          support@nzela.cd
+        <a href="mailto:info@nzelaa.com" className="text-primary-600 font-semibold hover:underline">
+          info@nzelaa.com
         </a>
       </div>
     );

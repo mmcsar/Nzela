@@ -68,7 +68,7 @@ export default function PrivacyPage() {
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Contact</h2>
           <p className="text-gray-600 mb-6">
-            Pour exercer vos droits ou pour toute question relative a cette politique, contactez notre DPO a privacy@nzela.cd ou ecrivez a : MMC SARL, Lubumbashi, Haut-Katanga, RDC.
+            Pour exercer vos droits ou pour toute question relative a cette politique, contactez notre DPO a info@nzelaa.com ou ecrivez a : MMC SARL, Lubumbashi, Haut-Katanga, RDC.
           </p>
         </div>
       </section>

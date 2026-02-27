@@ -31,7 +31,7 @@ Dans **Vercel** → ton projet → **Settings** → **Environment Variables**, a
 | `FLUTTERWAVE_WEBHOOK_HASH` | Flutterwave → Webhooks | Si paiements |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Généré (web-push) | Si notifications push |
 | `VAPID_PRIVATE_KEY` | Généré (web-push) | Si notifications push |
-| `VAPID_SUBJECT` | Ex. `mailto:contact@nzela.cd` | Si push |
+| `VAPID_SUBJECT` | Ex. `mailto:info@nzelaa.com` | Si push |
 
 **Optionnel (monétisation plus tard)** : `SUBSCRIPTION_GATE_ENABLED=true` — ou activer via **Admin → Paramètres → Métier → Monétisation**.
 

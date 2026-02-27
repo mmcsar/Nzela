@@ -33,7 +33,7 @@ Sans cette clé, la messagerie ne peut pas afficher la liste des utilisateurs et
 | **FLUTTERWAVE_WEBHOOK_HASH** | Webhook Flutterwave |
 | **NEXT_PUBLIC_VAPID_PUBLIC_KEY** | Notifications push (PWA) |
 | **VAPID_PRIVATE_KEY** | Notifications push |
-| **VAPID_SUBJECT** | Ex. `mailto:contact@nzela.cd` |
+| **VAPID_SUBJECT** | Ex. `mailto:info@nzelaa.com` |
 
 ---
 

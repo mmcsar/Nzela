@@ -15,7 +15,7 @@ const faqs = [
   { q: 'Nzela couvre quelles regions ?', a: 'Nzela couvre toute la RDC : les 26 provinces sont disponibles (Haut-Katanga, Lualaba, Kinshasa, Kivu, Kasai, Equateur, etc.).' },
   { q: 'Comment fonctionne le matching ?', a: 'Notre algorithme analyse la proximite geographique, la capacite, le type de marchandise et la reputation pour proposer les meilleures correspondances entre chargements et camions.' },
   { q: 'Mes donnees sont-elles en securite ?', a: 'Oui, nous utilisons le chiffrement SSL/TLS, le controle d\'acces base sur les roles (RBAC) et le Row Level Security (RLS) pour proteger toutes les donnees.' },
-  { q: 'Comment contacter le support ?', a: 'Vous pouvez nous contacter via la page Contact, par email a contact@nzela.cd, ou par telephone. Les abonnes Pro et Select beneficient d\'un support prioritaire.' },
+  { q: 'Comment contacter le support ?', a: 'Vous pouvez nous contacter via la page Contact, par email a info@nzelaa.com, ou par telephone. Les abonnes Pro et Select beneficient d\'un support prioritaire.' },
 ];
 
 export default function FAQPage() {
