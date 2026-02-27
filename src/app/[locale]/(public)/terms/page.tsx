@@ -52,7 +52,7 @@ export default function TermsPage() {
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Propriete intellectuelle</h2>
           <p className="text-gray-600 mb-6">
-            Tout le contenu du Service, y compris les logos, textes, images et logiciels, est la propriete de MMC SARL et est protege par les lois sur la propriete intellectuelle.
+            Tout le contenu du Service, y compris les logos, textes, images et logiciels, est la propriete de Maintenance de Matériel au Congo (M M C SARL) et est protege par les lois sur la propriete intellectuelle.
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Contact</h2>

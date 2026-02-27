@@ -12,6 +12,10 @@ import { createClient } from '@/lib/supabase/client';
 import { Load } from '@/types';
 import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
 
+/** RCCM officiel de la plateforme (MMC SARL) */
+const PLATFORM_RCCM = 'LSHI 17-B-6981';
+const PLATFORM_LEGAL = 'Maintenance de Matériel au Congo (M M C SARL)';
+
 const CARGO_TYPES = [
   { value: 'minerai_cuivre', label: 'Minerai / Concentré de cuivre' },
   { value: 'cobalt', label: 'Cobalt' },
@@ -209,6 +213,10 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
             <div>
               <span className="text-sm font-medium text-gray-500">RCCM</span>
               <p className="font-medium">{broker.registration_number}</p>
+            </div>
+            <div className="sm:col-span-2 pt-2 border-t border-gray-100">
+              <span className="text-xs text-gray-500">Plateforme</span>
+              <p className="text-sm font-medium text-gray-700">{PLATFORM_LEGAL} — RCCM {PLATFORM_RCCM}</p>
             </div>
             <div>
               <span className="text-sm font-medium text-gray-500">Téléphone</span>

@@ -87,7 +87,7 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-3">
               <MapPin className="w-5 h-5 text-primary-400 flex-shrink-0" />
-              <span className="text-sm">Lubumbashi, Haut-Katanga, RDC</span>
+              <span className="text-sm">04, Avenue Monga, Quartier Craa, Lubumbashi, RDC — RCCM LSHI 17-B-6981</span>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
@@ -106,7 +106,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500" suppressHydrationWarning>
-              Copyright &copy; {currentYear} Nzela - MMC SARL. Tous droits reserves.
+              Copyright &copy; {currentYear} Nzela — Maintenance de Matériel au Congo (M M C SARL). Tous droits réservés.
             </p>
             <div className="flex gap-6">
               <Link href="/terms" className="text-sm text-gray-500 hover:text-white transition-colors">
