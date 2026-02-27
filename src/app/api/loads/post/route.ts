@@ -29,14 +29,60 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .maybeSingle();
 
+    const role = userData?.role ?? (user.app_metadata as { role?: string })?.role ?? 'company';
     let brokerId = userData?.broker_id ?? null;
-    if (!brokerId && userData?.role === 'broker') {
-      const { data: broker } = await supabase
-        .from('brokers')
-        .select('id')
-        .eq('owner_id', user.id)
-        .maybeSingle();
-      brokerId = broker?.id ?? null;
+
+    // Même logique que getAuthUser/sync-profile : rattacher par owner_id, email, préfixe, puis service role
+    if (!brokerId && role === 'broker') {
+      let entityId: string | null = null;
+      const { data: byOwner } = await supabase.from('brokers').select('id').eq('owner_id', user.id).maybeSingle();
+      entityId = byOwner?.id ?? null;
+      if (!entityId && user.email) {
+        const { data: byEmailData } = await supabase.from('brokers').select('id').eq('email', user.email).limit(1);
+        const row = Array.isArray(byEmailData) ? byEmailData[0] : byEmailData;
+        if (row?.id) entityId = row.id;
+      }
+      if (!entityId && user.email) {
+        const prefix = user.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
+        if (prefix.length >= 2) {
+          const { data: byNameData } = await supabase.from('brokers').select('id').ilike('name', `%${prefix}%`).limit(1);
+          const row = Array.isArray(byNameData) ? byNameData[0] : byNameData;
+          if (row?.id) entityId = row.id;
+          if (!entityId) {
+            const { data: byEmailPrefixData } = await supabase.from('brokers').select('id').ilike('email', `%${prefix}%`).limit(1);
+            const row2 = Array.isArray(byEmailPrefixData) ? byEmailPrefixData[0] : byEmailPrefixData;
+            if (row2?.id) entityId = row2.id;
+          }
+        }
+      }
+      if (!entityId && user.email) {
+        try {
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          if (key && key !== 'your_service_role_key_here') {
+            const db = createServiceRoleClient();
+            const prefix = user.email.split('@')[0]?.trim().replace(/[%_\\]/g, '') ?? '';
+            if (prefix.length >= 2) {
+              const { data: unlinked } = await db.from('brokers').select('id, name, email').is('owner_id', null).limit(50);
+              const list = Array.isArray(unlinked) ? unlinked : unlinked ? [unlinked] : [];
+              const match = list.find(
+                (r: { id: string; name?: string | null; email?: string | null }) =>
+                  (r.name && r.name.toLowerCase().includes(prefix.toLowerCase())) ||
+                  (r.email && r.email.toLowerCase().includes(prefix.toLowerCase()))
+              );
+              if (match?.id) {
+                entityId = match.id;
+                await db.from('brokers').update({ owner_id: user.id }).eq('id', entityId);
+              }
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+      if (entityId) {
+        brokerId = entityId;
+        await supabase.from('users').update({ broker_id: entityId }).eq('id', user.id);
+      }
     }
 
     if (!brokerId) {

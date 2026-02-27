@@ -130,6 +130,7 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
     try {
       const res = await fetch('/api/loads/post', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           origin: data.origin,

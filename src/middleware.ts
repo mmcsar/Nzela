@@ -31,8 +31,18 @@ function isDashboardRoute(pathname: string): boolean {
   return withoutLocale.startsWith('/dashboard');
 }
 
+const LOCALE_PREFIX = /^\/(fr|en)(\/|$)/;
+
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // 0. Si l'URL n'a pas de locale (ex: /reset-password, /forgot-password), rediriger vers /fr/...
+  const publicWithoutLocale = ['/reset-password', '/forgot-password', '/login', '/register'];
+  if (!LOCALE_PREFIX.test(pathname) && publicWithoutLocale.some((r) => pathname === r || pathname.startsWith(r + '/'))) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/fr' + pathname;
+    return NextResponse.redirect(url);
+  }
 
   // 1. Pour les routes dashboard, vérifier l'authentification d'abord
   if (isDashboardRoute(pathname)) {
