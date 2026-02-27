@@ -271,13 +271,17 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'recipientId requis' }, { status: 400 });
       }
 
-      // Verifier que le destinataire existe
-      const { data: recipient } = await supabase
-        .from('users')
-        .select('id, email')
-        .eq('id', recipientId)
-        .single();
-
+      // Vérifier que le destinataire existe (service role car RLS users ne permet pas de lire les autres)
+      let recipient: { id: string; email?: string } | null = null;
+      try {
+        const service = createServiceRoleClient();
+        const { data } = await service.from('users').select('id, email').eq('id', recipientId).single();
+        recipient = data;
+      } catch {
+        // Service role non configuré : fallback client (admin verra les users, broker/company non)
+        const { data } = await supabase.from('users').select('id, email').eq('id', recipientId).single();
+        recipient = data;
+      }
       if (!recipient) {
         return NextResponse.json({ error: 'Destinataire introuvable' }, { status: 404 });
       }

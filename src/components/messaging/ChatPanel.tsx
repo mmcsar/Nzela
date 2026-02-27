@@ -130,7 +130,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
     try {
       setFetchError(null);
       if (!silent) setIsLoading(true);
-      const response = await fetch('/api/messages');
+      const response = await fetch('/api/messages', { credentials: 'include' });
       const data = await response.json();
       if (response.ok) {
         setMessagingNotInstalled(null);
@@ -159,7 +159,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
     setIsLoadingMessages(true);
     setFetchError(null);
     try {
-      const response = await fetch(`/api/messages?conversationId=${conv.id}`);
+      const response = await fetch(`/api/messages?conversationId=${conv.id}`, { credentials: 'include' });
       const data = await response.json();
       if (response.ok) {
         setMessages(data.messages || []);
@@ -183,6 +183,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           action: 'create_conversation',
           recipientId,
@@ -191,6 +192,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       });
       const data = await response.json();
       if (response.ok && data.conversation) {
+        setFetchError(null);
         await fetchConversations();
         const created = data.conversation;
         openConversation({
@@ -203,16 +205,19 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
           lastMessageAt: new Date().toISOString(),
           createdAt: new Date().toISOString(),
         });
+      } else {
+        setFetchError(toErrorMessage(data?.error, 'Impossible de créer la conversation.'));
       }
     } catch (error) {
       console.error('Erreur creation conversation:', error);
+      setFetchError('Erreur réseau. Réessayez.');
     }
   }, [loadId, recipientId, fetchConversations, openConversation]);
 
   // ── Refresh messages silencieux ──
   const refreshMessages = useCallback(async (convId: string) => {
     try {
-      const response = await fetch(`/api/messages?conversationId=${convId}`);
+      const response = await fetch(`/api/messages?conversationId=${convId}`, { credentials: 'include' });
       const data = await response.json();
       if (response.ok && data.messages) {
         setMessages(prev => {
@@ -312,6 +317,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           conversationId: selectedConv.id,
           content,
@@ -796,6 +802,7 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
   const [loads, setLoads] = useState<{ id: string; label: string }[]>([]);
   const [selectedLoadId, setSelectedLoadId] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = useMemo(() => createClient(), []);
 
@@ -803,7 +810,7 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
     try {
       setUsersError(null);
       // Utilisateurs avec qui on peut discuter (via API pour contourner RLS)
-      const usersRes = await fetch('/api/messages/users');
+      const usersRes = await fetch('/api/messages/users', { credentials: 'include' });
       const usersJson = await usersRes.json().catch(() => ({}));
       if (usersRes.ok) {
         setUsers(usersJson.users ?? []);
@@ -851,11 +858,13 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
   const handleCreate = async () => {
     if (!selectedUserId) return;
     setIsCreating(true);
+    setCreateError(null);
 
     try {
       const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           action: 'create_conversation',
           recipientId: selectedUserId,
@@ -865,10 +874,14 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
 
       const data = await response.json();
       if (response.ok && data.conversation) {
+        setCreateError(null);
         onCreated(data.conversation.id);
+      } else {
+        setCreateError(toErrorMessage(data?.error, 'Impossible de créer la conversation.'));
       }
     } catch (error) {
       console.error('Erreur creation conversation:', error);
+      setCreateError('Erreur réseau. Réessayez.');
     } finally {
       setIsCreating(false);
     }
@@ -953,6 +966,15 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
               ))}
             </select>
           </div>
+
+          {createError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-800 flex items-center gap-2">
+              <span className="flex-1">{createError}</span>
+              <button type="button" onClick={() => setCreateError(null)} className="text-red-600 shrink-0" aria-label="Fermer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
           <button
             onClick={handleCreate}
