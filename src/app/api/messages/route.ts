@@ -351,13 +351,14 @@ export async function POST(request: Request) {
         convTitle = `Conversation avec ${recipient.email?.split('@')[0] || 'Utilisateur'}`;
       }
 
-      // 1) Fonction Postgres (SECURITY DEFINER = pas de RLS) avec JWT explicite pour que auth.uid() soit bien reçu
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.access_token) {
+      // 1) RPC create_conversation_secure avec JWT (header Authorization prioritaire, sinon session cookies)
+      const authHeader = request.headers.get('Authorization');
+      const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+      const token = bearerToken || (await supabase.auth.getSession()).data.session?.access_token || null;
+
+      if (token) {
         try {
-          const clientWithToken = createClientWithAccessToken(session.access_token);
+          const clientWithToken = createClientWithAccessToken(token);
           const { data: rpcId, error: rpcError } = await clientWithToken.rpc('create_conversation_secure', {
             p_creator_id: auth.userId,
             p_recipient_id: recipientId,
@@ -369,7 +370,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ conversation: { id: rpcId, title: convTitle }, existing: false }, { status: 201 });
           }
         } catch {
-          // RPC échoué (ex: fonction absente), on passe au fallback
+          // RPC échoué, on passe au fallback
         }
       }
 
@@ -410,6 +411,15 @@ export async function POST(request: Request) {
             {
               error:
                 'Fonction create_conversation_backend absente. Exécutez dans Supabase (SQL Editor) le script supabase/messaging_create_conversation_function.sql.',
+            },
+            { status: 503 }
+          );
+        }
+        if (msg && (msg.includes('permission denied') || msg.includes('SUPABASE_SERVICE_ROLE_KEY'))) {
+          return NextResponse.json(
+            {
+              error:
+                'Clé API incorrecte. Dans .env.local, définissez SUPABASE_SERVICE_ROLE_KEY avec la clé "service_role" (Supabase > Settings > API), pas la clé anon.',
             },
             { status: 503 }
           );

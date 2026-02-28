@@ -180,9 +180,13 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
   const initConversationForLoad = useCallback(async () => {
     if (!loadId || !recipientId) return;
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+
       const response = await fetch('/api/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({
           action: 'create_conversation',
@@ -212,7 +216,7 @@ export function ChatPanel({ loadId, recipientId, embedded = false, className = '
       console.error('Erreur creation conversation:', error);
       setFetchError('Erreur réseau. Réessayez.');
     }
-  }, [loadId, recipientId, fetchConversations, openConversation]);
+  }, [loadId, recipientId, fetchConversations, openConversation, supabase]);
 
   // ── Refresh messages silencieux ──
   const refreshMessages = useCallback(async (convId: string) => {
@@ -861,9 +865,13 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
     setCreateError(null);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+
       const response = await fetch('/api/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({
           action: 'create_conversation',
