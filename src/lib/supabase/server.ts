@@ -13,6 +13,19 @@ export function createServiceRoleClient() {
   return createSupabaseClient(url, key, { auth: { persistSession: false } });
 }
 
+/** Client avec JWT explicite (pour RPC en Route Handler où les cookies peuvent ne pas être transmis). */
+export function createClientWithAccessToken(accessToken: string) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase: NEXT_PUBLIC_SUPABASE_URL et ANON_KEY requis');
+  }
+  return createSupabaseClient(url, key, {
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    auth: { persistSession: false },
+  });
+}
+
 export async function createClient() {
   const cookieStore = await cookies();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

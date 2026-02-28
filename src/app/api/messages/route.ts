@@ -1,4 +1,4 @@
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient, createClientWithAccessToken } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/checkRole';
 import { handleApiError } from '@/lib/api/error';
@@ -351,55 +351,65 @@ export async function POST(request: Request) {
         convTitle = `Conversation avec ${recipient.email?.split('@')[0] || 'Utilisateur'}`;
       }
 
-      // 1) Essayer la fonction Postgres (SECURITY DEFINER = pas de RLS) avec le client utilisateur (session)
-      const { data: rpcId, error: rpcError } = await supabase.rpc('create_conversation_secure', {
-        p_creator_id: auth.userId,
-        p_recipient_id: recipientId,
-        p_load_id: loadId || null,
-        p_title: convTitle,
-        p_type: convType || (loadId ? 'load' : 'direct'),
-      });
-
-      if (!rpcError && rpcId) {
-        return NextResponse.json({ conversation: { id: rpcId, title: convTitle }, existing: false }, { status: 201 });
+      // 1) Fonction Postgres (SECURITY DEFINER = pas de RLS) avec JWT explicite pour que auth.uid() soit bien reçu
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        try {
+          const clientWithToken = createClientWithAccessToken(session.access_token);
+          const { data: rpcId, error: rpcError } = await clientWithToken.rpc('create_conversation_secure', {
+            p_creator_id: auth.userId,
+            p_recipient_id: recipientId,
+            p_load_id: loadId || null,
+            p_title: convTitle,
+            p_type: convType || (loadId ? 'load' : 'direct'),
+          });
+          if (!rpcError && rpcId) {
+            return NextResponse.json({ conversation: { id: rpcId, title: convTitle }, existing: false }, { status: 201 });
+          }
+        } catch {
+          // RPC échoué (ex: fonction absente), on passe au fallback
+        }
       }
 
-      // 2) Fallback : service role (si la fonction n'existe pas ou erreur)
+      // 2) Fallback : RPC backend avec service role (contourne RLS, pas d'INSERT direct)
       try {
         const serviceClient = createServiceRoleClient();
-        const { data: conversation, error: convError } = await serviceClient
-          .from('conversations')
-          .insert({
-            load_id: loadId || null,
-            title: convTitle,
-            type: convType || (loadId ? 'load' : 'direct'),
-            status: 'active',
-            metadata: loadId ? { loadId } : {},
-          })
-          .select()
-          .single();
+        const { data: rpcBackendId, error: rpcBackendError } = await serviceClient.rpc(
+          'create_conversation_backend',
+          {
+            p_creator_id: auth.userId,
+            p_recipient_id: recipientId,
+            p_load_id: loadId || null,
+            p_title: convTitle,
+            p_type: convType || (loadId ? 'load' : 'direct'),
+          }
+        );
 
-        if (convError) throw convError;
-
-        await serviceClient.from('conversation_participants').insert([
-          { conversation_id: conversation.id, user_id: auth.userId, role: 'member' },
-          { conversation_id: conversation.id, user_id: recipientId, role: 'member' },
-        ]);
-        await serviceClient.from('messages').insert({
-          conversation_id: conversation.id,
-          sender_id: auth.userId,
-          content: 'Conversation demarree',
-          type: 'system',
-          is_system: true,
-        });
-
-        return NextResponse.json({ conversation: { id: conversation.id, title: convTitle }, existing: false }, { status: 201 });
+        if (!rpcBackendError && rpcBackendId) {
+          return NextResponse.json(
+            { conversation: { id: rpcBackendId, title: convTitle }, existing: false },
+            { status: 201 }
+          );
+        }
+        throw rpcBackendError || new Error('create_conversation_backend a échoué');
       } catch (e) {
         const msg = getErrorMessage(e);
         if (msg && (msg.includes('row-level security') || msg.includes('policy'))) {
           return NextResponse.json(
             {
-              error: 'Création conversation impossible. Exécutez le script Supabase : supabase/messaging_create_conversation_function.sql',
+              error:
+                'Création bloquée. Exécutez dans Supabase (SQL Editor) le script supabase/messaging_create_conversation_function.sql (il contient create_conversation_backend).',
+            },
+            { status: 503 }
+          );
+        }
+        if (msg && msg.includes('function') && msg.includes('does not exist')) {
+          return NextResponse.json(
+            {
+              error:
+                'Fonction create_conversation_backend absente. Exécutez dans Supabase (SQL Editor) le script supabase/messaging_create_conversation_function.sql.',
             },
             { status: 503 }
           );
