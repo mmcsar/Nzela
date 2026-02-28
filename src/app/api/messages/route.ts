@@ -280,14 +280,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'recipientId requis' }, { status: 400 });
       }
 
-      // Vérifier que le destinataire existe (service role car RLS users ne permet pas de lire les autres)
+      // Vérifier que le destinataire existe (service role ou fallback)
       let recipient: { id: string; email?: string } | null = null;
       try {
         const service = createServiceRoleClient();
         const { data } = await service.from('users').select('id, email').eq('id', recipientId).single();
         recipient = data;
       } catch {
-        // Service role non configuré : fallback client (admin verra les users, broker/company non)
         const { data } = await supabase.from('users').select('id, email').eq('id', recipientId).single();
         recipient = data;
       }
@@ -295,42 +294,53 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Destinataire introuvable' }, { status: 404 });
       }
 
-      // Création conversation + participants + message via service role pour éviter RLS
-      let serviceClient: ReturnType<typeof createServiceRoleClient>;
-      try {
-        serviceClient = createServiceRoleClient();
-      } catch (e) {
-        return NextResponse.json(
-          { error: 'Configuration serveur messagerie incomplète (SUPABASE_SERVICE_ROLE_KEY).' },
-          { status: 503 }
-        );
-      }
-
-      // Verifier si une conversation existe deja entre ces 2 utilisateurs pour ce load
+      // Vérifier conversation existante (service role si dispo, sinon supabase)
+      let existingConvId: string | null = null;
       if (loadId) {
-        const { data: existingConvs } = await serviceClient
-          .from('conversations')
-          .select('id')
-          .eq('load_id', loadId)
-          .eq('status', 'active');
-
-        for (const conv of existingConvs || []) {
-          const { data: parts } = await serviceClient
-            .from('conversation_participants')
-            .select('user_id')
-            .eq('conversation_id', conv.id);
-
-          const userIds = (parts || []).map((p: any) => p.user_id);
-          if (userIds.includes(auth.userId) && userIds.includes(recipientId)) {
-            return NextResponse.json({ conversation: { id: conv.id }, existing: true });
+        try {
+          const service = createServiceRoleClient();
+          const { data: existingConvs } = await service
+            .from('conversations')
+            .select('id')
+            .eq('load_id', loadId)
+            .eq('status', 'active');
+          for (const conv of existingConvs || []) {
+            const { data: parts } = await service
+              .from('conversation_participants')
+              .select('user_id')
+              .eq('conversation_id', conv.id);
+            const userIds = (parts || []).map((p: any) => p.user_id);
+            if (userIds.includes(auth.userId) && userIds.includes(recipientId)) {
+              existingConvId = conv.id;
+              break;
+            }
+          }
+        } catch {
+          const { data: existingConvs } = await supabase
+            .from('conversations')
+            .select('id')
+            .eq('load_id', loadId)
+            .eq('status', 'active');
+          for (const conv of existingConvs || []) {
+            const { data: parts } = await supabase
+              .from('conversation_participants')
+              .select('user_id')
+              .eq('conversation_id', conv.id);
+            const userIds = (parts || []).map((p: any) => p.user_id);
+            if (userIds.includes(auth.userId) && userIds.includes(recipientId)) {
+              existingConvId = conv.id;
+              break;
+            }
           }
         }
       }
+      if (existingConvId) {
+        return NextResponse.json({ conversation: { id: existingConvId }, existing: true });
+      }
 
-      // Generer le titre
       let convTitle = title;
       if (!convTitle && loadId) {
-        const { data: load } = await serviceClient.from('loads').select('origin, destination, cargo_type').eq('id', loadId).single();
+        const { data: load } = await supabase.from('loads').select('origin, destination, cargo_type').eq('id', loadId).single();
         if (load) {
           const o = typeof load.origin === 'string' ? JSON.parse(load.origin) : load.origin;
           const d = typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination;
@@ -341,38 +351,61 @@ export async function POST(request: Request) {
         convTitle = `Conversation avec ${recipient.email?.split('@')[0] || 'Utilisateur'}`;
       }
 
-      const { data: conversation, error: convError } = await serviceClient
-        .from('conversations')
-        .insert({
-          load_id: loadId || null,
-          title: convTitle,
-          type: convType || (loadId ? 'load' : 'direct'),
-          status: 'active',
-          metadata: loadId ? { loadId } : {},
-        })
-        .select()
-        .single();
+      // 1) Essayer la fonction Postgres (SECURITY DEFINER = pas de RLS) avec le client utilisateur (session)
+      const { data: rpcId, error: rpcError } = await supabase.rpc('create_conversation_secure', {
+        p_creator_id: auth.userId,
+        p_recipient_id: recipientId,
+        p_load_id: loadId || null,
+        p_title: convTitle,
+        p_type: convType || (loadId ? 'load' : 'direct'),
+      });
 
-      if (convError) throw convError;
+      if (!rpcError && rpcId) {
+        return NextResponse.json({ conversation: { id: rpcId, title: convTitle }, existing: false }, { status: 201 });
+      }
 
-      const { error: partError } = await serviceClient
-        .from('conversation_participants')
-        .insert([
+      // 2) Fallback : service role (si la fonction n'existe pas ou erreur)
+      try {
+        const serviceClient = createServiceRoleClient();
+        const { data: conversation, error: convError } = await serviceClient
+          .from('conversations')
+          .insert({
+            load_id: loadId || null,
+            title: convTitle,
+            type: convType || (loadId ? 'load' : 'direct'),
+            status: 'active',
+            metadata: loadId ? { loadId } : {},
+          })
+          .select()
+          .single();
+
+        if (convError) throw convError;
+
+        await serviceClient.from('conversation_participants').insert([
           { conversation_id: conversation.id, user_id: auth.userId, role: 'member' },
           { conversation_id: conversation.id, user_id: recipientId, role: 'member' },
         ]);
+        await serviceClient.from('messages').insert({
+          conversation_id: conversation.id,
+          sender_id: auth.userId,
+          content: 'Conversation demarree',
+          type: 'system',
+          is_system: true,
+        });
 
-      if (partError) throw partError;
-
-      await serviceClient.from('messages').insert({
-        conversation_id: conversation.id,
-        sender_id: auth.userId,
-        content: 'Conversation demarree',
-        type: 'system',
-        is_system: true,
-      });
-
-      return NextResponse.json({ conversation: { id: conversation.id, title: convTitle }, existing: false }, { status: 201 });
+        return NextResponse.json({ conversation: { id: conversation.id, title: convTitle }, existing: false }, { status: 201 });
+      } catch (e) {
+        const msg = getErrorMessage(e);
+        if (msg && (msg.includes('row-level security') || msg.includes('policy'))) {
+          return NextResponse.json(
+            {
+              error: 'Création conversation impossible. Exécutez le script Supabase : supabase/messaging_create_conversation_function.sql',
+            },
+            { status: 503 }
+          );
+        }
+        throw e;
+      }
     }
 
     // ── Envoyer un message ──
