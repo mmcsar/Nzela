@@ -240,12 +240,23 @@ export async function GET(request: Request) {
 
 // ══════════════════════════════════════════
 // POST - Envoyer un message OU creer une conversation
+// Les INSERT (conversations, conversation_participants, messages) utilisent le client
+// authentifié (createClient = cookies de la requête) pour que RLS voie auth.uid().
 // ══════════════════════════════════════════
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const auth = await requireAuth(supabase, ['broker', 'company', 'admin']);
     if (!auth.allowed) return auth.response!;
+
+    // Vérifier que la session est bien présente côté Supabase (évite erreur RLS opaque)
+    const { data: { user: sessionUser } } = await supabase.auth.getUser();
+    if (!sessionUser || sessionUser.id !== auth.userId) {
+      return NextResponse.json(
+        { error: 'Session expirée ou invalide. Reconnectez-vous.' },
+        { status: 401 }
+      );
+    }
 
     const rateLimit = messageLimiter.check(auth.userId);
     if (!rateLimit.allowed) return rateLimit.response!;
@@ -330,8 +341,19 @@ export async function POST(request: Request) {
         convTitle = `Conversation avec ${recipient.email?.split('@')[0] || 'Utilisateur'}`;
       }
 
-      // Creer la conversation
-      const { data: conversation, error: convError } = await supabase
+      // Création conversation + participants + message via service role pour éviter RLS
+      // (auth déjà vérifié par requireAuth ; la session cookie n'est pas toujours vue par Postgres en Route Handler)
+      let serviceClient: ReturnType<typeof createServiceRoleClient>;
+      try {
+        serviceClient = createServiceRoleClient();
+      } catch (e) {
+        return NextResponse.json(
+          { error: 'Configuration serveur messagerie incomplète (SUPABASE_SERVICE_ROLE_KEY).' },
+          { status: 503 }
+        );
+      }
+
+      const { data: conversation, error: convError } = await serviceClient
         .from('conversations')
         .insert({
           load_id: loadId || null,
@@ -345,8 +367,7 @@ export async function POST(request: Request) {
 
       if (convError) throw convError;
 
-      // Ajouter les 2 participants
-      const { error: partError } = await supabase
+      const { error: partError } = await serviceClient
         .from('conversation_participants')
         .insert([
           { conversation_id: conversation.id, user_id: auth.userId, role: 'member' },
@@ -355,8 +376,7 @@ export async function POST(request: Request) {
 
       if (partError) throw partError;
 
-      // Message systeme de bienvenue
-      await supabase.from('messages').insert({
+      await serviceClient.from('messages').insert({
         conversation_id: conversation.id,
         sender_id: auth.userId,
         content: 'Conversation demarree',
