@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Link } from '@/lib/i18n/routing';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Globe, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, CheckCircle, Calculator, Fuel, FileCheck, Navigation } from 'lucide-react';
 
@@ -36,6 +37,9 @@ export default async function HomePage() {
         {/* Overlay left pour garder le texte lisible */}
         <div className="absolute inset-0 z-[2] bg-gradient-to-r from-primary-700/90 via-primary-700/40 to-transparent pointer-events-none" aria-hidden />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+          <div className="absolute top-6 right-4 sm:right-6 md:right-8 z-20">
+            <Clock />
+          </div>
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
               Une bourse de fret avec tout ce dont vous avez besoin
