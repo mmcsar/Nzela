@@ -2,6 +2,7 @@
 
 import { BOL } from '@/types';
 import jsPDF from 'jspdf';
+import JsBarcode from 'jsbarcode';
 
 // ── Helpers ──
 function safe(val: any): any {
@@ -13,6 +14,24 @@ function safeArr(val: any): any[] {
   if (!val) return [];
   const parsed = typeof val === 'string' ? JSON.parse(val) : val;
   return Array.isArray(parsed) ? parsed : [];
+}
+
+/** Génère une image data URL du code-barres (CODE128) pour le numéro BOL */
+function getBarcodeDataUrl(bolNumber: string): string | null {
+  if (typeof document === 'undefined') return null;
+  try {
+    const canvas = document.createElement('canvas');
+    JsBarcode(canvas, bolNumber.replace(/[^A-Za-z0-9-]/g, '').slice(0, 80) || '0', {
+      format: 'CODE128',
+      width: 1.5,
+      height: 28,
+      displayValue: false,
+      margin: 0,
+    });
+    return canvas.toDataURL('image/png');
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -116,17 +135,50 @@ export function generateBOLPDF(bol: BOL) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.text(`Date: ${new Date(bol.createdAt).toLocaleDateString('fr-FR')}`, margin + halfW + halfW / 2, yR, { align: 'center' });
-  // Barcode placeholder
-  yR += 4;
-  doc.setDrawColor(180);
-  doc.setLineWidth(0.2);
-  doc.rect(margin + halfW + 15, yR, halfW - 30, 8, 'S');
+  // Zone WAYBILL + code-barres (numéro BOL)
+  yR += 3;
   doc.setFontSize(6);
-  doc.setTextColor(150);
-  doc.text('ESPACE CODE-BARRES', margin + halfW + halfW / 2, yR + 5, { align: 'center' });
-  doc.setTextColor(0);
+  doc.setTextColor(80, 80, 80);
+  doc.text('WAYBILL', margin + halfW + halfW / 2, yR, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+  yR += 3;
+  const barcodeW = halfW - 30;
+  const barcodeH = 8;
+  const barcodeX = margin + halfW + 15;
+  const barcodeDataUrl = getBarcodeDataUrl(bolNum);
+  if (barcodeDataUrl) {
+    doc.addImage(barcodeDataUrl, 'PNG', barcodeX, yR, barcodeW, barcodeH);
+  } else {
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.2);
+    doc.rect(barcodeX, yR, barcodeW, barcodeH, 'S');
+    doc.setFontSize(5);
+    doc.setTextColor(150);
+    doc.text('ESPACE CODE-BARRES', margin + halfW + halfW / 2, yR + 5, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+  }
 
   y += blockH1 + 1;
+
+  // ══════════════════════════════════════════
+  // TRAJET — Où se trouve la marchandise (origine → destination)
+  // ══════════════════════════════════════════
+  const originLabel = [origin.city, origin.province].filter(Boolean).join(', ') || origin.address || '—';
+  const destLabel = [destination.city, destination.province].filter(Boolean).join(', ') || destination.address || (consignee.name ? consignee.name : '—');
+  const trajetH = 10;
+  doc.setFillColor(245, 248, 252);
+  doc.rect(margin, y, innerW, trajetH, 'F');
+  drawRect(margin, y, innerW, trajetH);
+  sectionHeader('Localisation marchandise / Trajet', margin, y, innerW, 6);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`${originLabel}  →  ${destLabel}`, margin + innerW / 2, y + 8, { align: 'center' });
+  doc.setFontSize(6);
+  doc.setTextColor(90, 90, 90);
+  doc.text('Trajet prévu (départ → arrivée). Pour le suivi GPS en temps réel : Tableau de bord → Suivi (Tracking).', margin + innerW / 2, y + trajetH - 1, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+  y += trajetH + 1;
 
   // ══════════════════════════════════════════
   // DESTINATAIRE (gauche) | TRANSPORTEUR (droite)
@@ -242,9 +294,11 @@ export function generateBOLPDF(bol: BOL) {
   drawRect(margin, y, innerW, rowH);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
+  const totalWeight = Number(bol.totalWeight ?? 0) || 0;
+  const totalValue = Number(bol.totalValue ?? 0) || 0;
   doc.text('TOTAL GENERAL', margin + 2, y + rowH / 2 + 1);
-  doc.text(`${bol.totalWeight.toLocaleString()} kg`, margin + 98 + 1, y + rowH / 2 + 1);
-  doc.text(`${bol.totalValue.toLocaleString()} CDF`, margin + innerW - 30, y + rowH / 2 + 1);
+  doc.text(`${totalWeight.toLocaleString()} kg`, margin + 98 + 1, y + rowH / 2 + 1);
+  doc.text(`${totalValue.toLocaleString()} CDF`, margin + innerW - 30, y + rowH / 2 + 1);
   y += rowH + 2;
 
   // ══════════════════════════════════════════

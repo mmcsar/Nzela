@@ -33,37 +33,42 @@ export default function BOLDetailPage() {
         // Store BOL number
         setBolNumber(data.bol_number || data.id.slice(0, 8));
         
-        // Map Supabase data to BOL type
+        // Map Supabase data to BOL type (shipper/carrier/consignee en JSONB)
         const load = data.load;
+        const shipperObj = data.shipper && typeof data.shipper === 'object' ? data.shipper : {};
+        const carrierObj = data.carrier && typeof data.carrier === 'object' ? data.carrier : {};
+        const consigneeObj = data.consignee && typeof data.consignee === 'object' ? data.consignee : {};
         const mappedBOL: BOL = {
           id: data.id,
           loadId: data.load_id,
           truckId: data.truck_id || '',
           shipper: {
-            name: data.shipper_name,
-            address: data.shipper_address,
-            phone: data.shipper_phone,
+            name: shipperObj.name ?? data.shipper_name,
+            address: shipperObj.address ?? data.shipper_address,
+            phone: shipperObj.phone ?? data.shipper_phone,
+            city: shipperObj.city,
+            province: shipperObj.province,
           } as any,
-          carrier: data.carrier_name ? {
-            name: data.carrier_name,
-            address: data.carrier_address || '',
-            phone: data.carrier_phone,
-          } as any : {} as any,
-          origin: load?.origin || { address: '', city: '', province: 'haut-katanga' },
-          destination: load?.destination || { address: '', city: '', province: 'haut-katanga' },
+          carrier: {
+            name: carrierObj.name ?? data.carrier_name,
+            address: carrierObj.address ?? data.carrier_address,
+            phone: carrierObj.phone ?? data.carrier_phone,
+            scac: carrierObj.scac,
+          } as any,
+          origin: (data.origin && typeof data.origin === 'object') ? data.origin : (load?.origin || { address: '', city: '', province: 'haut-katanga' }),
+          destination: (data.destination && typeof data.destination === 'object') ? data.destination : (load?.destination || { address: '', city: '', province: 'haut-katanga' }),
           items: Array.isArray(data.items) ? data.items : [],
-          totalWeight: Array.isArray(data.items) 
-            ? data.items.reduce((sum: number, item: any) => sum + (item.weight || 0), 0)
-            : 0,
-          totalValue: Array.isArray(data.items)
-            ? data.items.reduce((sum: number, item: any) => sum + (item.value || 0), 0)
-            : 0,
-          pickupDate: load?.pickup_date ? new Date(load.pickup_date) : new Date(),
-          deliveryDate: load?.delivery_date ? new Date(load.delivery_date) : new Date(),
+          totalWeight: Number(data.total_weight) || (Array.isArray(data.items) ? data.items.reduce((sum: number, item: any) => sum + (item.weight || 0), 0) : 0),
+          totalValue: Number(data.total_value) || (Array.isArray(data.items) ? data.items.reduce((sum: number, item: any) => sum + (item.value || 0), 0) : 0),
+          pickupDate: data.pickup_date ? new Date(data.pickup_date) : (load?.pickup_date ? new Date(load.pickup_date) : new Date()),
+          deliveryDate: data.delivery_date ? new Date(data.delivery_date) : (load?.delivery_date ? new Date(load.delivery_date) : new Date()),
           signature: data.signature || undefined,
           status: data.status,
           createdAt: new Date(data.created_at),
         };
+        (mappedBOL as any).consignee = consigneeObj.name ? consigneeObj : { name: data.consignee_name, address: data.consignee_address, city: data.consignee_city, phone: data.consignee_phone };
+        (mappedBOL as any).bol_number = data.bol_number;
+        (mappedBOL as any).special_instructions = data.special_instructions;
         
         setBOL(mappedBOL);
       } catch (err: any) {

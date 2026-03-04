@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { BOL, BOLItem, Load, Truck } from '@/types';
 import { truckTypeFr } from '@/lib/utils/translate-fr';
+import { downloadBOLPDF } from '@/components/bol/BOLPrint';
 import { Plus, Trash2, Save, X } from 'lucide-react';
 
 const bolSchema = z.object({
@@ -249,6 +250,27 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         .single();
 
       if (bolError) throw bolError;
+
+      // Générer et télécharger le PDF automatiquement à la création
+      const pdfPayload = {
+        id: bol.id,
+        loadId: bol.load_id,
+        truckId: bol.truck_id || '',
+        shipper: typeof bol.shipper === 'object' ? bol.shipper : {},
+        carrier: typeof bol.carrier === 'object' ? bol.carrier : {},
+        consignee: typeof bol.consignee === 'object' ? bol.consignee : {},
+        origin: typeof bol.origin === 'object' ? bol.origin : (load?.origin || {}),
+        destination: typeof bol.destination === 'object' ? bol.destination : (load?.destination || {}),
+        items: Array.isArray(bol.items) ? bol.items : [],
+        totalWeight: Number(bol.total_weight) || totalWeight,
+        totalValue: Number(bol.total_value) || totalValue,
+        pickupDate: bol.pickup_date ? new Date(bol.pickup_date) : new Date(data.pickupDate),
+        deliveryDate: bol.delivery_date ? new Date(bol.delivery_date) : new Date(data.deliveryDate),
+        status: bol.status,
+        createdAt: new Date(bol.created_at),
+        bol_number: bol.bol_number,
+      };
+      downloadBOLPDF(pdfPayload as BOL);
 
       if (onSuccess) {
         onSuccess(bol as BOL);

@@ -14,12 +14,43 @@ interface BOL {
   bol_number: string;
   load_id: string;
   status: 'draft' | 'signed' | 'completed';
-  shipper_name: string;
-  consignee_name: string;
-  total_weight: number;
-  total_value: number;
+  shipper_name?: string;
+  consignee_name?: string;
+  shipper?: Record<string, unknown>;
+  carrier?: Record<string, unknown>;
+  consignee?: Record<string, unknown>;
+  origin?: Record<string, unknown>;
+  destination?: Record<string, unknown>;
+  items?: unknown[];
+  total_weight?: number;
+  total_value?: number;
+  pickup_date?: string;
+  delivery_date?: string;
   created_at: string;
   load?: any;
+}
+
+/** Mappe une ligne BOL (DB) vers le format attendu par generateBOLPDF / downloadBOLPDF */
+function mapBolRowToPdf(bol: BOL) {
+  const load = bol.load;
+  return {
+    id: bol.id,
+    loadId: bol.load_id,
+    truckId: (bol as any).truck_id || '',
+    shipper: bol.shipper && typeof bol.shipper === 'object' ? bol.shipper : { name: bol.shipper_name },
+    carrier: bol.carrier && typeof bol.carrier === 'object' ? bol.carrier : {},
+    consignee: bol.consignee && typeof bol.consignee === 'object' ? bol.consignee : { name: bol.consignee_name },
+    origin: bol.origin && typeof bol.origin === 'object' ? bol.origin : load?.origin || {},
+    destination: bol.destination && typeof bol.destination === 'object' ? bol.destination : load?.destination || {},
+    items: Array.isArray(bol.items) ? bol.items : load?.items || [],
+    totalWeight: Number(bol.total_weight) || 0,
+    totalValue: Number(bol.total_value) || 0,
+    pickupDate: bol.pickup_date ? new Date(bol.pickup_date) : (load?.pickup_date ? new Date(load.pickup_date) : new Date()),
+    deliveryDate: bol.delivery_date ? new Date(bol.delivery_date) : (load?.delivery_date ? new Date(load.delivery_date) : new Date()),
+    status: bol.status,
+    createdAt: new Date(bol.created_at),
+    bol_number: bol.bol_number,
+  };
 }
 
 export default function BOLListPage() {
@@ -280,24 +311,7 @@ export default function BOLListPage() {
                           className="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
                           title="Telecharger PDF"
                           onClick={() => {
-                            const bolData = {
-                              id: bol.id,
-                              loadId: bol.load_id,
-                              truckId: '',
-                              shipper: { name: bol.shipper_name },
-                              carrier: {},
-                              consignee: { name: bol.consignee_name },
-                              origin: bol.load?.origin || {},
-                              destination: bol.load?.destination || {},
-                              items: bol.load?.items || [],
-                              totalWeight: bol.total_weight || 0,
-                              totalValue: bol.total_value || 0,
-                              pickupDate: bol.load?.pickup_date || new Date(),
-                              deliveryDate: bol.load?.delivery_date || new Date(),
-                              status: bol.status,
-                              createdAt: new Date(bol.created_at),
-                              bolNumber: bol.bol_number,
-                            };
+                            const bolData = mapBolRowToPdf(bol);
                             downloadBOLPDF(bolData as any);
                           }}
                         >
@@ -307,24 +321,7 @@ export default function BOLListPage() {
                           className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors"
                           title="Imprimer"
                           onClick={() => {
-                            const bolData = {
-                              id: bol.id,
-                              loadId: bol.load_id,
-                              truckId: '',
-                              shipper: { name: bol.shipper_name },
-                              carrier: {},
-                              consignee: { name: bol.consignee_name },
-                              origin: bol.load?.origin || {},
-                              destination: bol.load?.destination || {},
-                              items: bol.load?.items || [],
-                              totalWeight: bol.total_weight || 0,
-                              totalValue: bol.total_value || 0,
-                              pickupDate: bol.load?.pickup_date || new Date(),
-                              deliveryDate: bol.load?.delivery_date || new Date(),
-                              status: bol.status,
-                              createdAt: new Date(bol.created_at),
-                              bolNumber: bol.bol_number,
-                            };
+                            const bolData = mapBolRowToPdf(bol);
                             const doc = generateBOLPDF(bolData as any);
                             const pdfBlob = doc.output('blob');
                             const url = URL.createObjectURL(pdfBlob);
