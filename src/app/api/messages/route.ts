@@ -456,12 +456,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Vous n\'etes pas participant de cette conversation' }, { status: 403 });
     }
 
+    const contentStr = typeof content === 'string' ? content.trim() : String(content ?? '').trim();
     const { data: message, error: msgError } = await serviceForMessage
       .from('messages')
       .insert({
         conversation_id: conversationId,
         sender_id: auth.userId,
-        content: content.trim(),
+        content: contentStr,
         type: msgType || 'text',
         attachment_url: attachmentUrl || null,
         is_system: false,
