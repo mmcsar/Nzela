@@ -114,11 +114,10 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
       const isAdmin = userData?.role === 'admin';
       const isBroker = !!userData?.broker_id;
 
-      // ── Charger les loads ──
+      // ── Charger les loads (tous les statuts pour afficher tous les chargements du courtier) ──
       let loadsQuery = supabase
         .from('loads')
         .select('*')
-        .in('status', ['available', 'booked'])
         .order('created_at', { ascending: false })
         .limit(100);
 
