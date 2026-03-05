@@ -724,7 +724,7 @@ export default function AdminSettingsPage() {
     companyName: 'Maintenance de Matériel au Congo (M M C SARL)',
     description: 'Plateforme de transport et logistique pour la RDC',
     supportEmail: 'support@nzela.cd',
-    supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 995 547 081',
+    supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584',
     website: 'https://nzela.cd',
     address: '04, Avenue Monga, Quartier Craa, Lubumbashi, RDC — RCCM LSHI 17-B-6981',
   });

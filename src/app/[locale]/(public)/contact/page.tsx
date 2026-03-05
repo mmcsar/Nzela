@@ -7,7 +7,7 @@ import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toErrorMessage } from '@/lib/api/error';
 
-const supportPhone = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 995 547 081';
+const supportPhone = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584';
 const contactInfo = [
   { icon: MapPin, label: 'Adresse', value: '04, Avenue Monga, Quartier Craa, Lubumbashi, RDC — RCCM LSHI 17-B-6981' },
   { icon: Phone, label: 'Téléphone', value: supportPhone },
