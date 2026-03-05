@@ -127,14 +127,16 @@ export function generateBOLPDF(bol: BOL) {
   // Header droite
   sectionHeader('Numero du Bordereau', margin + halfW, y, halfW);
   let yR = y + 10;
-  const bolNum = (bol as any).bolNumber || (bol as any).bol_number || `BOL-${bol.id.substring(0, 8).toUpperCase()}`;
+  const bolId = (bol?.id && typeof bol.id === 'string') ? bol.id : '';
+  const bolNum = (bol as any).bolNumber || (bol as any).bol_number || `BOL-${bolId.substring(0, 8).toUpperCase() || 'N'}`;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text(bolNum, margin + halfW + halfW / 2, yR + 2, { align: 'center' });
   yR += 10;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  doc.text(`Date: ${new Date(bol.createdAt).toLocaleDateString('fr-FR')}`, margin + halfW + halfW / 2, yR, { align: 'center' });
+  const createdDate = bol?.createdAt ? (() => { try { return new Date(bol.createdAt).toLocaleDateString('fr-FR'); } catch { return '—'; } })() : '—';
+  doc.text(`Date: ${createdDate}`, margin + halfW + halfW / 2, yR, { align: 'center' });
   // Zone WAYBILL + code-barres (numéro BOL)
   yR += 3;
   doc.setFontSize(6);
@@ -280,7 +282,7 @@ export function generateBOLPDF(bol: BOL) {
     ];
 
     vals.forEach((val, i) => {
-      doc.text(val.substring(0, 25), xCol + 1, y + rowH / 2 + 1);
+      doc.text(String(val ?? '').substring(0, 25), xCol + 1, y + rowH / 2 + 1);
       doc.line(xCol, y, xCol, y + rowH);
       xCol += colWidths[i];
     });
@@ -389,7 +391,29 @@ export function generateBOLPDF(bol: BOL) {
 }
 
 export function downloadBOLPDF(bol: BOL) {
-  const doc = generateBOLPDF(bol);
-  const bolNum = (bol as any).bolNumber || (bol as any).bol_number || `BOL-${bol.id.substring(0, 8).toUpperCase()}`;
-  doc.save(`${bolNum}.pdf`);
+  try {
+    const doc = generateBOLPDF(bol);
+    const bolNum = (bol as any).bolNumber || (bol as any).bol_number || `BOL-${(bol?.id && typeof bol.id === 'string' ? bol.id : '').substring(0, 8).toUpperCase() || 'N'}`;
+    const safeName = `${String(bolNum).replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = safeName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Erreur téléchargement BOL PDF:', err);
+    try {
+      const doc = generateBOLPDF(bol);
+      doc.save('BOL.pdf');
+    } catch (e2) {
+      console.error('Fallback BOL PDF failed:', e2);
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert('Impossible de générer le PDF. Vérifiez la console (F12) pour plus de détails.');
+      }
+    }
+  }
 }
