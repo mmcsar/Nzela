@@ -47,11 +47,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'loadId ou sessionId requis' }, { status: 400 });
     }
 
+    let resolvedLoadId = loadId;
+    if (!resolvedLoadId && sessionId) {
+      const { data: sessionRow } = await supabase
+        .from('tracking_sessions')
+        .select('load_id')
+        .eq('id', sessionId)
+        .single();
+      if (sessionRow?.load_id) resolvedLoadId = sessionRow.load_id;
+    }
+
     // ── Recuperer le load ──
     const { data: load } = await supabase
       .from('loads')
       .select('*')
-      .eq('id', loadId!)
+      .eq('id', resolvedLoadId!)
       .single();
 
     if (!load) {
@@ -70,7 +80,7 @@ export async function GET(request: Request) {
     const { data: sessions } = await supabase
       .from('tracking_sessions')
       .select('*')
-      .eq('load_id', loadId!)
+      .eq('load_id', load.id)
       .order('created_at', { ascending: false })
       .limit(1);
 

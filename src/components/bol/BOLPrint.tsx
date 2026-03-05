@@ -21,7 +21,10 @@ function getBarcodeDataUrl(bolNumber: string): string | null {
   if (typeof document === 'undefined') return null;
   try {
     const canvas = document.createElement('canvas');
-    JsBarcode(canvas, bolNumber.replace(/[^A-Za-z0-9-]/g, '').slice(0, 80) || '0', {
+    const code = String(bolNumber || '')
+      .replace(/[^A-Za-z0-9-]/g, '')
+      .slice(0, 30) || '0';
+    JsBarcode(canvas, code, {
       format: 'CODE128',
       width: 1.5,
       height: 28,
@@ -147,10 +150,17 @@ export function generateBOLPDF(bol: BOL) {
   const barcodeW = halfW - 30;
   const barcodeH = 8;
   const barcodeX = margin + halfW + 15;
-  const barcodeDataUrl = getBarcodeDataUrl(bolNum);
-  if (barcodeDataUrl) {
-    doc.addImage(barcodeDataUrl, 'PNG', barcodeX, yR, barcodeW, barcodeH);
-  } else {
+  let barcodeDrawn = false;
+  try {
+    const barcodeDataUrl = getBarcodeDataUrl(bolNum);
+    if (barcodeDataUrl && barcodeDataUrl.startsWith('data:image')) {
+      doc.addImage(barcodeDataUrl, 'PNG', barcodeX, yR, barcodeW, barcodeH);
+      barcodeDrawn = true;
+    }
+  } catch {
+    barcodeDrawn = false;
+  }
+  if (!barcodeDrawn) {
     doc.setDrawColor(180);
     doc.setLineWidth(0.2);
     doc.rect(barcodeX, yR, barcodeW, barcodeH, 'S');
@@ -391,28 +401,40 @@ export function generateBOLPDF(bol: BOL) {
 }
 
 export function downloadBOLPDF(bol: BOL) {
+  if (typeof window === 'undefined') return;
+  let doc: ReturnType<typeof jsPDF.prototype.constructor> | null = null;
   try {
-    const doc = generateBOLPDF(bol);
-    const bolNum = (bol as any).bolNumber || (bol as any).bol_number || `BOL-${(bol?.id && typeof bol.id === 'string' ? bol.id : '').substring(0, 8).toUpperCase() || 'N'}`;
-    const safeName = `${String(bolNum).replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
+    doc = generateBOLPDF(bol);
+  } catch (err) {
+    console.error('Erreur génération BOL PDF:', err);
+    if (window.alert) {
+      window.alert(`Impossible de générer le PDF: ${err instanceof Error ? err.message : 'erreur inconnue'}`);
+    }
+    return;
+  }
+  const bolNum = (bol as any).bolNumber || (bol as any).bol_number || `BOL-${(bol?.id && typeof bol.id === 'string' ? bol.id : '').substring(0, 8).toUpperCase() || 'N'}`;
+  const safeName = `${String(bolNum).replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
+  try {
     const blob = doc.output('blob');
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = safeName;
+    a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   } catch (err) {
     console.error('Erreur téléchargement BOL PDF:', err);
     try {
-      const doc = generateBOLPDF(bol);
-      doc.save('BOL.pdf');
+      doc.save(safeName);
     } catch (e2) {
-      console.error('Fallback BOL PDF failed:', e2);
-      if (typeof window !== 'undefined' && window.alert) {
-        window.alert('Impossible de générer le PDF. Vérifiez la console (F12) pour plus de détails.');
+      console.error('Fallback doc.save failed:', e2);
+      if (window.alert) {
+        window.alert('Le téléchargement a échoué. Essayez avec un autre navigateur ou vérifiez les autorisations.');
       }
     }
   }
