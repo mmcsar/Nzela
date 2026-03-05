@@ -106,11 +106,12 @@ export default async function BrokerDashboardPage() {
               Voir Load Board
             </Button>
           </Link>
-          <Link href="/dashboard/broker/bol/create">
-            <Button variant="outline" className="w-full" size="lg">
-              <FileText className="w-5 h-5 mr-2" />
-              Créer un BOL
-            </Button>
+          <Link
+            href="/dashboard/broker/bol/create"
+            className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 font-medium rounded-lg border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          >
+            <FileText className="w-5 h-5" />
+            Créer un BOL
           </Link>
         </div>
       </div>

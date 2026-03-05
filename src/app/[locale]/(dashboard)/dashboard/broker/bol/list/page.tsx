@@ -190,11 +190,12 @@ export default function BOLListPage() {
             <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Actualiser
           </Button>
-          <Link href="/dashboard/broker/bol/create">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Creer un BOL
-            </Button>
+          <Link
+            href="/dashboard/broker/bol/create"
+            className="inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Creer un BOL
           </Link>
         </div>
       </div>

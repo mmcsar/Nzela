@@ -72,11 +72,12 @@ export function BOLList() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Mes Bordereaux de Chargement</h1>
-        <Link href="/dashboard/broker/bol/create">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Créer un BOL
-          </Button>
+        <Link
+          href="/dashboard/broker/bol/create"
+          className="inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Créer un BOL
         </Link>
       </div>
 
@@ -87,11 +88,12 @@ export function BOLList() {
           <p className="text-gray-600 mb-6">
             Créez votre premier bordereau de chargement pour suivre vos expéditions
           </p>
-          <Link href="/dashboard/broker/bol/create">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Créer un BOL
-            </Button>
+          <Link
+            href="/dashboard/broker/bol/create"
+            className="inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Créer un BOL
           </Link>
         </div>
       ) : (
