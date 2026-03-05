@@ -402,7 +402,7 @@ export function generateBOLPDF(bol: BOL) {
 
 export function downloadBOLPDF(bol: BOL) {
   if (typeof window === 'undefined') return;
-  let doc: ReturnType<typeof jsPDF.prototype.constructor> | null = null;
+  let doc: ReturnType<typeof generateBOLPDF> | null = null;
   try {
     doc = generateBOLPDF(bol);
   } catch (err) {
