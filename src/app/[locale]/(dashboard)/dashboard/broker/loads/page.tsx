@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
-import { Plus, Eye, RefreshCw, Search, Package, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Eye, RefreshCw, Search, Package, ArrowUpDown, ArrowUp, ArrowDown, FileText } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { useRealtimeLoads } from '@/hooks/useRealtimeLoads';
 
@@ -334,13 +334,22 @@ export default function LoadsPage() {
                         {load.pickup_date ? formatDate(load.pickup_date) : 'N/A'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
-                          title="Voir details"
-                          onClick={() => router.push(`/dashboard/loads/${load.id}`)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            className="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                            title="Creer un BOL pour ce chargement"
+                            onClick={() => router.push(`/dashboard/broker/bol/create?loadId=${load.id}`)}
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Voir details"
+                            onClick={() => router.push(`/dashboard/loads/${load.id}`)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

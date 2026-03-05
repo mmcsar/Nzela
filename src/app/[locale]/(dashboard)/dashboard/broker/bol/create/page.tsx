@@ -3,10 +3,14 @@
 import { BOLForm } from '@/components/bol/BOLForm';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 
 export default function CreateBOLPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const loadId = searchParams.get('loadId') || undefined;
+  const truckId = searchParams.get('truckId') || undefined;
 
   return (
     <div className="space-y-6">
@@ -23,7 +27,7 @@ export default function CreateBOLPage() {
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <BOLForm />
+        <BOLForm loadId={loadId} truckId={truckId} />
       </div>
     </div>
   );
