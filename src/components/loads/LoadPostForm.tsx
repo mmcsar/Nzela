@@ -180,6 +180,11 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
   };
 
   const onSubmit = async (data: LoadFormData) => {
+    const contactPhone = broker?.phone || (isEditingBroker ? brokerEdit.phone : '');
+    if (broker && !contactPhone?.trim()) {
+      setError('Veuillez renseigner votre numéro de téléphone dans la section « Détails du courtier » (cliquez sur Modifier puis Enregistrer) pour que les clients puissent vous contacter.');
+      return;
+    }
     setIsLoading(true);
     setError('');
 
@@ -258,7 +263,7 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                 <Building2 className="w-5 h-5 text-primary-600" />
                 Détails du courtier
               </h2>
-              <p className="text-sm text-gray-600 mt-1">Ces informations seront affichées aux transporteurs pour les mises en contact.</p>
+              <p className="text-sm text-gray-600 mt-1">Ces informations (dont votre numéro de téléphone) seront affichées aux transporteurs pour vous contacter.</p>
             </div>
             {!isEditingBroker ? (
               <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingBroker(true)} className="gap-1.5">
@@ -305,9 +310,9 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone (visible par les clients)</label>
                   <input
-                    type="text"
+                    type="tel"
                     value={brokerEdit.phone}
                     onChange={(e) => setBrokerEdit((p) => ({ ...p, phone: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -348,7 +353,7 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                   </p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Téléphone</span>
+                  <span className="text-sm font-medium text-gray-500">Téléphone (visible par les clients)</span>
                   <p className="font-medium">{broker.phone || '—'}</p>
                 </div>
                 <div>

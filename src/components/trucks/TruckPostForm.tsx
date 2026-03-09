@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,14 @@ import { Button } from '@/components/ui/Button';
 import { Truck } from '@/types';
 import { toErrorMessage } from '@/lib/api/error';
 import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
+import { Building2, Pencil, Check, X } from 'lucide-react';
+
+interface CompanyInfo {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+}
 
 const truckSchema = z.object({
   type: z.string().min(1, 'Le type de camion est requis'),
@@ -48,6 +56,25 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [company, setCompany] = useState<CompanyInfo | null>(null);
+  const [companyEdit, setCompanyEdit] = useState({ phone: '', email: '' });
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
+  const [savingCompany, setSavingCompany] = useState(false);
+  const [companyEditError, setCompanyEditError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/companies', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { companies?: CompanyInfo[] }) => {
+        if (cancelled || !data?.companies?.length) return;
+        const c = data.companies[0];
+        setCompany(c);
+        setCompanyEdit({ phone: c.phone ?? '', email: c.email ?? '' });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const {
     register,
@@ -85,7 +112,41 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
     setValue('features', newFeatures);
   };
 
+  const handleSaveCompany = async () => {
+    if (!company) return;
+    setCompanyEditError('');
+    setSavingCompany(true);
+    try {
+      const res = await fetch(`/api/companies/${company.id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: companyEdit.phone || undefined,
+          email: companyEdit.email || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCompanyEditError(data.error || 'Erreur lors de l\'enregistrement');
+        return;
+      }
+      if (data.company) {
+        setCompany({ ...company, phone: data.company.phone ?? '', email: data.company.email ?? '' });
+        setCompanyEdit({ phone: data.company.phone ?? '', email: data.company.email ?? '' });
+      }
+      setIsEditingCompany(false);
+    } finally {
+      setSavingCompany(false);
+    }
+  };
+
   const onSubmit = async (data: TruckFormData) => {
+    const contactPhone = company?.phone || (isEditingCompany ? companyEdit.phone : '');
+    if (company && !contactPhone?.trim()) {
+      setError('Veuillez renseigner le numéro de téléphone de votre entreprise dans la section « Coordonnées de contact » pour que les courtiers puissent vous contacter.');
+      return;
+    }
     setIsLoading(true);
     setError('');
 
@@ -126,6 +187,81 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error}
+        </div>
+      )}
+
+      {company && (
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-orange-600" />
+                Coordonnées de contact
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">Votre numéro et email seront affichés aux courtiers pour vous contacter.</p>
+            </div>
+            {!isEditingCompany ? (
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingCompany(true)} className="gap-1.5">
+                <Pencil className="w-4 h-4" />
+                Modifier
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingCompany(false)} className="gap-1.5" disabled={savingCompany}>
+                  <X className="w-4 h-4" />
+                  Annuler
+                </Button>
+                <Button type="button" size="sm" onClick={handleSaveCompany} isLoading={savingCompany} className="gap-1.5">
+                  <Check className="w-4 h-4" />
+                  Enregistrer
+                </Button>
+              </div>
+            )}
+          </div>
+          {companyEditError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{companyEditError}</div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <span className="text-sm font-medium text-gray-500">Entreprise</span>
+              <p className="font-medium">{company.name || '—'}</p>
+            </div>
+            {isEditingCompany ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone (visible par les clients)</label>
+                  <input
+                    type="tel"
+                    value={companyEdit.phone}
+                    onChange={(e) => setCompanyEdit((p) => ({ ...p, phone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="+243 ..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={companyEdit.email}
+                    onChange={(e) => setCompanyEdit((p) => ({ ...p, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="email@exemple.com"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Téléphone (visible par les clients)</span>
+                  <p className="font-medium">{company.phone || '—'}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Email</span>
+                  <p className="font-medium">{company.email || '—'}</p>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 
