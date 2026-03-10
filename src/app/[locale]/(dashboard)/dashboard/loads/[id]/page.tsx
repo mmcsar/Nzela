@@ -12,6 +12,7 @@ import { DocumentManager } from '@/components/documents/DocumentManager';
 import { ChatPanel } from '@/components/messaging/ChatPanel';
 import { ReviewForm } from '@/components/ratings/ReviewForm';
 import { RatingSummary } from '@/components/ratings/RatingSummary';
+import { LoadStatusTimeline } from '@/components/loads/LoadStatusTimeline';
 import {
   ArrowLeft, MapPin, Package, Truck, DollarSign,
   Calendar, Weight, Route, FileText, MessageSquare,
@@ -159,6 +160,13 @@ export default function LoadDetailPage() {
               <div className="w-3 h-3 bg-red-500 rounded-full" />
             </div>
           </div>
+
+          <LoadStatusTimeline
+            status={load.status}
+            createdAt={load.created_at}
+            updatedAt={load.updated_at}
+            className="mb-4"
+          />
 
           {/* Détails rapides */}
           <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
