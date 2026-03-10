@@ -140,24 +140,24 @@ export default function LoadDetailPage() {
             )}
           </div>
 
-          {/* Route */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex items-center gap-2 flex-1">
-              <div className="w-3 h-3 bg-blue-500 rounded-full" />
-              <div>
-                <div className="text-sm font-medium text-gray-900">{origin.city}</div>
-                <div className="text-xs text-gray-500">{origin.province}</div>
+          {/* Route — origine bleu, destination vert, responsive + animation */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-500/30 animate-pulse flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-blue-700 truncate">{origin.city}</div>
+                <div className="text-xs text-gray-500 truncate">{origin.province}</div>
               </div>
             </div>
-            <div className="flex-shrink-0 px-3">
-              <Route className="w-5 h-5 text-gray-300" />
+            <div className="flex-shrink-0 px-2 sm:px-3 transition-transform hover:scale-110">
+              <Route className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             </div>
-            <div className="flex items-center gap-2 flex-1 justify-end text-right">
-              <div>
-                <div className="text-sm font-medium text-gray-900">{dest.city}</div>
-                <div className="text-xs text-gray-500">{dest.province}</div>
+            <div className="flex items-center gap-2 flex-1 min-w-0 justify-end sm:justify-end text-right">
+              <div className="min-w-0 flex-1 sm:flex-initial text-right">
+                <div className="text-sm font-medium text-emerald-700 truncate">{dest.city}</div>
+                <div className="text-xs text-gray-500 truncate">{dest.province}</div>
               </div>
-              <div className="w-3 h-3 bg-red-500 rounded-full" />
+              <div className="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30 animate-pulse flex-shrink-0" />
             </div>
           </div>
 
