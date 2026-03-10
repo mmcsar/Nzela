@@ -774,7 +774,11 @@ export default function TruckBoardPage() {
                         <Phone className="w-3.5 h-3.5" /> Appeler
                       </a>
                     )}
-                    <button className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg text-xs font-semibold hover:bg-primary-100">
+                    <button
+                      type="button"
+                      onClick={() => { router.push('/dashboard/messages'); setPreviewTruck(null); }}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg text-xs font-semibold hover:bg-primary-100"
+                    >
                       <MessageSquare className="w-3.5 h-3.5" /> Message
                     </button>
                   </div>

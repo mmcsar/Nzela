@@ -874,6 +874,7 @@ export default function LoadBoardPage() {
                               </a>
                             )}
                             <button
+                              type="button"
                               onClick={(e) => { e.stopPropagation(); setPreviewLoad(load); }}
                               className="p-1.5 text-gray-300 hover:text-primary-600 hover:bg-primary-50 transition-colors rounded-lg"
                               title="Message"
@@ -1022,6 +1023,7 @@ export default function LoadBoardPage() {
                             </a>
                           )}
                           <button
+                            type="button"
                             onClick={(e) => { e.stopPropagation(); setPreviewLoad(load); }}
                             className="p-1.5 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors"
                             title="Message"
@@ -1105,7 +1107,7 @@ function PreviewDrawer({ load, isFav, onToggleFav, onClose, onViewFull, onMessag
       <div className="fixed inset-0 bg-black/20 z-40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-right">
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-right" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="sticky top-0 bg-white border-b px-5 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
@@ -1254,7 +1256,8 @@ function PreviewDrawer({ load, isFav, onToggleFav, onClose, onViewFull, onMessag
                   </a>
                 )}
                 <button
-                  onClick={onMessage}
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMessage(); }}
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg text-xs font-semibold hover:bg-primary-100 transition-colors"
                 >
                   <MessageSquare className="w-3.5 h-3.5" /> Message
