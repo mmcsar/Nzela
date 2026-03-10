@@ -32,19 +32,21 @@ export default async function CompanyDashboardPage() {
   };
 
   if (userData?.company_id) {
-    // Parallel fetch: company + trucks at the same time
-    const [companyRes, trucksRes] = await Promise.all([
-      supabase.from('companies').select('*').eq('id', userData.company_id).single(),
-      supabase.from('trucks').select('*').eq('company_id', userData.company_id).order('created_at', { ascending: false }).limit(5),
+    const companyId = userData.company_id;
+    const [companyRes, trucksAllRes, trucksRecentRes] = await Promise.all([
+      supabase.from('companies').select('*').eq('id', companyId).single(),
+      supabase.from('trucks').select('id, status').eq('company_id', companyId),
+      supabase.from('trucks').select('*').eq('company_id', companyId).order('created_at', { ascending: false }).limit(5),
     ]);
 
     company = companyRes.data;
-    trucks = trucksRes.data || [];
+    const allTrucks = trucksAllRes.data || [];
+    trucks = trucksRecentRes.data || [];
 
     stats = {
-      totalTrucks: trucks.length,
-      availableTrucks: trucks.filter((t: any) => t.status === 'available').length,
-      bookedTrucks: trucks.filter((t: any) => t.status === 'booked').length,
+      totalTrucks: allTrucks.length,
+      availableTrucks: allTrucks.filter((t: any) => t.status === 'available').length,
+      bookedTrucks: allTrucks.filter((t: any) => t.status === 'booked').length,
     };
   }
 

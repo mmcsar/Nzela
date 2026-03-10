@@ -28,22 +28,32 @@ export default async function BrokerDashboardPage() {
     totalLoads: 0,
     availableLoads: 0,
     bookedLoads: 0,
+    totalBols: 0,
   };
 
   if (userData?.broker_id) {
-    // Parallel fetch: broker + loads at the same time
+    const brokerId = userData.broker_id;
     const [brokerRes, loadsRes] = await Promise.all([
-      supabase.from('brokers').select('*').eq('id', userData.broker_id).single(),
-      supabase.from('loads').select('*').eq('broker_id', userData.broker_id).order('created_at', { ascending: false }).limit(5),
+      supabase.from('brokers').select('*').eq('id', brokerId).single(),
+      supabase.from('loads').select('id, status, created_at, trailer_type, distance, price').eq('broker_id', brokerId).order('created_at', { ascending: false }),
     ]);
 
     broker = brokerRes.data;
-    loads = loadsRes.data || [];
+    const allLoads = loadsRes.data || [];
+    loads = allLoads.slice(0, 5);
+
+    let bolCount = 0;
+    if (allLoads.length > 0) {
+      const loadIds = allLoads.map((l: any) => l.id);
+      const { count } = await supabase.from('bols').select('id', { count: 'exact', head: true }).in('load_id', loadIds);
+      bolCount = count ?? 0;
+    }
 
     stats = {
-      totalLoads: loads.length,
-      availableLoads: loads.filter((l: any) => l.status === 'available').length,
-      bookedLoads: loads.filter((l: any) => l.status === 'booked').length,
+      totalLoads: allLoads.length,
+      availableLoads: allLoads.filter((l: any) => l.status === 'available').length,
+      bookedLoads: allLoads.filter((l: any) => l.status === 'booked').length,
+      totalBols: bolCount,
     };
   }
 
@@ -60,7 +70,7 @@ export default async function BrokerDashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -86,6 +96,15 @@ export default async function BrokerDashboardPage() {
               <p className="text-3xl font-bold text-orange-600">{stats.bookedLoads}</p>
             </div>
             <Package className="w-12 h-12 text-orange-400" />
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Bordereaux (BOL)</p>
+              <p className="text-3xl font-bold text-blue-600">{stats.totalBols}</p>
+            </div>
+            <FileText className="w-12 h-12 text-blue-400" />
           </div>
         </div>
       </div>

@@ -274,6 +274,33 @@ export default function TruckBoardPage() {
   const clearFilters = () => setFilters({ city: '', type: '', status: 'available', search: '', minCapacity: '', maxCapacity: '', minPrice: '', maxPrice: '' });
   const activeFilterCount = Object.entries(filters).filter(([k, v]) => v && v !== 'available' && k !== 'status').length + (filters.status !== 'available' ? 1 : 0);
 
+  // Export CSV (liste filtrée)
+  const exportCSV = () => {
+    const headers = ['ID', 'Date dispo', 'Type', 'Ville', 'Province', 'Destination', 'Capacite (kg)', 'Prix/km', 'Statut', 'Entreprise', 'Telephone'];
+    const rows = sortedTrucks.map(t => [
+      t.id.substring(0, 8),
+      formatDate(t.available_date),
+      t.type,
+      t.location_city,
+      t.location_province,
+      t.dest_city || '',
+      t.capacity,
+      t.price_per_km,
+      t.status,
+      t.company_name,
+      t.company_phone || '',
+    ]);
+    const escape = (v: string | number) => (typeof v === 'string' && (v.includes(',') || v.includes('"') || v.includes('\n')) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+    const csv = [headers.join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `truck-board-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // KPIs
   const stats = {
     total: filteredTrucks.length,
@@ -347,6 +374,9 @@ export default function TruckBoardPage() {
             <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400'}`}><LayoutList className="w-4 h-4" /></button>
             <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400'}`}><LayoutGrid className="w-4 h-4" /></button>
           </div>
+          <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-50 transition-colors">
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Export</span>
+          </button>
           <button onClick={fetchTrucks} disabled={isLoading} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-50">
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
