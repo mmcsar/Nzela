@@ -433,7 +433,7 @@ export default function LoadBoardPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-gradient-to-b from-slate-50/70 to-gray-50/50 min-h-screen py-1">
       {/* ══════════════════════ HEADER ══════════════════════ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
@@ -649,7 +649,7 @@ export default function LoadBoardPage() {
       )}
 
       {/* ══════════════════════ COUNTER ══════════════════════ */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-gray-500 px-0.5">
         <span>
           <strong className="text-gray-800">{sortedLoads.length}</strong> chargement{sortedLoads.length !== 1 ? 's' : ''}
           {activeFilterCount > 0 && ` (${activeFilterCount} filtre${activeFilterCount > 1 ? 's' : ''})`}
@@ -668,10 +668,10 @@ export default function LoadBoardPage() {
 
       {/* ══════════════════════ TABLE VIEW ══════════════════════ */}
       {viewMode === 'table' && (
-        <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-white/95 border border-gray-200/90 rounded-xl overflow-hidden shadow-sm backdrop-blur-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-gray-50/80 border-b">
+              <thead className="bg-slate-50 border-b border-gray-100">
                 <tr>
                   <th className="w-8 px-2"></th>
                   <SortHeader col="pickup_date" label="Ramassage" />
@@ -686,7 +686,7 @@ export default function LoadBoardPage() {
                   <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Contact</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-100">
                 {isLoading ? (
                   <tr>
                     <td colSpan={11} className="px-6 py-16 text-center">
@@ -731,7 +731,9 @@ export default function LoadBoardPage() {
                     return (
                       <tr
                         key={load.id}
-                        className={`hover:bg-blue-50/40 cursor-pointer transition-all group ${isNewLoad ? 'bg-amber-50/20' : ''} ${isFav ? 'border-l-2 border-l-amber-400' : ''}`}
+                        className={`cursor-pointer transition-all group ${isNewLoad ? 'bg-amber-50/25' : ''} ${isFav ? 'border-l-2 border-l-amber-400' : ''} ${
+                          paginatedLoads.indexOf(load) % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
+                        } hover:bg-blue-50/50`}
                         onClick={() => setPreviewLoad(load)}
                       >
                         {/* Favori */}
@@ -929,7 +931,7 @@ export default function LoadBoardPage() {
                   <div
                     key={load.id}
                     onClick={() => setPreviewLoad(load)}
-                    className={`bg-white border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 relative ${
+                    className={`bg-white/95 border border-gray-200/90 rounded-xl p-4 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 hover:bg-white relative backdrop-blur-sm ${
                       isNewLoad ? 'ring-2 ring-amber-200/50' : ''
                     } ${isFav ? 'border-l-4 border-l-amber-400' : ''}`}
                   >
@@ -970,15 +972,15 @@ export default function LoadBoardPage() {
 
                     {/* Details grid */}
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="bg-gray-50 rounded-lg px-2.5 py-1.5">
+                      <div className="bg-slate-50/80 rounded-lg px-2.5 py-1.5 border border-gray-100/80">
                         <div className="text-[9px] text-gray-500 uppercase font-semibold">Poids</div>
                         <div className="text-xs font-bold text-gray-800">{formatWeight(load.weight)}</div>
                       </div>
-                      <div className="bg-gray-50 rounded-lg px-2.5 py-1.5">
+                      <div className="bg-slate-50/80 rounded-lg px-2.5 py-1.5 border border-gray-100/80">
                         <div className="text-[9px] text-gray-500 uppercase font-semibold">Distance</div>
                         <div className="text-xs font-bold text-gray-800">{load.distance > 0 ? `${load.distance} km` : '—'}</div>
                       </div>
-                      <div className="bg-gray-50 rounded-lg px-2.5 py-1.5">
+                      <div className="bg-slate-50/80 rounded-lg px-2.5 py-1.5 border border-gray-100/80">
                         <div className="text-[9px] text-gray-500 uppercase font-semibold">Prix</div>
                         <div className="text-xs font-bold text-gray-900">{formatPrice(load.price)}</div>
                       </div>
@@ -994,7 +996,7 @@ export default function LoadBoardPage() {
 
                     {/* Editeur + Contact */}
                     {load.broker_name && (
-                      <div className="flex items-center justify-between py-2 border-t border-gray-100">
+                      <div className="flex items-center justify-between py-2 border-t border-gray-100/90">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-[10px] font-bold text-blue-700">{load.broker_name.charAt(0).toUpperCase()}</span>
