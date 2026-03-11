@@ -309,14 +309,15 @@ export default function BOLListPage() {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
-                          title="Telecharger PDF"
+                          className="flex items-center gap-1.5 p-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                          title="Télécharger PDF"
                           onClick={() => {
                             const bolData = mapBolRowToPdf(bol);
                             downloadBOLPDF(bolData as any);
                           }}
                         >
                           <Download className="w-4 h-4" />
+                          <span className="hidden sm:inline text-xs font-medium">Télécharger PDF</span>
                         </button>
                         <button
                           className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors"

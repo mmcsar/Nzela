@@ -134,7 +134,7 @@ export default function BOLDetailPage() {
             }}
           >
             <Download className="w-4 h-4 mr-2" />
-            Telecharger PDF
+            Télécharger PDF
           </Button>
           <Button
             variant="outline"

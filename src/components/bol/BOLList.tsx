@@ -5,7 +5,8 @@ import { BOL } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { FileText, Eye, Plus } from 'lucide-react';
+import { FileText, Eye, Plus, Download } from 'lucide-react';
+import { downloadBOLPDF } from './BOLPrint';
 
 export function BOLList() {
   const [bols, setBols] = useState<BOL[]>([]);
@@ -158,12 +159,44 @@ export function BOLList() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Link href={`/dashboard/broker/bol/${bol.id}`}>
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-1" />
-                          Voir
+                      <div className="flex items-center gap-2">
+                        <Link href={`/dashboard/broker/bol/${bol.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4 mr-1" />
+                            Voir
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const raw = bol as any;
+                            const pdfBol = {
+                              ...bol,
+                              loadId: raw.load_id ?? bol.loadId,
+                              truckId: raw.truck_id ?? bol.truckId,
+                              shipper: raw.shipper ?? bol.shipper,
+                              carrier: raw.carrier ?? bol.carrier,
+                              consignee: raw.consignee ?? (bol as any).consignee,
+                              origin: typeof raw.origin === 'string' ? JSON.parse(raw.origin) : (raw.origin ?? bol.origin),
+                              destination: typeof raw.destination === 'string' ? JSON.parse(raw.destination) : (raw.destination ?? bol.destination),
+                              items: Array.isArray(raw.items) ? raw.items : (bol.items ?? []),
+                              totalWeight: Number(raw.total_weight ?? bol.totalWeight ?? 0),
+                              totalValue: Number(raw.total_value ?? bol.totalValue ?? 0),
+                              pickupDate: raw.pickup_date ? new Date(raw.pickup_date) : bol.pickupDate,
+                              deliveryDate: raw.delivery_date ? new Date(raw.delivery_date) : bol.deliveryDate,
+                              createdAt: raw.created_at ? new Date(raw.created_at) : bol.createdAt,
+                              status: raw.status ?? bol.status,
+                            };
+                            (pdfBol as any).bol_number = raw.bol_number ?? `BOL-${bol.id.substring(0, 8).toUpperCase()}`;
+                            (pdfBol as any).bolNumber = (pdfBol as any).bol_number;
+                            downloadBOLPDF(pdfBol as BOL);
+                          }}
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Télécharger PDF
                         </Button>
-                      </Link>
+                      </div>
                     </td>
                   </tr>
                 );
