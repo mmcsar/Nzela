@@ -17,6 +17,16 @@ export default async function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
+      {/* Bandeau annonce passante — formation numérique */}
+      <div className="bg-primary-700 text-white py-2.5 border-b border-primary-600" role="region" aria-label="Annonce">
+        <div className="ticker-wrap">
+          <div className="ticker-inner">
+            <span>Formation numérique Nzela : démarrage en avril — Inscriptions bientôt ouvertes</span>
+            <span>Formation numérique Nzela : démarrage en avril — Inscriptions bientôt ouvertes</span>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <main className="relative overflow-hidden bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white">
         <div className="absolute inset-0 opacity-10 z-0">
