@@ -5,7 +5,8 @@ import { useRouter } from '@/lib/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { Link } from '@/lib/i18n/routing';
-import { FileText, Plus, Loader2, DollarSign, Package, ChevronRight } from 'lucide-react';
+import { FileText, Plus, Loader2, DollarSign, Package, ChevronRight, Download } from 'lucide-react';
+import { downloadTransportInvoicePDF, type TransportInvoiceForPDF } from '@/components/invoices/TransportInvoicePrint';
 
 function parseLocation(loc: unknown): string {
   if (!loc) return '—';
@@ -27,8 +28,10 @@ interface Invoice {
   currency: string;
   status: string;
   invoice_number: string | null;
+  notes?: string | null;
   created_at: string;
   load?: { origin: unknown; destination: unknown; price: number; status: string };
+  broker?: { name?: string } | null;
 }
 
 export default function TMSFacturationPage() {
@@ -39,7 +42,13 @@ export default function TMSFacturationPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid'>('all');
   const supabase = useMemo(() => createClient(), []);
+
+  const filteredInvoices = filterStatus === 'unpaid'
+    ? invoices.filter((i) => i.status === 'draft' || i.status === 'sent')
+    : invoices;
+  const unpaidCount = invoices.filter((i) => i.status === 'draft' || i.status === 'sent').length;
 
   const fetchInvoices = useCallback(async () => {
     try {
@@ -168,19 +177,42 @@ export default function TMSFacturationPage() {
       )}
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-primary-600" />
-          <h2 className="text-sm font-bold text-gray-700">Factures ({invoices.length})</h2>
+        <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-primary-600" />
+            <h2 className="text-sm font-bold text-gray-700">Factures ({filteredInvoices.length})</h2>
+            {unpaidCount > 0 && (
+              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                {unpaidCount} en attente de paiement
+              </span>
+            )}
+          </div>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => setFilterStatus('all')}
+              className={`px-2 py-1 text-xs font-medium rounded ${filterStatus === 'all' ? 'bg-primary-100 text-primary-700' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              Toutes
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterStatus('unpaid')}
+              className={`px-2 py-1 text-xs font-medium rounded ${filterStatus === 'unpaid' ? 'bg-amber-100 text-amber-700' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              Non payées
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           {loading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
             </div>
-          ) : invoices.length === 0 ? (
+          ) : filteredInvoices.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-sm">Aucune facture pour le moment</p>
+              <p className="text-sm">{filterStatus === 'unpaid' ? 'Aucune facture en attente de paiement' : 'Aucune facture pour le moment'}</p>
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -190,11 +222,11 @@ export default function TMSFacturationPage() {
                   <th className="text-right py-3 px-4 font-semibold text-gray-700">Montant</th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-700">Statut</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-700">Date</th>
-                  <th className="w-8" />
+                  <th className="py-3 px-2 text-right font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((inv) => (
+                {filteredInvoices.map((inv) => (
                   <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                     <td className="py-3 px-4">
                       <span className="font-mono text-gray-900">{inv.invoice_number || inv.id.slice(0, 8)}</span>
@@ -219,15 +251,38 @@ export default function TMSFacturationPage() {
                     <td className="py-3 px-4 text-right text-gray-500">
                       {inv.created_at ? new Date(inv.created_at).toLocaleDateString('fr-FR') : '—'}
                     </td>
-                    <td className="py-3 px-4">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/dashboard/loads/${inv.load_id}`)}
-                        className="p-1 text-gray-400 hover:text-primary-600"
-                        title="Voir chargement"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
+                    <td className="py-3 px-2">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const payload: TransportInvoiceForPDF = {
+                              id: inv.id,
+                              invoice_number: inv.invoice_number,
+                              amount: Number(inv.amount),
+                              currency: inv.currency || 'CDF',
+                              status: inv.status,
+                              notes: inv.notes,
+                              created_at: inv.created_at,
+                              load: inv.load,
+                              broker: inv.broker,
+                            };
+                            downloadTransportInvoicePDF(payload);
+                          }}
+                          className="p-1.5 text-gray-500 hover:text-primary-600 rounded hover:bg-gray-100"
+                          title="Télécharger PDF"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/dashboard/tms/facturation/${inv.id}`)}
+                          className="p-1.5 text-gray-500 hover:text-primary-600 rounded hover:bg-gray-100"
+                          title="Voir / modifier"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

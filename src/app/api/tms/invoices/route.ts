@@ -13,7 +13,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('transport_invoices')
-      .select('id, load_id, broker_id, company_id, amount, currency, status, invoice_number, created_at, load:loads(origin, destination, price, status)')
+      .select('id, load_id, broker_id, company_id, amount, currency, status, invoice_number, notes, created_at, load:loads(origin, destination, price, status), broker:brokers(name)')
       .order('created_at', { ascending: false })
       .limit(200);
 
