@@ -16,6 +16,10 @@ import {
   LayoutGrid,
   RefreshCw,
   Loader2,
+  FileText,
+  TrendingUp,
+  Calendar,
+  Users,
 } from 'lucide-react';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
 
@@ -182,7 +186,27 @@ export default function TMSPage() {
             <p className="text-sm text-gray-500">Vue d&apos;ensemble et suivi de vos chargements</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/dashboard/tms/facturation">
+            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+              <FileText className="w-4 h-4" /> Facturation
+            </span>
+          </Link>
+          <Link href="/dashboard/tms/analytics">
+            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+              <TrendingUp className="w-4 h-4" /> Analytics
+            </span>
+          </Link>
+          <Link href="/dashboard/tms/planification">
+            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+              <Calendar className="w-4 h-4" /> Planification
+            </span>
+          </Link>
+          <Link href="/dashboard/tms/portail">
+            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+              <Users className="w-4 h-4" /> Portail
+            </span>
+          </Link>
           <Link href="/dashboard/tracking">
             <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
               <Satellite className="w-4 h-4" /> Tracking GPS
