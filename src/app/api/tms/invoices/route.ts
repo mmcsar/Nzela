@@ -25,7 +25,7 @@ export async function GET() {
   }
 }
 
-/** POST - Créer une facture à partir d'un chargement terminé */
+/** POST - Créer une facture : à partir d'un chargement terminé OU manuellement (montant + devise) */
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -33,41 +33,74 @@ export async function POST(request: Request) {
     if (!auth.allowed) return auth.response!;
 
     const body = await request.json();
-    const { loadId } = body;
-    if (!loadId) return NextResponse.json({ error: 'loadId requis' }, { status: 400 });
+    const { loadId, amount, currency, notes } = body as {
+      loadId?: string;
+      amount?: number;
+      currency?: string;
+      notes?: string;
+    };
 
-    const { data: load, error: loadErr } = await supabase
-      .from('loads')
-      .select('id, broker_id, price, status')
-      .eq('id', loadId)
-      .single();
+    let load_id: string | null = null;
+    let broker_id: string | null = auth.brokerId ?? null;
+    let company_id: string | null = null;
+    let finalAmount: number;
+    let finalCurrency: string;
 
-    if (loadErr || !load) return NextResponse.json({ error: 'Chargement non trouvé' }, { status: 404 });
-    if (load.status !== 'completed') return NextResponse.json({ error: 'Seuls les chargements terminés peuvent être facturés' }, { status: 400 });
+    if (loadId) {
+      // Création à partir d'un chargement
+      const { data: load, error: loadErr } = await supabase
+        .from('loads')
+        .select('id, broker_id, price, status')
+        .eq('id', loadId)
+        .single();
 
-    if (auth.role === 'broker' && auth.brokerId && load.broker_id !== auth.brokerId) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+      if (loadErr || !load) return NextResponse.json({ error: 'Chargement non trouvé' }, { status: 404 });
+      if (load.status !== 'completed') return NextResponse.json({ error: 'Seuls les chargements terminés peuvent être facturés' }, { status: 400 });
+
+      if (auth.role === 'broker' && auth.brokerId && load.broker_id !== auth.brokerId) {
+        return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+      }
+
+      const { data: existing } = await supabase
+        .from('transport_invoices')
+        .select('id')
+        .eq('load_id', loadId)
+        .maybeSingle();
+      if (existing) return NextResponse.json({ error: 'Une facture existe déjà pour ce chargement' }, { status: 409 });
+
+      load_id = load.id;
+      broker_id = load.broker_id ?? broker_id;
+      finalAmount = Number(load.price) || 0;
+      finalCurrency = 'CDF';
+    } else {
+      // Création manuelle : montant et devise requis
+      const numAmount = amount != null ? Number(amount) : NaN;
+      if (Number.isNaN(numAmount) || numAmount <= 0) {
+        return NextResponse.json({ error: 'Montant invalide (obligatoire pour une facture manuelle)' }, { status: 400 });
+      }
+      finalAmount = numAmount;
+      finalCurrency = currency === 'USD' ? 'USD' : 'CDF';
+      if (auth.role === 'broker' && !broker_id) {
+        return NextResponse.json({ error: 'Aucun profil courtier lié' }, { status: 403 });
+      }
     }
 
-    const { data: existing } = await supabase
-      .from('transport_invoices')
-      .select('id')
-      .eq('load_id', loadId)
-      .maybeSingle();
-    if (existing) return NextResponse.json({ error: 'Une facture existe déjà pour ce chargement' }, { status: 409 });
+    const suffix = load_id ? load_id.slice(0, 8) : Date.now().toString(36);
+    const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}-${suffix}`;
 
-    const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}-${loadId.slice(0, 8)}`;
     const { data: invoice, error: insertErr } = await supabase
       .from('transport_invoices')
       .insert({
-        load_id: loadId,
-        broker_id: load.broker_id,
-        amount: Number(load.price) || 0,
-        currency: 'CDF',
+        load_id: load_id,
+        broker_id: broker_id,
+        company_id: company_id,
+        amount: finalAmount,
+        currency: finalCurrency,
         status: 'draft',
         invoice_number: invoiceNumber,
+        notes: notes && String(notes).trim() ? String(notes).trim() : null,
       })
-      .select('id, load_id, amount, currency, status, invoice_number, created_at')
+      .select('id, load_id, amount, currency, status, invoice_number, notes, created_at')
       .single();
 
     if (insertErr) throw insertErr;

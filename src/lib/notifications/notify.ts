@@ -1,8 +1,9 @@
 /**
  * Notification Helper
- * Creates persistent notifications in DB + sends push
+ * Creates persistent notifications in DB + sends push.
+ * Uses service role client so inserts work with RLS (only service role can insert).
  */
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendPushToMany, type PushPayload } from './push-service';
 
 interface NotifyParams {
@@ -20,7 +21,13 @@ interface NotifyParams {
  * Send notification to a single user (DB + optional push)
  */
 export async function notifyUser(params: NotifyParams) {
-  const supabase = await createClient();
+  let supabase;
+  try {
+    supabase = createServiceRoleClient();
+  } catch {
+    console.warn('[Notify] SUPABASE_SERVICE_ROLE_KEY not set, skipping notification');
+    return null;
+  }
 
   // 1. Insert in DB
   const { data: notification, error } = await supabase
@@ -59,12 +66,7 @@ export async function notifyUser(params: NotifyParams) {
         data: { notificationId: notification.id, ...params.metadata },
       };
 
-      const result = await sendPushToMany(subscriptions, pushPayload);
-
-      // Deactivate expired subscriptions
-      if (result.failed > 0) {
-        // Could cleanup dead subscriptions here
-      }
+      await sendPushToMany(subscriptions, pushPayload);
     }
   }
 
@@ -85,13 +87,17 @@ export async function notifyUsers(userIds: string[], params: Omit<NotifyParams, 
  * Send notification to all admins
  */
 export async function notifyAdmins(params: Omit<NotifyParams, 'userId'>) {
-  const supabase = await createClient();
-  const { data: admins } = await supabase
-    .from('users')
-    .select('id')
-    .eq('role', 'admin');
+  try {
+    const supabase = createServiceRoleClient();
+    const { data: admins } = await supabase
+      .from('users')
+      .select('id')
+      .eq('role', 'admin');
 
-  if (!admins || admins.length === 0) return [];
+    if (!admins || admins.length === 0) return [];
 
-  return notifyUsers(admins.map(a => a.id), params);
+    return notifyUsers(admins.map(a => a.id), params);
+  } catch {
+    return [];
+  }
 }

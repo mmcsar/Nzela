@@ -5,7 +5,7 @@ import { useRouter } from '@/lib/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { Link } from '@/lib/i18n/routing';
-import { FileText, Plus, Loader2, DollarSign, Package, ChevronRight, Download } from 'lucide-react';
+import { FileText, Plus, Loader2, DollarSign, Package, ChevronRight, Download, PenLine } from 'lucide-react';
 import { downloadTransportInvoicePDF, type TransportInvoiceForPDF } from '@/components/invoices/TransportInvoicePrint';
 
 function parseLocation(loc: unknown): string {
@@ -23,14 +23,14 @@ function parseLocation(loc: unknown): string {
 
 interface Invoice {
   id: string;
-  load_id: string;
+  load_id: string | null;
   amount: number;
   currency: string;
   status: string;
   invoice_number: string | null;
   notes?: string | null;
   created_at: string;
-  load?: { origin: unknown; destination: unknown; price: number; status: string };
+  load?: { origin: unknown; destination: unknown; price: number; status: string } | null;
   broker?: { name?: string } | null;
 }
 
@@ -43,6 +43,11 @@ export default function TMSFacturationPage() {
   const [creating, setCreating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid'>('all');
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [manualAmount, setManualAmount] = useState('');
+  const [manualCurrency, setManualCurrency] = useState<'CDF' | 'USD'>('CDF');
+  const [manualNotes, setManualNotes] = useState('');
+  const [creatingManual, setCreatingManual] = useState(false);
   const supabase = useMemo(() => createClient(), []);
 
   const filteredInvoices = filterStatus === 'unpaid'
@@ -105,6 +110,39 @@ export default function TMSFacturationPage() {
     }
   };
 
+  const createManualInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const num = parseFloat(manualAmount.replace(/\s/g, '').replace(',', '.'));
+    if (Number.isNaN(num) || num <= 0) {
+      setError('Montant invalide');
+      return;
+    }
+    setCreatingManual(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/tms/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: num,
+          currency: manualCurrency,
+          notes: manualNotes.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur');
+      setShowManualForm(false);
+      setManualAmount('');
+      setManualNotes('');
+      await fetchInvoices();
+      await fetchLoadsToInvoice();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur création facture');
+    } finally {
+      setCreatingManual(false);
+    }
+  };
+
   if (authLoading || !isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-[320px]">
@@ -132,48 +170,121 @@ export default function TMSFacturationPage() {
       )}
 
       {(role === 'broker' || role === 'admin') && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-            <Package className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-sm font-bold text-gray-700">Chargements à facturer ({loadsToInvoice.length})</h2>
-          </div>
-          <div className="p-4">
-            {loading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
-              </div>
-            ) : loadsToInvoice.length === 0 ? (
-              <p className="text-sm text-gray-500">Aucun chargement terminé sans facture.</p>
-            ) : (
-              <ul className="space-y-2">
-                {loadsToInvoice.map((load) => (
-                  <li
-                    key={load.id}
-                    className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <span className="text-sm font-medium text-gray-900">
-                        {parseLocation(load.origin)} → {parseLocation(load.destination)}
-                      </span>
-                      <span className="ml-2 text-sm text-gray-500">
-                        {Number(load.price || 0).toLocaleString()} CDF
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => createInvoice(load.id)}
-                      disabled={creating === load.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
+        <>
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+              <Package className="w-4 h-4 text-emerald-600" />
+              <h2 className="text-sm font-bold text-gray-700">Chargements à facturer ({loadsToInvoice.length})</h2>
+            </div>
+            <div className="p-4">
+              {loading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
+                </div>
+              ) : loadsToInvoice.length === 0 ? (
+                <p className="text-sm text-gray-500">Aucun chargement terminé sans facture.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {loadsToInvoice.map((load) => (
+                    <li
+                      key={load.id}
+                      className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded-lg"
                     >
-                      {creating === load.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                      Créer facture
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <div>
+                        <span className="text-sm font-medium text-gray-900">
+                          {parseLocation(load.origin)} → {parseLocation(load.destination)}
+                        </span>
+                        <span className="ml-2 text-sm text-gray-500">
+                          {Number(load.price || 0).toLocaleString()} CDF
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => createInvoice(load.id)}
+                        disabled={creating === load.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                      >
+                        {creating === load.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                        Créer facture
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {!showManualForm ? (
+              <div className="p-4">
+                <button
+                  type="button"
+                  onClick={() => setShowManualForm(true)}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors"
+                >
+                  <PenLine className="w-4 h-4" />
+                  Créer une facture manuellement
+                </button>
+                <p className="mt-2 text-xs text-gray-500">Facture sans chargement lié (montant et devise saisis à la main).</p>
+              </div>
+            ) : (
+              <form onSubmit={createManualInvoice} className="p-4 space-y-4 border-t border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-800">Nouvelle facture manuelle</h3>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Montant *</label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={manualAmount}
+                    onChange={(e) => setManualAmount(e.target.value)}
+                    placeholder="Ex: 150000"
+                    className="w-full max-w-xs px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Devise</label>
+                  <select
+                    value={manualCurrency}
+                    onChange={(e) => setManualCurrency(e.target.value as 'CDF' | 'USD')}
+                    className="w-full max-w-xs px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="CDF">CDF</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Notes (optionnel)</label>
+                  <textarea
+                    value={manualNotes}
+                    onChange={(e) => setManualNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Réf. client, prestation..."
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={creatingManual}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                  >
+                    {creatingManual ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    Créer la facture
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowManualForm(false); setManualAmount(''); setManualNotes(''); setError(null); }}
+                    disabled={creatingManual}
+                    className="px-3 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </form>
             )}
           </div>
-        </div>
+        </>
       )}
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -230,10 +341,12 @@ export default function TMSFacturationPage() {
                   <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                     <td className="py-3 px-4">
                       <span className="font-mono text-gray-900">{inv.invoice_number || inv.id.slice(0, 8)}</span>
-                      {inv.load && (
+                      {inv.load ? (
                         <div className="text-xs text-gray-500 mt-0.5">
                           {parseLocation(inv.load.origin)} → {parseLocation(inv.load.destination)}
                         </div>
+                      ) : (
+                        <div className="text-xs text-gray-500 mt-0.5 italic">Facture manuelle</div>
                       )}
                     </td>
                     <td className="py-3 px-4 text-right font-medium">

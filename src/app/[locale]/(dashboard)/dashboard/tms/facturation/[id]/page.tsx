@@ -119,6 +119,7 @@ export default function FacturationDetailPage() {
 
   const origin = invoice.load ? parseLoc(invoice.load.origin) : '—';
   const dest = invoice.load ? parseLoc(invoice.load.destination) : '—';
+  const isManual = !invoice.load_id;
 
   return (
     <div className="space-y-6">
@@ -154,7 +155,9 @@ export default function FacturationDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-500">Trajet</span>
-              <p className="font-medium text-gray-900">{origin} → {dest}</p>
+              <p className="font-medium text-gray-900">
+                {isManual ? 'Facture manuelle (sans chargement lié)' : `${origin} → ${dest}`}
+              </p>
             </div>
             <div>
               <span className="text-gray-500">Montant</span>
