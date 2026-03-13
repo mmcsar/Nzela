@@ -10,7 +10,7 @@ import {
   Building2, Users, Car, BarChart3, Zap, Wrench, Navigation,
   MessageSquare, LayoutDashboard, ChevronDown, FileSignature,
   Satellite, Wallet, ShieldCheck, AlertTriangle, Mail, Phone, LogOut, Plus,
-  Bell, Handshake, TrendingUp, Shield,
+  Bell, Handshake, TrendingUp, Shield, LayoutGrid,
 } from 'lucide-react';
 
 // Navigation config par role
@@ -37,6 +37,7 @@ function getNavLinks(role: string) {
       { href: '/dashboard/publish', icon: Plus, label: 'Publier' },
       { href: '/dashboard/company/trucks/post', icon: Truck, label: 'Publier un camion' },
       { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
+      { href: '/dashboard/tms', icon: LayoutGrid, label: 'TMS' },
       { href: '/dashboard/company/trucks/search', icon: Truck, label: 'Camions' },
       { href: '/dashboard/company/vehicles', icon: Car, label: 'Vehicules' },
       { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },
@@ -60,6 +61,7 @@ function getNavLinks(role: string) {
       { href: '/dashboard/publish', icon: Plus, label: 'Publier' },
       { href: '/dashboard/broker/loads/post', icon: Package, label: 'Publier un chargement' },
       { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
+      { href: '/dashboard/tms', icon: LayoutGrid, label: 'TMS' },
       { href: '/dashboard/broker/loads/search', icon: Navigation, label: 'Recherche Loads' },
       { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },
       { href: '/dashboard/loads/alerts', icon: Bell, label: 'Alertes' },
@@ -81,6 +83,7 @@ function getNavLinks(role: string) {
   return [
     { href: '/dashboard/admin', icon: Home, label: 'Dashboard' },
     { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
+    { href: '/dashboard/tms', icon: LayoutGrid, label: 'TMS' },
     { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },
     { href: '/dashboard/loads/alerts', icon: Bell, label: 'Alertes' },
     { href: '/dashboard/rates', icon: TrendingUp, label: 'Tarifs' },
