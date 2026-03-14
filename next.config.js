@@ -1,15 +1,25 @@
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+
+// Revision pour la page offline (precache) : invalide le cache si le fichier change
+const offlinePath = path.join(__dirname, 'public', 'offline.html');
+const offlineRevision =
+  fs.existsSync(offlinePath) ?
+    crypto.createHash('md5').update(fs.readFileSync(offlinePath, 'utf8')).digest('hex') :
+    '1';
+
 const withSerwistInit = require('@serwist/next').default || require('@serwist/next');
 const withSerwist = withSerwistInit({
   swSrc: 'src/lib/pwa/sw.ts',
   swDest: 'public/sw.js',
   cacheOnNavigation: true,
   disable: process.env.NODE_ENV === 'development',
+  additionalPrecacheEntries: [{ url: '/offline.html', revision: offlineRevision }],
 });
 
 const createNextIntlPlugin = require('next-intl/plugin');
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-
-const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

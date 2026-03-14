@@ -93,7 +93,22 @@ export default function FacturationDetailPage() {
       notes: invoice.notes,
       created_at: invoice.created_at,
       load: invoice.load,
-      broker: invoice.broker,
+      broker: invoice.broker ? {
+        name: invoice.broker.name,
+        address: invoice.broker.address,
+        city: invoice.broker.city,
+        phone: invoice.broker.phone,
+        registration_number: invoice.broker.registration_number,
+      } : null,
+      company: invoice.company ? {
+        name: invoice.company.name,
+        address: invoice.company.address,
+        city: invoice.company.city,
+        phone: invoice.company.phone,
+        registration_number: invoice.company.registration_number,
+      } : null,
+      tva_rate: 0,
+      due_days: 14,
     };
     downloadTransportInvoicePDF(payload);
   };
@@ -120,6 +135,11 @@ export default function FacturationDetailPage() {
   const origin = invoice.load ? parseLoc(invoice.load.origin) : '—';
   const dest = invoice.load ? parseLoc(invoice.load.destination) : '—';
   const isManual = !invoice.load_id;
+  const dateEmission = invoice.created_at ? new Date(invoice.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+  const dateEcheance = invoice.created_at ? new Date(new Date(invoice.created_at).getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+  const clientName = invoice.company?.name || 'Client';
+  const clientAddress = [invoice.company?.address, invoice.company?.city].filter(Boolean).join(', ') || '—';
+  const issuerName = invoice.broker?.name || 'Nzela';
 
   return (
     <div className="space-y-6">
@@ -144,12 +164,84 @@ export default function FacturationDetailPage() {
         </div>
       )}
 
+      {/* Aperçu facture (style pro) */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-primary-700 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-primary-200 text-xs uppercase tracking-wider">Émetteur</p>
+            <p className="font-bold text-white">{issuerName}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="bg-amber-400 text-gray-900 text-xs font-bold px-2 py-1 rounded">FACTURE</span>
+            <span className="text-white font-mono text-sm">{invoice.invoice_number || invoice.id.slice(0, 8)}</span>
+            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+              invoice.status === 'paid' ? 'bg-emerald-500/80 text-white' :
+              invoice.status === 'sent' ? 'bg-blue-500/80 text-white' :
+              invoice.status === 'cancelled' ? 'bg-red-500/80 text-white' : 'bg-white/20 text-white'
+            }`}>
+              {STATUS_OPTIONS.find((s) => s.value === invoice.status)?.label || invoice.status}
+            </span>
+          </div>
+        </div>
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-100">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-1">Facturé à</p>
+            <p className="font-semibold text-gray-900">{clientName}</p>
+            {clientAddress !== '—' && <p className="text-sm text-gray-600">{clientAddress}</p>}
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-1">Référence commande</p>
+            <p className="font-mono font-semibold text-gray-900">{invoice.invoice_number || invoice.id.slice(0, 8)}</p>
+          </div>
+        </div>
+        <div className="px-4 py-2 flex flex-wrap gap-6 text-sm border-b border-gray-100 bg-gray-50/50">
+          <div>
+            <span className="text-gray-500">Date d&apos;émission</span>
+            <span className="ml-2 font-medium">{dateEmission}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Échéance</span>
+            <span className="ml-2 font-medium text-amber-700">{dateEcheance}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Devise</span>
+            <span className="ml-2 font-medium">{invoice.currency === 'USD' ? 'USD / CDF' : invoice.currency}</span>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="text-left py-2 px-4 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">#</th>
+                <th className="text-left py-2 px-4 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Description</th>
+                <th className="text-right py-2 px-4 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-100">
+                <td className="py-3 px-4">01</td>
+                <td className="py-3 px-4">
+                  {isManual ? 'Prestation transport (facture manuelle)' : `Transport fret ${origin} → ${dest}`}
+                </td>
+                <td className="py-3 px-4 text-right font-medium">
+                  {Number(invoice.amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {invoice.currency}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="px-4 py-3 bg-primary-700 flex items-center justify-between">
+          <span className="text-white font-bold">Solde à payer</span>
+          <span className="text-lg font-bold text-white">
+            {Number(invoice.amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {invoice.currency}
+          </span>
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
           <FileText className="w-4 h-4 text-primary-600" />
-          <h1 className="text-lg font-bold text-gray-900">
-            Facture {invoice.invoice_number || invoice.id.slice(0, 8)}
-          </h1>
+          <h2 className="text-lg font-bold text-gray-900">Modifier la facture</h2>
         </div>
         <div className="p-4 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -163,24 +255,6 @@ export default function FacturationDetailPage() {
               <span className="text-gray-500">Montant</span>
               <p className="font-medium text-gray-900">
                 {Number(invoice.amount).toLocaleString('fr-FR')} {invoice.currency}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-500">Date de création</span>
-              <p className="font-medium text-gray-900">
-                {invoice.created_at ? new Date(invoice.created_at).toLocaleDateString('fr-FR') : '—'}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-500">Statut</span>
-              <p className="font-medium">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  invoice.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                  invoice.status === 'sent' ? 'bg-blue-100 text-blue-700' :
-                  invoice.status === 'cancelled' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {STATUS_OPTIONS.find((s) => s.value === invoice.status)?.label || invoice.status}
-                </span>
               </p>
             </div>
           </div>

@@ -31,7 +31,8 @@ interface Invoice {
   notes?: string | null;
   created_at: string;
   load?: { origin: unknown; destination: unknown; price: number; status: string } | null;
-  broker?: { name?: string } | null;
+  broker?: { name?: string; address?: string; city?: string; phone?: string; registration_number?: string } | null;
+  company?: { name?: string; address?: string; city?: string; phone?: string; registration_number?: string } | null;
 }
 
 export default function TMSFacturationPage() {
@@ -378,7 +379,9 @@ export default function TMSFacturationPage() {
                               notes: inv.notes,
                               created_at: inv.created_at,
                               load: inv.load,
-                              broker: inv.broker,
+                              broker: inv.broker ?? null,
+                              company: inv.company ?? null,
+                              due_days: 14,
                             };
                             downloadTransportInvoicePDF(payload);
                           }}

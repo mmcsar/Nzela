@@ -16,7 +16,7 @@ export async function GET(_request: Request, { params }: Params) {
 
     const { data, error } = await supabase
       .from('transport_invoices')
-      .select('*, load:loads(origin, destination, price, status, broker_id), broker:brokers(name, phone, email, address)')
+      .select('*, load:loads(origin, destination, price, status, broker_id), broker:brokers(name, phone, email, address, city, registration_number), company:companies(name, address, city, phone, registration_number)')
       .eq('id', id)
       .single();
 
