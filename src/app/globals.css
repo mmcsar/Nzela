@@ -185,6 +185,44 @@ textarea.input-visible {
   display: none;
 }
 
+/* TMS Pro (ShipLabel-style) dark theme */
+.tms-pro-wrap {
+  --tms-bg: #0b0b0d;
+  --tms-s: #141416;
+  --tms-s2: #1c1c20;
+  --tms-s3: #242428;
+  --tms-b: #2a2a30;
+  --tms-b2: #363640;
+  --tms-a: #f0c040;
+  --tms-a2: #f5d060;
+  --tms-green: #3ddc84;
+  --tms-blue: #4da6ff;
+  --tms-red: #ff5252;
+  --tms-orange: #ff8c42;
+  --tms-t: #efefef;
+  --tms-m: #888;
+  --tms-m2: #555;
+  --tms-r: 10px;
+}
+.tms-pro-wrap input.tms-pro-input,
+.tms-pro-wrap textarea.tms-pro-input,
+.tms-pro-wrap select.tms-pro-input {
+  color: var(--tms-t) !important;
+  -webkit-text-fill-color: var(--tms-t) !important;
+  background: var(--tms-s2) !important;
+  border-color: var(--tms-b) !important;
+}
+.tms-pro-wrap input.tms-pro-input:focus,
+.tms-pro-wrap textarea.tms-pro-input:focus,
+.tms-pro-wrap select.tms-pro-input:focus {
+  border-color: var(--tms-a) !important;
+  box-shadow: 0 0 0 2px rgba(240, 192, 64, 0.25);
+}
+.tms-pro-wrap button:focus-visible,
+.tms-pro-wrap a:focus-visible {
+  outline: 2px solid var(--tms-a);
+  outline-offset: 2px;
+}
 
 
 
