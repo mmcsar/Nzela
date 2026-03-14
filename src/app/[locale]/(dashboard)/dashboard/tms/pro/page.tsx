@@ -95,11 +95,20 @@ export default function TMSProPage() {
     }
   }, [role, brokerId, companyId, supabase]);
 
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  /* setState dans callback async (fin fetch) = événement externe, autorisé par la règle mais détecté ici */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!isAuthorized) return;
-    setLoading(true);
-    Promise.all([fetchTrucks(), fetchLoads()]).finally(() => setLoading(false));
+    let cancelled = false;
+    Promise.all([fetchTrucks(), fetchLoads()]).finally(() => {
+      if (!cancelled) setInitialLoadDone(true);
+    });
+    return () => { cancelled = true; };
   }, [isAuthorized, fetchTrucks, fetchLoads]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const isLoading = loading || (!initialLoadDone && isAuthorized);
 
   const kpis = useMemo(() => ({
     vehicles: trucks.length,
@@ -171,7 +180,6 @@ export default function TMSProPage() {
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight" style={{ letterSpacing: '-0.5px' }}>
                 {PAGE_TITLES[panel][0]}
               </h1>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: 'rgba(240,192,64,.15)', color: theme.a }}>Vue Pro</span>
             </div>
             <p className="text-xs mt-0.5" style={{ color: theme.m }}>
               {PAGE_TITLES[panel][1]}
@@ -181,12 +189,12 @@ export default function TMSProPage() {
             <button
               type="button"
               onClick={refreshData}
-              disabled={loading}
+              disabled={isLoading}
               aria-label="Actualiser les données"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition-colors disabled:opacity-50"
               style={{ borderColor: theme.b, color: theme.m }}
             >
-              <RefreshCw className={'w-3.5 h-3.5 ' + (loading ? 'animate-spin' : '')} />
+              <RefreshCw className={'w-3.5 h-3.5 ' + (isLoading ? 'animate-spin' : '')} />
               <span className="hidden sm:inline">Actualiser</span>
             </button>
             <button
@@ -287,7 +295,7 @@ export default function TMSProPage() {
                   style={{ borderColor: theme.b }}
                 />
               </div>
-              {loading ? (
+              {isLoading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin" style={{ color: theme.a }} />
                 </div>
@@ -442,7 +450,7 @@ export default function TMSProPage() {
                   style={{ borderColor: theme.b }}
                 />
               </div>
-              {loading ? (
+              {isLoading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin" style={{ color: theme.a }} />
                 </div>
