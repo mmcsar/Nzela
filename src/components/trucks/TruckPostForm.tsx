@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from '@/lib/i18n/routing';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import { Truck } from '@/types';
 import { toErrorMessage } from '@/lib/api/error';
 import { ALL_REGION_IDS, ALL_REGION_NAMES } from '@/lib/constants/rdc-provinces';
 import { Building2, Pencil, Check, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface CompanyInfo {
   id: string;
@@ -19,40 +20,47 @@ interface CompanyInfo {
   email: string;
 }
 
-const truckSchema = z.object({
-  type: z.string().min(1, 'Le type de camion est requis'),
-  capacity: z.number().min(1, 'La capacité doit être supérieure à 0'),
-  currentLocation: z.object({
-    address: z.string().min(1, 'L\'adresse est requise'),
-    city: z.string().min(1, 'La ville est requise'),
-    province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]),
-    coordinates: z.object({
-      lat: z.number().optional(),
-      lng: z.number().optional(),
-    }).optional(),
-  }),
-  availableDate: z.string().min(1, 'La date de disponibilité est requise'),
-  destination: z.object({
-    address: z.string().optional(),
-    city: z.string().optional(),
-    province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]).optional(),
-    coordinates: z.object({
-      lat: z.number().optional(),
-      lng: z.number().optional(),
-    }).optional(),
-  }).optional(),
-  price: z.number().min(0, 'Le prix doit être positif'),
-  pricePerKm: z.number().min(0, 'Le prix par km doit être positif'),
-  features: z.array(z.string()).optional(),
-});
+interface TruckFormData {
+  type: string;
+  capacity: number;
+  currentLocation: { address: string; city: string; province: string; coordinates?: { lat?: number; lng?: number } };
+  availableDate: string;
+  destination?: { address?: string; city?: string; province?: string; coordinates?: { lat?: number; lng?: number } };
+  price: number;
+  pricePerKm: number;
+  features?: string[];
+}
 
-type TruckFormData = z.infer<typeof truckSchema>;
+const FEATURES: { value: string; key: string }[] = [
+  { value: 'GPS', key: 'featureGps' },
+  { value: 'Refrigéré', key: 'featureRefrigere' },
+  { value: 'Plateau', key: 'featurePlateau' },
+  { value: 'Bâché', key: 'featureBache' },
+  { value: 'Grue', key: 'featureGrue' },
+  { value: 'Hayon', key: 'featureHayon' },
+  { value: 'Double essieu', key: 'featureDoubleEssieu' },
+  { value: 'Triple essieu', key: 'featureTripleEssieu' },
+];
+
+const TRUCK_TYPE_OPTIONS = [
+  { value: 'flatbed', key: 'trailerFlatbed' },
+  { value: 'van', key: 'trailerVan' },
+  { value: 'reefer', key: 'trailerReefer' },
+  { value: 'tanker', key: 'trailerTanker' },
+  { value: 'container', key: 'trailerContainer' },
+  { value: 'lowboy', key: 'trailerLowboy' },
+  { value: 'step-deck', key: 'trailerStepDeck' },
+  { value: 'benne', key: 'trailerBenne' },
+  { value: 'porte-char', key: 'trailerPorteChar' },
+  { value: '53ft', key: 'trailer53ft' },
+];
 
 interface TruckPostFormProps {
   onSuccess?: (truck: Truck) => void;
 }
 
 export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
+  const t = useTranslations('postTruckForm');
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -61,6 +69,27 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [savingCompany, setSavingCompany] = useState(false);
   const [companyEditError, setCompanyEditError] = useState('');
+
+  const truckSchema = useMemo(() => z.object({
+    type: z.string().min(1, t('errTypeRequired')),
+    capacity: z.number().min(1, t('errCapacityMin')),
+    currentLocation: z.object({
+      address: z.string().min(1, t('errAddressRequired')),
+      city: z.string().min(1, t('errCityRequired')),
+      province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]),
+      coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
+    }),
+    availableDate: z.string().min(1, t('errAvailableDateRequired')),
+    destination: z.object({
+      address: z.string().optional(),
+      city: z.string().optional(),
+      province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]).optional(),
+      coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
+    }).optional(),
+    price: z.number().min(0, t('errPricePositive')),
+    pricePerKm: z.number().min(0, t('errPricePerKmPositive')),
+    features: z.array(z.string()).optional(),
+  }), [t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,16 +122,6 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
   });
 
   const features = watch('features') || [];
-  const availableFeatures = [
-    'GPS',
-    'Refrigéré',
-    'Plateau',
-    'Bâché',
-    'Grue',
-    'Hayon',
-    'Double essieu',
-    'Triple essieu',
-  ];
 
   const toggleFeature = (feature: string) => {
     const currentFeatures = features || [];
@@ -128,7 +147,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setCompanyEditError(data.error || 'Erreur lors de l\'enregistrement');
+        setCompanyEditError(data.error || t('errorSave'));
         return;
       }
       if (data.company) {
@@ -144,7 +163,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
   const onSubmit = async (data: TruckFormData) => {
     const contactPhone = company?.phone || (isEditingCompany ? companyEdit.phone : '');
     if (company && !contactPhone?.trim()) {
-      setError('Veuillez renseigner le numéro de téléphone de votre entreprise dans la section « Coordonnées de contact » pour que les courtiers puissent vous contacter.');
+      setError(t('pleaseAddPhone'));
       return;
     }
     setIsLoading(true);
@@ -167,7 +186,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(toErrorMessage(json.error, 'Erreur lors de la création'));
+      if (!res.ok) throw new Error(toErrorMessage(json.error, t('errorOccurred')));
       const truck = json.truck;
 
       if (onSuccess) {
@@ -176,7 +195,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         router.push(`/dashboard/company/trucks/${truck.id}`);
       }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue');
+      setError(err.message || t('errorOccurred'));
     } finally {
       setIsLoading(false);
     }
@@ -196,24 +215,24 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
             <div>
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-orange-600" />
-                Coordonnées de contact
+                {t('contactDetails')}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">Votre numéro et email seront affichés aux courtiers pour vous contacter.</p>
+              <p className="text-sm text-gray-600 mt-1">{t('contactDetailsDesc')}</p>
             </div>
             {!isEditingCompany ? (
               <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingCompany(true)} className="gap-1.5">
                 <Pencil className="w-4 h-4" />
-                Modifier
+                {t('edit')}
               </Button>
             ) : (
               <div className="flex gap-2">
                 <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingCompany(false)} className="gap-1.5" disabled={savingCompany}>
                   <X className="w-4 h-4" />
-                  Annuler
+                  {t('cancel')}
                 </Button>
                 <Button type="button" size="sm" onClick={handleSaveCompany} isLoading={savingCompany} className="gap-1.5">
                   <Check className="w-4 h-4" />
-                  Enregistrer
+                  {t('save')}
                 </Button>
               </div>
             )}
@@ -223,40 +242,40 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <span className="text-sm font-medium text-gray-500">Entreprise</span>
+              <span className="text-sm font-medium text-gray-500">{t('company')}</span>
               <p className="font-medium">{company.name || '—'}</p>
             </div>
             {isEditingCompany ? (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone (visible par les clients)</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('phoneVisible')}</label>
                   <input
                     type="tel"
                     value={companyEdit.phone}
                     onChange={(e) => setCompanyEdit((p) => ({ ...p, phone: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="+243 ..."
+                    placeholder={t('placeholderPhone')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('email')}</label>
                   <input
                     type="email"
                     value={companyEdit.email}
                     onChange={(e) => setCompanyEdit((p) => ({ ...p, email: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="email@exemple.com"
+                    placeholder={t('placeholderEmail')}
                   />
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Téléphone (visible par les clients)</span>
+                  <span className="text-sm font-medium text-gray-500">{t('phoneVisible')}</span>
                   <p className="font-medium">{company.phone || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Email</span>
+                  <span className="text-sm font-medium text-gray-500">{t('email')}</span>
                   <p className="font-medium">{company.email || '—'}</p>
                 </div>
               </>
@@ -266,35 +285,28 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
       )}
 
       <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
-        <h2 className="text-2xl font-bold">Informations du camion</h2>
+        <h2 className="text-2xl font-bold">{t('truckInfo')}</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type de camion <span className="text-red-500">*</span>
+              {t('truckType')} <span className="text-red-500">*</span>
             </label>
             <select
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               {...register('type')}
             >
-              <option value="">Selectionner...</option>
-              <option value="flatbed">Plateau (Flatbed)</option>
-              <option value="van">Fourgon (Van)</option>
-              <option value="reefer">Frigorifique (Reefer)</option>
-              <option value="tanker">Citerne (Tanker)</option>
-              <option value="container">Conteneur</option>
-              <option value="lowboy">Surbaisse (Lowboy)</option>
-              <option value="step-deck">Plateau surbaisse (Step Deck)</option>
-              <option value="benne">Benne</option>
-              <option value="porte-char">Porte-char</option>
-              <option value="53ft">53 pieds</option>
+              <option value="">{t('selectType')}</option>
+              {TRUCK_TYPE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{t(o.key)}</option>
+              ))}
             </select>
             {errors.type && (
               <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
             )}
           </div>
           <Input
-            label="Capacité (kg)"
+            label={t('capacityKg')}
             type="number"
             {...register('capacity', { valueAsNumber: true })}
             error={errors.capacity?.message}
@@ -303,23 +315,23 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         </div>
 
         <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-4">Localisation actuelle</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('currentLocation')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Adresse"
+              label={t('address')}
               {...register('currentLocation.address')}
               error={errors.currentLocation?.address?.message}
               required
             />
             <Input
-              label="Ville"
+              label={t('city')}
               {...register('currentLocation.city')}
               error={errors.currentLocation?.city?.message}
               required
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Province
+                {t('province')}
               </label>
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -334,21 +346,21 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         </div>
 
         <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-4">Destination souhaitée (optionnel)</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('destinationOptional')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Ville de destination"
+              label={t('destinationCity')}
               {...register('destination.city')}
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Province
+                {t('province')}
               </label>
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('destination.province')}
               >
-                <option value="">Toute destination</option>
+                <option value="">{t('anyDestination')}</option>
                 {ALL_REGION_IDS.map((id) => (
                   <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
                 ))}
@@ -358,17 +370,17 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         </div>
 
         <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-4">Tarification</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('pricing')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Prix fixe (CDF)"
+              label={t('fixedPriceCdf')}
               type="number"
               {...register('price', { valueAsNumber: true })}
               error={errors.price?.message}
               required
             />
             <Input
-              label="Prix par km (CDF)"
+              label={t('pricePerKmCdf')}
               type="number"
               step="0.01"
               {...register('pricePerKm', { valueAsNumber: true })}
@@ -379,9 +391,9 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         </div>
 
         <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-4">Disponibilité</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('availability')}</h3>
           <Input
-            label="Date de disponibilité"
+            label={t('availableDate')}
             type="datetime-local"
             {...register('availableDate')}
             error={errors.availableDate?.message}
@@ -390,20 +402,20 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         </div>
 
         <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-4">Équipements et caractéristiques</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('featuresSection')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {availableFeatures.map((feature) => (
+            {FEATURES.map((item) => (
               <label
-                key={feature}
+                key={item.value}
                 className="flex items-center space-x-2 cursor-pointer p-3 border rounded-lg hover:bg-gray-50"
               >
                 <input
                   type="checkbox"
-                  checked={features.includes(feature)}
-                  onChange={() => toggleFeature(feature)}
+                  checked={features.includes(item.value)}
+                  onChange={() => toggleFeature(item.value)}
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm">{feature}</span>
+                <span className="text-sm">{t(item.key)}</span>
               </label>
             ))}
           </div>
@@ -412,14 +424,14 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
 
       <div className="flex gap-4">
         <Button type="submit" isLoading={isLoading} className="flex-1">
-          Publier le camion
+          {t('publishTruck')}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={() => router.back()}
         >
-          Annuler
+          {t('cancel')}
         </Button>
       </div>
     </form>
