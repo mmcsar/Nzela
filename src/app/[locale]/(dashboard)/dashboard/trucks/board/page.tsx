@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/lib/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
@@ -12,7 +13,6 @@ import {
   Wrench, Gauge, Mail,
 } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
-import { truckTypeFr, truckStatusFr } from '@/lib/utils/translate-fr';
 
 // ══════════════════════════════════════════
 // INTERFACES & CONSTANTS
@@ -43,17 +43,6 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; dot: string }> 
   'in-transit': { label: 'En transit', bg: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
   maintenance: { label: 'Maintenance', bg: 'bg-gray-50 text-gray-600 border-gray-200', dot: 'bg-gray-400' },
 };
-
-const TRUCK_TYPES = [
-  { value: '', label: 'Tous types' },
-  { value: 'flatbed', label: 'Plateau' },
-  { value: 'van', label: 'Fourgon' },
-  { value: 'reefer', label: 'Frigorifique' },
-  { value: 'tanker', label: 'Citerne' },
-  { value: 'container', label: 'Conteneur' },
-  { value: 'benne', label: 'Benne' },
-  { value: 'lowboy', label: 'Surbaisse' },
-];
 
 const PAGE_SIZE = 25;
 const FETCH_LIMIT = 80;
@@ -108,9 +97,24 @@ function getErrorMessage(error: unknown) {
 // MAIN COMPONENT
 // ══════════════════════════════════════════
 export default function TruckBoardPage() {
+  const t = useTranslations('truckBoard');
   const { isLoading: authLoading, isAuthorized, authError, role } = useRequireRole(['broker', 'company', 'admin']);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+
+  const statusLabel = (s: string) => {
+    if (s === 'all') return t('all');
+    if (s === 'available') return t('available');
+    if (s === 'booked') return t('booked');
+    if (s === 'in-transit') return t('inTransit');
+    if (s === 'maintenance') return t('maintenance');
+    return s;
+  };
+  const trailerLabel = (value: string) => {
+    const key: Record<string, string> = { '': 'allTypes', flatbed: 'trailerFlatbed', van: 'trailerVan', reefer: 'trailerReefer', tanker: 'trailerTanker', container: 'trailerContainer', benne: 'trailerBenne', lowboy: 'trailerLowboy' };
+    const k = key[value] || 'allTypes';
+    return t(k as 'allTypes' | 'trailerFlatbed' | 'trailerVan' | 'trailerReefer' | 'trailerTanker' | 'trailerContainer' | 'trailerBenne' | 'trailerLowboy');
+  };
 
   const [trucks, setTrucks] = useState<TruckRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -240,7 +244,7 @@ export default function TruckBoardPage() {
         t.dest_city.toLowerCase().includes(term) ||
         t.company_name.toLowerCase().includes(term) ||
         t.type.toLowerCase().includes(term) ||
-        truckTypeFr(t.type).toLowerCase().includes(term);
+        trailerLabel(t.type).toLowerCase().includes(term);
       if (!match) return false;
     }
     if (f.minCapacity && t.capacity < Number(f.minCapacity)) return false;
@@ -276,7 +280,7 @@ export default function TruckBoardPage() {
 
   // Export CSV (liste filtrée)
   const exportCSV = () => {
-    const headers = ['ID', 'Date dispo', 'Type', 'Ville', 'Province', 'Destination', 'Capacite (kg)', 'Prix/km', 'Statut', 'Entreprise', 'Telephone'];
+    const headers = [t('id'), t('dispo'), t('type'), t('location'), t('province'), t('destination'), t('capacity'), t('pricePerKm'), t('status'), t('company'), t('phone')];
     const rows = sortedTrucks.map(t => [
       t.id.substring(0, 8),
       formatDate(t.available_date),
@@ -329,16 +333,16 @@ export default function TruckBoardPage() {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="max-w-xl w-full bg-white border border-amber-200 rounded-xl p-5 shadow-sm">
-          <p className="text-sm font-semibold text-amber-700">Acces indisponible</p>
+          <p className="text-sm font-semibold text-amber-700">{t('accessUnavailable')}</p>
           <p className="text-sm text-gray-600 mt-1">
-            {authError || 'Session invalide ou profil utilisateur incomplet. Reconnectez-vous puis reessayez.'}
+            {authError || t('invalidSession')}
           </p>
           <div className="mt-4 flex items-center gap-2">
             <Button size="sm" onClick={() => router.push('/login')}>
-              Se reconnecter
+              {t('reconnect')}
             </Button>
             <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
-              Reessayer
+              {t('retry')}
             </Button>
           </div>
         </div>
@@ -355,16 +359,16 @@ export default function TruckBoardPage() {
             <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
               <Truck className="w-4 h-4 text-white" />
             </div>
-            Truck Board
+            {t('title')}
             {stats.newCount > 0 && (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[11px] font-bold animate-pulse">
-                <Sparkles className="w-3 h-3" /> {stats.newCount} nouveau{stats.newCount > 1 ? 'x' : ''}
+                <Sparkles className="w-3 h-3" /> {stats.newCount} {t('newLabel')}{stats.newCount > 1 ? 'x' : ''}
               </span>
             )}
           </h1>
           <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
-            Marche des camions disponibles
-            <span className="flex items-center gap-1 text-emerald-600"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live</span>
+            {t('marketSubtitle')}
+            <span className="flex items-center gap-1 text-emerald-600"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> {t('live')}</span>
             <span className="text-gray-300">|</span>
             <span>MAJ: {lastRefresh ? lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
           </p>
@@ -375,14 +379,14 @@ export default function TruckBoardPage() {
             <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400'}`}><LayoutGrid className="w-4 h-4" /></button>
           </div>
           <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-50 transition-colors">
-            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Export</span>
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{t('export')}</span>
           </button>
           <button onClick={fetchTrucks} disabled={isLoading} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-50">
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
           {userRole === 'company' && (
             <Button size="sm" onClick={() => router.push('/dashboard/publish')}>
-              <Plus className="w-3.5 h-3.5 mr-1" /> Poster
+              <Plus className="w-3.5 h-3.5 mr-1" /> {t('post')}
             </Button>
           )}
         </div>
@@ -390,19 +394,19 @@ export default function TruckBoardPage() {
 
       {fetchError && (
         <div className="border border-amber-200 bg-amber-50 text-amber-800 text-sm rounded-lg px-3 py-2">
-          Erreur de chargement du Truck Board: {fetchError}
+          {t('loadError')}: {fetchError}
         </div>
       )}
 
       {/* KPIs */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         {[
-          { label: 'Total', value: stats.total, icon: Truck, color: 'text-gray-700', bg: 'from-gray-50 to-gray-100/50', border: 'border-gray-200' },
-          { label: 'Disponibles', value: stats.available, icon: MapPin, color: 'text-emerald-700', bg: 'from-emerald-50 to-emerald-100/30', border: 'border-emerald-200' },
-          { label: 'En transit', value: stats.inTransit, icon: Truck, color: 'text-amber-700', bg: 'from-amber-50 to-amber-100/30', border: 'border-amber-200' },
-          { label: 'Nouveaux', value: stats.newCount, icon: Sparkles, color: 'text-rose-700', bg: 'from-rose-50 to-rose-100/30', border: 'border-rose-200' },
-          { label: 'Prix moy/km', value: `${stats.avgPrice.toLocaleString()} CDF`, icon: DollarSign, color: 'text-green-700', bg: 'from-green-50 to-green-100/30', border: 'border-green-200' },
-          { label: 'Capacite tot.', value: formatWeight(stats.totalCapacity), icon: Scale, color: 'text-blue-700', bg: 'from-blue-50 to-blue-100/30', border: 'border-blue-200' },
+          { label: t('total'), value: stats.total, icon: Truck, color: 'text-gray-700', bg: 'from-gray-50 to-gray-100/50', border: 'border-gray-200' },
+          { label: t('available'), value: stats.available, icon: MapPin, color: 'text-emerald-700', bg: 'from-emerald-50 to-emerald-100/30', border: 'border-emerald-200' },
+          { label: t('inTransit'), value: stats.inTransit, icon: Truck, color: 'text-amber-700', bg: 'from-amber-50 to-amber-100/30', border: 'border-amber-200' },
+          { label: t('newLabel'), value: stats.newCount, icon: Sparkles, color: 'text-rose-700', bg: 'from-rose-50 to-rose-100/30', border: 'border-rose-200' },
+          { label: t('avgPrice'), value: `${stats.avgPrice.toLocaleString()} CDF`, icon: DollarSign, color: 'text-green-700', bg: 'from-green-50 to-green-100/30', border: 'border-green-200' },
+          { label: t('totalCapacity'), value: formatWeight(stats.totalCapacity), icon: Scale, color: 'text-blue-700', bg: 'from-blue-50 to-blue-100/30', border: 'border-blue-200' },
         ].map((kpi) => { const Icon = kpi.icon; return (
           <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-xl border ${kpi.border} p-2.5 transition-all hover:shadow-sm hover:-translate-y-0.5`}>
             <div className="flex items-center gap-1.5 mb-0.5"><Icon className={`w-3 h-3 ${kpi.color}`} /><span className="text-[9px] text-gray-500 font-semibold uppercase tracking-wide">{kpi.label}</span></div>
@@ -416,13 +420,13 @@ export default function TruckBoardPage() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input type="text" value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })}
-            placeholder="Rechercher ville, entreprise, type de camion..."
+            placeholder={t('searchPlaceholderLong')}
             className="w-full pl-10 pr-10 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/40 bg-white" />
           {filters.search && <button onClick={() => setFilters({ ...filters, search: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>}
         </div>
         <div className="hidden lg:flex items-center gap-1">
           {(['available', 'all', 'booked', 'in-transit'] as const).map(s => {
-            const cfg = s === 'all' ? { label: 'Tous', bg: 'bg-gray-50 text-gray-600 border-gray-200', dot: 'bg-gray-400' } : STATUS_CONFIG[s];
+            const cfg = s === 'all' ? { label: t('all'), bg: 'bg-gray-50 text-gray-600 border-gray-200', dot: 'bg-gray-400' } : { ...STATUS_CONFIG[s], label: statusLabel(s) };
             const active = filters.status === s;
             return (
               <button key={s} onClick={() => setFilters({ ...filters, status: s })}
@@ -435,6 +439,7 @@ export default function TruckBoardPage() {
         <button onClick={() => setShowFilters(!showFilters)}
           className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium border rounded-lg transition-all ${showFilters ? 'bg-primary-50 text-primary-700 border-primary-200' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
           <Filter className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('filters')}</span>
           {activeFilterCount > 0 && <span className="px-1.5 py-0.5 text-[10px] font-bold bg-primary-600 text-white rounded-full">{activeFilterCount}</span>}
         </button>
       </div>
@@ -444,41 +449,42 @@ export default function TruckBoardPage() {
         <div className="bg-white border rounded-xl p-4 space-y-3 shadow-sm">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Ville</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('location')}</label>
               <input type="text" value={filters.city} onChange={e => setFilters({ ...filters, city: e.target.value })} placeholder="Lubumbashi..."
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Type</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('type')}</label>
               <select value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none">
-                {TRUCK_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                <option value="">{t('allTypes')}</option>
+                {[{ value: 'flatbed', key: 'trailerFlatbed' as const }, { value: 'van', key: 'trailerVan' as const }, { value: 'reefer', key: 'trailerReefer' as const }, { value: 'tanker', key: 'trailerTanker' as const }, { value: 'container', key: 'trailerContainer' as const }, { value: 'benne', key: 'trailerBenne' as const }, { value: 'lowboy', key: 'trailerLowboy' as const }].map(o => <option key={o.value} value={o.value}>{t(o.key)}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Capacite min (kg)</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('minCapacity')} (kg)</label>
               <input type="number" value={filters.minCapacity} onChange={e => setFilters({ ...filters, minCapacity: e.target.value })}
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Capacite max (kg)</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('maxCapacity')} (kg)</label>
               <input type="number" value={filters.maxCapacity} onChange={e => setFilters({ ...filters, maxCapacity: e.target.value })}
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Prix min/km</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('minPrice')}/km</label>
               <input type="number" value={filters.minPrice} onChange={e => setFilters({ ...filters, minPrice: e.target.value })}
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Prix max/km</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('maxPrice')}/km</label>
               <input type="number" value={filters.maxPrice} onChange={e => setFilters({ ...filters, maxPrice: e.target.value })}
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none" />
             </div>
           </div>
           {activeFilterCount > 0 && (
             <div className="flex justify-end">
-              <button onClick={clearFilters} className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium"><XCircle className="w-3.5 h-3.5" /> Effacer ({activeFilterCount})</button>
+              <button onClick={clearFilters} className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium"><XCircle className="w-3.5 h-3.5" /> {t('clearFilters')} ({activeFilterCount})</button>
             </div>
           )}
         </div>
@@ -486,8 +492,8 @@ export default function TruckBoardPage() {
 
       {/* Counter */}
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span><strong className="text-gray-800">{sortedTrucks.length}</strong> camion{sortedTrucks.length !== 1 ? 's' : ''}</span>
-        <span>Page {page}/{totalPages}</span>
+        <span><strong className="text-gray-800">{sortedTrucks.length}</strong> {sortedTrucks.length !== 1 ? t('trucksCountPlural') : t('trucksCount')}</span>
+        <span>{page} {t('pageOf')} {totalPages}</span>
       </div>
 
       {/* TABLE VIEW */}
@@ -498,26 +504,26 @@ export default function TruckBoardPage() {
               <thead className="bg-gray-50/80 border-b">
                 <tr>
                   <th className="w-8 px-2"></th>
-                  <SortHeader col="available_date" label="Dispo" />
-                  <SortHeader col="type" label="Type" />
-                  <SortHeader col="location_city" label="Localisation" />
-                  <SortHeader col="dest_city" label="Destination" />
-                  <SortHeader col="capacity" label="Capacite" align="right" />
-                  <SortHeader col="price_per_km" label="CDF/km" align="right" />
-                  <SortHeader col="status" label="Statut" />
-                  <SortHeader col="company_name" label="Entreprise" />
-                  <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Contact</th>
+                  <SortHeader col="available_date" label={t('dispo')} />
+                  <SortHeader col="type" label={t('type')} />
+                  <SortHeader col="location_city" label={t('location')} />
+                  <SortHeader col="dest_city" label={t('destination')} />
+                  <SortHeader col="capacity" label={t('capacity')} align="right" />
+                  <SortHeader col="price_per_km" label={t('pricePerKm')} align="right" />
+                  <SortHeader col="status" label={t('status')} />
+                  <SortHeader col="company_name" label={t('company')} />
+                  <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">{t('contact')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {isLoading ? (
-                  <tr><td colSpan={10} className="px-6 py-16 text-center"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary-400" /><p className="text-sm text-gray-500">Chargement...</p></td></tr>
+                  <tr><td colSpan={10} className="px-6 py-16 text-center"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary-400" /><p className="text-sm text-gray-500">{t('loading')}</p></td></tr>
                 ) : paginatedTrucks.length === 0 ? (
                   <tr><td colSpan={10} className="px-6 py-20 text-center">
                     <Truck className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm font-semibold text-gray-600">Aucun camion trouve</p>
+                    <p className="text-sm font-semibold text-gray-600">{t('noTrucksFound')}</p>
                     {(userRole === 'company' || userRole === 'admin') && (
-                      <Button size="sm" className="mt-4" onClick={() => router.push('/dashboard/publish')}><Plus className="w-3.5 h-3.5 mr-1" /> Poster un camion</Button>
+                      <Button size="sm" className="mt-4" onClick={() => router.push('/dashboard/publish')}><Plus className="w-3.5 h-3.5 mr-1" /> {t('postFirstTruck')}</Button>
                     )}
                   </td></tr>
                 ) : paginatedTrucks.map(truck => {
@@ -543,14 +549,14 @@ export default function TruckBoardPage() {
                         </div>
                       </td>
                       <td className="px-3 py-2.5">
-                        <span className="text-xs font-medium text-gray-700 px-1.5 py-0.5 bg-orange-50 rounded">{truckTypeFr(truck.type)}</span>
+                        <span className="text-xs font-medium text-gray-700 px-1.5 py-0.5 bg-orange-50 rounded">{trailerLabel(truck.type)}</span>
                       </td>
                       <td className="px-3 py-2.5">
                         <span className="text-xs font-semibold text-gray-800">{truck.location_city || '—'}</span>
                         {truck.location_province && <span className="text-[9px] text-gray-400 ml-1">{truck.location_province.substring(0, 3).toUpperCase()}</span>}
                       </td>
                       <td className="px-3 py-2.5">
-                        <span className="text-xs text-gray-600">{truck.dest_city || 'Toute destination'}</span>
+                        <span className="text-xs text-gray-600">{truck.dest_city || t('anyDestination')}</span>
                       </td>
                       <td className="px-3 py-2.5 text-right">
                         <span className="text-xs font-medium text-gray-800">{formatWeight(truck.capacity)}</span>
@@ -561,14 +567,14 @@ export default function TruckBoardPage() {
                       <td className="px-3 py-2.5">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusCfg.bg}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot} ${truck.status === 'available' ? 'animate-pulse' : ''}`} />
-                          {statusCfg.label}
+                          {statusLabel(truck.status)}
                         </span>
                       </td>
                       <td className="px-3 py-2.5">
                         {truck.company_name ? (
                           <div className="min-w-[120px]">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase rounded bg-orange-50 text-orange-700 border border-orange-200">Entreprise</span>
+                              <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase rounded bg-orange-50 text-orange-700 border border-orange-200">{t('company')}</span>
                             </div>
                             <div className="text-xs font-semibold text-gray-800 truncate max-w-[120px]">{truck.company_name}</div>
                             {truck.company_phone && <div className="text-[10px] text-gray-400 truncate">{truck.company_phone}</div>}
@@ -579,12 +585,12 @@ export default function TruckBoardPage() {
                         <div className="flex items-center gap-1">
                           {truck.company_phone && (
                             <a href={`tel:${truck.company_phone}`} onClick={e => e.stopPropagation()}
-                              className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 transition-colors rounded-lg" title="Appeler">
+                              className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 transition-colors rounded-lg" title={t('call')}>
                               <Phone className="w-3.5 h-3.5" />
                             </a>
                           )}
                           <button onClick={e => { e.stopPropagation(); setPreviewTruck(truck); }}
-                            className="p-1.5 text-gray-300 hover:text-primary-600 hover:bg-primary-50 transition-colors rounded-lg" title="Details">
+                            className="p-1.5 text-gray-300 hover:text-primary-600 hover:bg-primary-50 transition-colors rounded-lg" title={t('view')}>
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -597,7 +603,7 @@ export default function TruckBoardPage() {
           </div>
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50/50">
-              <p className="text-xs text-gray-500">{((page-1)*PAGE_SIZE)+1} - {Math.min(page*PAGE_SIZE, sortedTrucks.length)} sur {sortedTrucks.length}</p>
+              <p className="text-xs text-gray-500">{((page-1)*PAGE_SIZE)+1} - {Math.min(page*PAGE_SIZE, sortedTrucks.length)} {t('pageOf')} {sortedTrucks.length}</p>
               <div className="flex items-center gap-1">
                 <button onClick={() => setPage(1)} disabled={page===1} className="p-1.5 rounded-lg hover:bg-gray-200 disabled:opacity-30"><ChevronsLeft className="w-4 h-4" /></button>
                 <button onClick={() => setPage(Math.max(1,page-1))} disabled={page===1} className="p-1.5 rounded-lg hover:bg-gray-200 disabled:opacity-30"><ChevronLeft className="w-4 h-4" /></button>
@@ -624,9 +630,9 @@ export default function TruckBoardPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusCfg.bg}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />{statusCfg.label}
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />{statusLabel(truck.status)}
                     </span>
-                    <span className="text-xs font-medium text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded">{truckTypeFr(truck.type)}</span>
+                    <span className="text-xs font-medium text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded">{trailerLabel(truck.type)}</span>
                     {isNewTruck && <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[9px] font-bold"><Sparkles className="w-2.5 h-2.5" /> NEW</span>}
                   </div>
                   <button onClick={(e) => toggleFavorite(truck.id, e)} className="p-1">
@@ -652,11 +658,11 @@ export default function TruckBoardPage() {
                 {/* Details */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="bg-gray-50 rounded-lg px-2.5 py-1.5">
-                    <div className="text-[9px] text-gray-500 uppercase font-semibold">Capacite</div>
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold">{t('capacity')}</div>
                     <div className="text-xs font-bold text-gray-800">{formatWeight(truck.capacity)}</div>
                   </div>
                   <div className="bg-emerald-50 rounded-lg px-2.5 py-1.5">
-                    <div className="text-[9px] text-gray-500 uppercase font-semibold">Prix/km</div>
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold">{t('pricePerKm')}</div>
                     <div className="text-xs font-bold text-emerald-700">{truck.price_per_km ? `${truck.price_per_km.toLocaleString()} CDF` : '—'}</div>
                   </div>
                 </div>
@@ -681,14 +687,14 @@ export default function TruckBoardPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-semibold text-gray-800 truncate">{truck.company_name}</span>
-                          <span className="px-1 py-0.5 text-[7px] font-bold uppercase rounded bg-orange-50 text-orange-600 border border-orange-200 flex-shrink-0">Entreprise</span>
+                          <span className="px-1 py-0.5 text-[7px] font-bold uppercase rounded bg-orange-50 text-orange-600 border border-orange-200 flex-shrink-0">{t('company')}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
                       {truck.company_phone && (
                         <a href={`tel:${truck.company_phone}`} onClick={e => e.stopPropagation()}
-                          className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100" title="Appeler">
+                          className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100" title={t('call')}>
                           <Phone className="w-3.5 h-3.5" />
                         </a>
                       )}
@@ -718,7 +724,7 @@ export default function TruckBoardPage() {
                   <Truck className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Apercu du camion</h3>
+                  <h3 className="text-sm font-bold text-gray-900">{t('previewTitle')}</h3>
                   <p className="text-[10px] text-gray-400 font-mono">#{previewTruck.id.substring(0, 8).toUpperCase()}</p>
                 </div>
               </div>
@@ -729,20 +735,20 @@ export default function TruckBoardPage() {
               <div className="flex items-center gap-2">
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${(STATUS_CONFIG[previewTruck.status] || STATUS_CONFIG.available).bg}`}>
                   <span className={`w-2 h-2 rounded-full ${(STATUS_CONFIG[previewTruck.status] || STATUS_CONFIG.available).dot}`} />
-                  {(STATUS_CONFIG[previewTruck.status] || STATUS_CONFIG.available).label}
+                  {statusLabel(previewTruck.status)}
                 </span>
-                <span className="px-2 py-0.5 text-xs font-medium text-orange-700 bg-orange-50 rounded">{truckTypeFr(previewTruck.type)}</span>
+                <span className="px-2 py-0.5 text-xs font-medium text-orange-700 bg-orange-50 rounded">{trailerLabel(previewTruck.type)}</span>
               </div>
 
               <div className="bg-gray-50 rounded-xl border p-4 space-y-3">
                 <div>
-                  <div className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Localisation</div>
+                  <div className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">{t('location')}</div>
                   <div className="text-base font-bold text-gray-900">{previewTruck.location_city || '—'}</div>
                   <div className="text-xs text-gray-500">{previewTruck.location_province}</div>
                 </div>
                 {previewTruck.dest_city && (
                   <div>
-                    <div className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Destination souhaitee</div>
+                    <div className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">{t('destinationWanted')}</div>
                     <div className="text-base font-bold text-gray-900">{previewTruck.dest_city}</div>
                     <div className="text-xs text-gray-500">{previewTruck.dest_province}</div>
                   </div>
@@ -751,24 +757,24 @@ export default function TruckBoardPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 mb-1"><Scale className="w-3 h-3 text-gray-400" /><span className="text-[9px] text-gray-500 uppercase font-bold">Capacite</span></div>
+                  <div className="flex items-center gap-1.5 mb-1"><Scale className="w-3 h-3 text-gray-400" /><span className="text-[9px] text-gray-500 uppercase font-bold">{t('capacity')}</span></div>
                   <div className="text-sm font-semibold text-gray-800">{formatWeight(previewTruck.capacity)}</div>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 mb-1"><CalendarClock className="w-3 h-3 text-gray-400" /><span className="text-[9px] text-gray-500 uppercase font-bold">Disponible</span></div>
+                  <div className="flex items-center gap-1.5 mb-1"><CalendarClock className="w-3 h-3 text-gray-400" /><span className="text-[9px] text-gray-500 uppercase font-bold">{t('availableDate')}</span></div>
                   <div className="text-sm font-semibold text-gray-800">{formatDate(previewTruck.available_date)}</div>
                 </div>
               </div>
 
               <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-4">
-                <div className="text-[10px] text-emerald-600 uppercase font-bold mb-0.5">Prix par km</div>
+                <div className="text-[10px] text-emerald-600 uppercase font-bold mb-0.5">{t('pricePerKm')}</div>
                 <div className="text-2xl font-black text-emerald-800">{previewTruck.price_per_km ? `${previewTruck.price_per_km.toLocaleString()} CDF` : '—'}</div>
-                {previewTruck.price > 0 && <div className="text-xs text-emerald-600 mt-1">Prix fixe: {formatPrice(previewTruck.price)}</div>}
+                {previewTruck.price > 0 && <div className="text-xs text-emerald-600 mt-1">{t('fixedPrice')}: {formatPrice(previewTruck.price)}</div>}
               </div>
 
               {previewTruck.features && previewTruck.features.length > 0 && (
                 <div>
-                  <div className="text-[10px] text-gray-400 uppercase font-bold mb-2">Equipements</div>
+                  <div className="text-[10px] text-gray-400 uppercase font-bold mb-2">{t('equipment')}</div>
                   <div className="flex flex-wrap gap-1.5">
                     {previewTruck.features.map(f => (
                       <span key={f} className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-lg text-xs text-gray-700">
@@ -783,8 +789,8 @@ export default function TruckBoardPage() {
               {previewTruck.company_name && (
                 <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="text-[10px] text-gray-400 uppercase font-bold">Publie par</div>
-                    <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase rounded bg-orange-50 text-orange-700 border border-orange-200">Entreprise</span>
+                    <div className="text-[10px] text-gray-400 uppercase font-bold">{t('publishedBy')}</div>
+                    <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase rounded bg-orange-50 text-orange-700 border border-orange-200">{t('company')}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
@@ -801,7 +807,7 @@ export default function TruckBoardPage() {
                     {previewTruck.company_phone && (
                       <a href={`tel:${previewTruck.company_phone}`}
                         className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold hover:bg-emerald-100">
-                        <Phone className="w-3.5 h-3.5" /> Appeler
+                        <Phone className="w-3.5 h-3.5" /> {t('call')}
                       </a>
                     )}
                     <button
@@ -809,7 +815,7 @@ export default function TruckBoardPage() {
                       onClick={() => { router.push('/dashboard/messages'); setPreviewTruck(null); }}
                       className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg text-xs font-semibold hover:bg-primary-100"
                     >
-                      <MessageSquare className="w-3.5 h-3.5" /> Message
+                      <MessageSquare className="w-3.5 h-3.5" /> {t('message')}
                     </button>
                   </div>
                 </div>
@@ -817,9 +823,9 @@ export default function TruckBoardPage() {
 
               <div className="flex gap-3 pt-2">
                 <Button className="flex-1" onClick={() => { setPreviewTruck(null); }}>
-                  <Eye className="w-4 h-4 mr-2" /> Contacter l&apos;entreprise
+                  <Eye className="w-4 h-4 mr-2" /> {t('contactCompany')}
                 </Button>
-                <button onClick={() => setPreviewTruck(null)} className="px-4 py-2.5 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Fermer</button>
+                <button onClick={() => setPreviewTruck(null)} className="px-4 py-2.5 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">{t('close')}</button>
               </div>
             </div>
           </div>

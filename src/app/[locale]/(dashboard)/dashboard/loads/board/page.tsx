@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/lib/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
@@ -17,7 +18,7 @@ import { useRealtimeLoads } from '@/hooks/useRealtimeLoads';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
 import dynamic from 'next/dynamic';
 
-const LoadBoardMap = dynamic(() => import('@/components/loads/LoadBoardMap'), { ssr: false, loading: () => <div className="w-full h-[500px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400">Chargement de la carte...</div> });
+const LoadBoardMap = dynamic(() => import('@/components/loads/LoadBoardMap'), { ssr: false, loading: () => <div className="w-full h-[500px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400">...</div> });
 
 // ══════════════════════════════════════════
 // INTERFACES & CONSTANTS
@@ -160,9 +161,21 @@ function getErrorMessage(error: unknown) {
 // MAIN COMPONENT
 // ══════════════════════════════════════════
 export default function LoadBoardPage() {
+  const t = useTranslations('loadBoard');
   const { isLoading: authLoading, isAuthorized, authError, role } = useRequireRole(['broker', 'company', 'admin']);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+
+  const statusLabel = (s: string) => {
+    if (s === 'all') return t('all');
+    if (s === 'available') return t('available');
+    if (s === 'booked') return t('booked');
+    if (s === 'in-transit') return t('inTransit');
+    if (s === 'delivered') return t('delivered');
+    if (s === 'completed') return t('completed');
+    if (s === 'cancelled') return t('cancelled');
+    return s;
+  };
 
   const [loads, setLoads] = useState<LoadRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -419,16 +432,16 @@ export default function LoadBoardPage() {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="max-w-xl w-full bg-white border border-amber-200 rounded-xl p-5 shadow-sm">
-          <p className="text-sm font-semibold text-amber-700">Acces indisponible</p>
+          <p className="text-sm font-semibold text-amber-700">{t('accessUnavailable')}</p>
           <p className="text-sm text-gray-600 mt-1">
-            {authError || 'Session invalide ou profil utilisateur incomplet. Reconnectez-vous puis reessayez.'}
+            {authError || t('invalidSession')}
           </p>
           <div className="mt-4 flex items-center gap-2">
             <Button size="sm" onClick={() => router.push('/login')}>
-              Se reconnecter
+              {t('reconnect')}
             </Button>
             <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
-              Reessayer
+              {t('retry')}
             </Button>
           </div>
         </div>
@@ -445,19 +458,19 @@ export default function LoadBoardPage() {
             <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
               <Package className="w-4 h-4 text-white" />
             </div>
-            Load Board
+            {t('title')}
             {stats.newCount > 0 && (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[11px] font-bold animate-pulse">
                 <Sparkles className="w-3 h-3" />
-                {stats.newCount} nouveau{stats.newCount > 1 ? 'x' : ''}
+                {stats.newCount} {stats.newCount > 1 ? t('newLabelPlural') : t('newLabel')}
               </span>
             )}
           </h1>
           <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
-            Marche des chargements en temps reel
+            {t('marketSubtitle')}
             <span className="flex items-center gap-1 text-emerald-600">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live
+              {t('live')}
             </span>
             <span className="text-gray-300">|</span>
             <span>MAJ: {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -469,28 +482,28 @@ export default function LoadBoardPage() {
             <button
               onClick={() => setViewMode('table')}
               className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
-              title="Vue tableau"
+              title={t('tableView')}
             >
               <LayoutList className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('cards')}
               className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
-              title="Vue cartes"
+              title={t('cardView')}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('map')}
               className={`p-1.5 rounded-md transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
-              title="Vue carte"
+              title={t('cardViewMap')}
             >
               <Map className="w-4 h-4" />
             </button>
           </div>
 
           <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-50 transition-colors">
-            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Export</span>
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{t('export')}</span>
           </button>
           <button onClick={fetchLoads} disabled={isLoading} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-50 transition-colors">
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -505,20 +518,20 @@ export default function LoadBoardPage() {
 
       {fetchError && (
         <div className="border border-amber-200 bg-amber-50 text-amber-800 text-sm rounded-lg px-3 py-2">
-          Erreur de chargement du Load Board: {fetchError}
+          {t('loadError')}: {fetchError}
         </div>
       )}
 
       {/* ══════════════════════ KPIs ══════════════════════ */}
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
         {[
-          { label: 'Total', value: stats.total, icon: Package, color: 'text-gray-700', bg: 'from-gray-50 to-gray-100/50', border: 'border-gray-200' },
-          { label: 'Disponibles', value: stats.available, icon: MapPin, color: 'text-emerald-700', bg: 'from-emerald-50 to-emerald-100/30', border: 'border-emerald-200' },
-          { label: 'En transit', value: stats.inTransit, icon: Truck, color: 'text-amber-700', bg: 'from-amber-50 to-amber-100/30', border: 'border-amber-200' },
-          { label: 'Nouveaux', value: stats.newCount, icon: Sparkles, color: 'text-rose-700', bg: 'from-rose-50 to-rose-100/30', border: 'border-rose-200' },
-          { label: 'Prix moy.', value: formatPrice(stats.avgPrice), icon: DollarSign, color: 'text-green-700', bg: 'from-green-50 to-green-100/30', border: 'border-green-200' },
-          { label: 'Poids total', value: formatWeight(stats.totalWeight), icon: Scale, color: 'text-blue-700', bg: 'from-blue-50 to-blue-100/30', border: 'border-blue-200' },
-          { label: 'Dist. moy.', value: `${stats.avgDistance} km`, icon: Route, color: 'text-purple-700', bg: 'from-purple-50 to-purple-100/30', border: 'border-purple-200' },
+{ label: t('total'), value: stats.total, icon: Package, color: 'text-gray-700', bg: 'from-gray-50 to-gray-100/50', border: 'border-gray-200' },
+        { label: t('availableCount'), value: stats.available, icon: MapPin, color: 'text-emerald-700', bg: 'from-emerald-50 to-emerald-100/30', border: 'border-emerald-200' },
+        { label: t('inTransit'), value: stats.inTransit, icon: Truck, color: 'text-amber-700', bg: 'from-amber-50 to-amber-100/30', border: 'border-amber-200' },
+        { label: t('newLoads'), value: stats.newCount, icon: Sparkles, color: 'text-rose-700', bg: 'from-rose-50 to-rose-100/30', border: 'border-rose-200' },
+        { label: t('avgPrice'), value: formatPrice(stats.avgPrice), icon: DollarSign, color: 'text-green-700', bg: 'from-green-50 to-green-100/30', border: 'border-green-200' },
+        { label: t('totalWeightKpi'), value: formatWeight(stats.totalWeight), icon: Scale, color: 'text-blue-700', bg: 'from-blue-50 to-blue-100/30', border: 'border-blue-200' },
+        { label: t('avgDistance'), value: `${stats.avgDistance} km`, icon: Route, color: 'text-purple-700', bg: 'from-purple-50 to-purple-100/30', border: 'border-purple-200' },
         ].map((kpi) => {
           const Icon = kpi.icon;
           return (
@@ -541,7 +554,7 @@ export default function LoadBoardPage() {
             type="text"
             value={filters.search}
             onChange={e => setFilters({ ...filters, search: e.target.value })}
-            placeholder="Rechercher ville, courtier, ID, cargo, type..."
+            placeholder={t('searchPlaceholderLong')}
             className="w-full pl-10 pr-10 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-400 bg-white transition-all"
           />
           {filters.search && (
@@ -554,7 +567,7 @@ export default function LoadBoardPage() {
         {/* Quick status filters */}
         <div className="hidden lg:flex items-center gap-1">
           {(['all', 'available', 'booked', 'in-transit'] as const).map(s => {
-            const cfg = s === 'all' ? { label: 'Tous', bg: 'bg-gray-50 text-gray-600 border-gray-200', dot: 'bg-gray-400' } : STATUS_CONFIG[s];
+            const cfg = s === 'all' ? { label: t('all'), bg: 'bg-gray-50 text-gray-600 border-gray-200', dot: 'bg-gray-400' } : { ...STATUS_CONFIG[s], label: statusLabel(s) };
             const active = filters.status === s;
             return (
               <button
@@ -578,7 +591,7 @@ export default function LoadBoardPage() {
           }`}
         >
           <Filter className="w-4 h-4" />
-          <span className="hidden sm:inline">Filtres</span>
+          <span className="hidden sm:inline">{t('filters')}</span>
           {activeFilterCount > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] font-bold bg-primary-600 text-white rounded-full">{activeFilterCount}</span>
           )}
@@ -591,10 +604,10 @@ export default function LoadBoardPage() {
         <div className="bg-white border rounded-xl p-4 space-y-3 shadow-sm animate-in slide-in-from-top-2">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
-              { label: 'Date debut', type: 'date', key: 'startDate' },
-              { label: 'Date fin', type: 'date', key: 'endDate' },
-              { label: 'Origine', type: 'text', key: 'originCity', ph: 'Lubumbashi...' },
-              { label: 'Destination', type: 'text', key: 'destCity', ph: 'Kolwezi...' },
+              { label: t('startDate'), type: 'date', key: 'startDate' },
+              { label: t('endDate'), type: 'date', key: 'endDate' },
+              { label: t('origin'), type: 'text', key: 'originCity', ph: 'Lubumbashi...' },
+              { label: t('destination'), type: 'text', key: 'destCity', ph: 'Kolwezi...' },
             ].map(f => (
               <div key={f.key}>
                 <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{f.label}</label>
@@ -608,18 +621,26 @@ export default function LoadBoardPage() {
               </div>
             ))}
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Statut</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('status')}</label>
               <select value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })}
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none">
-                <option value="all">Tous</option>
-                {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                <option value="all">{t('all')}</option>
+                {Object.entries(STATUS_CONFIG).map(([k]) => <option key={k} value={k}>{statusLabel(k)}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Type remorque</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('trailerType')}</label>
               <select value={filters.trailerType} onChange={e => setFilters({ ...filters, trailerType: e.target.value })}
                 className="w-full px-2.5 py-1.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none">
-                {TRAILER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                <option value="">{t('allTypes')}</option>
+                {[
+                  { value: 'flatbed', key: 'trailerFlatbed' as const },
+                  { value: 'van', key: 'trailerVan' as const },
+                  { value: 'reefer', key: 'trailerReefer' as const },
+                  { value: 'tanker', key: 'trailerTanker' as const },
+                  { value: 'container', key: 'trailerContainer' as const },
+                  { value: 'lowboy', key: 'trailerLowboy' as const },
+                ].map(o => <option key={o.value} value={o.value}>{t(o.key)}</option>)}
               </select>
             </div>
           </div>
@@ -678,16 +699,16 @@ export default function LoadBoardPage() {
               <thead className="bg-slate-50 border-b border-gray-100">
                 <tr>
                   <th className="w-8 px-2"></th>
-                  <SortHeader col="pickup_date" label="Ramassage" />
-                  <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">Trajet</th>
-                  <SortHeader col="trailer_type" label="Type" />
-                  <SortHeader col="weight" label="Poids" align="right" />
-                  <SortHeader col="distance" label="Distance" align="right" />
-                  <SortHeader col="price" label="Prix" align="right" />
-                  <SortHeader col="price_per_km" label="CDF/km" align="right" />
-                  <SortHeader col="status" label="Statut" />
-                  <SortHeader col="broker_name" label="Editeur" />
-                  <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Contact</th>
+                  <SortHeader col="pickup_date" label={t('pickup')} />
+                  <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{t('traject')}</th>
+                  <SortHeader col="trailer_type" label={t('type')} />
+                  <SortHeader col="weight" label={t('weight')} align="right" />
+                  <SortHeader col="distance" label={t('distance')} align="right" />
+                  <SortHeader col="price" label={t('price')} align="right" />
+                  <SortHeader col="price_per_km" label={t('cdfPerKm')} align="right" />
+                  <SortHeader col="status" label={t('status')} />
+                  <SortHeader col="broker_name" label={t('publisher')} />
+                  <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">{t('contact')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -695,7 +716,7 @@ export default function LoadBoardPage() {
                   <tr>
                     <td colSpan={11} className="px-6 py-16 text-center">
                       <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary-400" />
-                      <p className="text-sm text-gray-500">Chargement du Load Board...</p>
+                      <p className="text-sm text-gray-500">{t('refresh')}...</p>
                     </td>
                   </tr>
                 ) : paginatedLoads.length === 0 ? (
@@ -705,20 +726,18 @@ export default function LoadBoardPage() {
                         <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                           <Package className="w-8 h-8 text-gray-300" />
                         </div>
-                        <p className="text-sm font-semibold text-gray-600">Aucun chargement trouve</p>
+                        <p className="text-sm font-semibold text-gray-600">{t('noLoadsFound')}</p>
                         <p className="text-xs text-gray-400 mt-1.5">
-                          {activeFilterCount > 0
-                            ? 'Essayez d\'ajuster vos filtres pour voir plus de resultats'
-                            : 'Les chargements apparaitront ici une fois publies'}
+                          {activeFilterCount > 0 ? t('noLoadsFilterHint') : t('noLoadsEmpty')}
                         </p>
                         {(userRole === 'broker' || userRole === 'admin') && (
                           <Button size="sm" className="mt-4" onClick={() => router.push('/dashboard/publish')}>
-                            <Plus className="w-3.5 h-3.5 mr-1" /> Poster un chargement
+                            <Plus className="w-3.5 h-3.5 mr-1" /> {t('postFirstLoad')}
                           </Button>
                         )}
                         {activeFilterCount > 0 && (
                           <button onClick={clearFilters} className="mt-2 text-xs text-primary-600 hover:text-primary-700 font-medium">
-                            Effacer les filtres
+                            {t('clearFilters')}
                           </button>
                         )}
                       </div>
@@ -843,7 +862,7 @@ export default function LoadBoardPage() {
                         <td className="px-3 py-2.5">
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusCfg.bg}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot} ${load.status === 'available' ? 'animate-pulse' : ''}`} />
-                            {statusCfg.label}
+                            {statusLabel(load.status)}
                           </span>
                         </td>
 
@@ -944,7 +963,7 @@ export default function LoadBoardPage() {
                       <div className="flex items-center gap-2">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusCfg.bg}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot} ${load.status === 'available' ? 'animate-pulse' : ''}`} />
-                          {statusCfg.label}
+                          {statusLabel(load.status)}
                         </span>
                         {isNewLoad && (
                           <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[9px] font-bold">
@@ -1104,6 +1123,17 @@ function PreviewDrawer({ load, isFav, onToggleFav, onClose, onViewFull, onMessag
   onViewFull: () => void;
   onMessage: () => void;
 }) {
+  const t = useTranslations('loadBoard');
+  const statusLabel = (s: string) => {
+    if (s === 'all') return t('all');
+    if (s === 'available') return t('available');
+    if (s === 'booked') return t('booked');
+    if (s === 'in-transit') return t('inTransit');
+    if (s === 'delivered') return t('delivered');
+    if (s === 'completed') return t('completed');
+    if (s === 'cancelled') return t('cancelled');
+    return s;
+  };
   const statusCfg = STATUS_CONFIG[load.status] || STATUS_CONFIG.available;
   const priceCol = getPriceColor(load.price_per_km);
 
@@ -1140,7 +1170,7 @@ function PreviewDrawer({ load, isFav, onToggleFav, onClose, onViewFull, onMessag
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusCfg.bg}`}>
               <span className={`w-2 h-2 rounded-full ${statusCfg.dot} ${load.status === 'available' ? 'animate-pulse' : ''}`} />
-              {statusCfg.label}
+              {statusLabel(load.status)}
             </span>
             {isNew(load.created_at) && (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-bold">
