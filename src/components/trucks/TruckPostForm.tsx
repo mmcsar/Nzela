@@ -28,6 +28,7 @@ interface TruckFormData {
   destination?: { address?: string; city?: string; province?: string; coordinates?: { lat?: number; lng?: number } };
   price: number;
   pricePerKm: number;
+  currency: 'CDF' | 'USD';
   features?: string[];
 }
 
@@ -88,6 +89,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
     }).optional(),
     price: z.number().min(0, t('errPricePositive')),
     pricePerKm: z.number().min(0, t('errPricePerKmPositive')),
+    currency: z.enum(['CDF', 'USD']),
     features: z.array(z.string()).optional(),
   }), [t]);
 
@@ -117,6 +119,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
       currentLocation: {
         province: 'haut-katanga',
       },
+      currency: 'CDF',
       features: [],
     },
   });
@@ -181,6 +184,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
           destination: data.destination || null,
           price: data.price,
           pricePerKm: data.pricePerKm,
+          currency: data.currency || 'CDF',
           features: data.features || [],
           status: 'available',
         }),
@@ -372,21 +376,33 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         <div className="border-t pt-6">
           <h3 className="text-lg font-semibold mb-4">{t('pricing')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label={t('fixedPriceCdf')}
-              type="number"
-              {...register('price', { valueAsNumber: true })}
-              error={errors.price?.message}
-              required
-            />
-            <Input
-              label={t('pricePerKmCdf')}
-              type="number"
-              step="0.01"
-              {...register('pricePerKm', { valueAsNumber: true })}
-              error={errors.pricePerKm?.message}
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('currency')}</label>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                {...register('currency')}
+              >
+                <option value="CDF">{t('currencyCdf')}</option>
+                <option value="USD">{t('currencyUsd')}</option>
+              </select>
+            </div>
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label={watch('currency') === 'USD' ? t('fixedPriceUsd') : t('fixedPriceCdf')}
+                type="number"
+                {...register('price', { valueAsNumber: true })}
+                error={errors.price?.message}
+                required
+              />
+              <Input
+                label={watch('currency') === 'USD' ? t('pricePerKmUsd') : t('pricePerKmCdf')}
+                type="number"
+                step="0.01"
+                {...register('pricePerKm', { valueAsNumber: true })}
+                error={errors.pricePerKm?.message}
+                required
+              />
+            </div>
           </div>
         </div>
 

@@ -131,6 +131,7 @@ export async function POST(request: Request) {
     const pricePerKm = Number(body.pricePerKm) ?? (distance > 0 ? Math.round(price / distance) : 0);
 
     // Défauts Haut-Katanga / Lualaba (flux classique Lubumbashi ↔ Kolwezi)
+    const currency = (body.currency === 'USD' ? 'USD' : 'CDF') as 'CDF' | 'USD';
     const loadData = {
       broker_id: brokerId,
       origin: {
@@ -151,6 +152,7 @@ export async function POST(request: Request) {
       weight: parseFloat(body.weight) || 0,
       price,
       price_per_km: pricePerKm,
+      currency,
       pickup_date: body.pickupDate || new Date().toISOString(),
       delivery_date: body.deliveryDate || new Date().toISOString(),
       cargo_type: body.cargoType || null,

@@ -181,6 +181,7 @@ export interface Database {
           destination: Json | null
           price: number
           price_per_km: number
+          currency: 'CDF' | 'USD'
           status: 'available' | 'booked' | 'in-transit' | 'maintenance'
           features: string[]
           created_at: string
@@ -196,6 +197,7 @@ export interface Database {
           destination?: Json | null
           price: number
           price_per_km: number
+          currency?: 'CDF' | 'USD'
           status?: 'available' | 'booked' | 'in-transit' | 'maintenance'
           features?: string[]
           created_at?: string
@@ -211,6 +213,7 @@ export interface Database {
           destination?: Json | null
           price?: number
           price_per_km?: number
+          currency?: 'CDF' | 'USD'
           status?: 'available' | 'booked' | 'in-transit' | 'maintenance'
           features?: string[]
           created_at?: string
@@ -229,6 +232,7 @@ export interface Database {
           weight: number
           price: number
           price_per_km: number
+          currency: 'CDF' | 'USD'
           pickup_date: string
           delivery_date: string
           cargo_type: string | null
@@ -251,6 +255,7 @@ export interface Database {
           weight: number
           price: number
           price_per_km: number
+          currency?: 'CDF' | 'USD'
           pickup_date: string
           delivery_date: string
           cargo_type?: string | null
@@ -271,6 +276,7 @@ export interface Database {
           weight?: number
           price?: number
           price_per_km?: number
+          currency?: 'CDF' | 'USD'
           pickup_date?: string
           delivery_date?: string
           cargo_type?: string | null

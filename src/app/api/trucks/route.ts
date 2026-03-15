@@ -96,9 +96,11 @@ export async function POST(request: Request) {
       destination,
       price,
       pricePerKm,
+      currency: bodyCurrency,
       features,
       status = 'available',
     } = body;
+    const currency = bodyCurrency === 'USD' ? 'USD' : 'CDF';
 
     if (!type || !capacity || !currentLocation || !availableDate || !price || !pricePerKm) {
       return withTiming(
@@ -118,6 +120,7 @@ export async function POST(request: Request) {
         destination: destination || null,
         price,
         price_per_km: pricePerKm,
+        currency,
         features: features || [],
         status,
       })
