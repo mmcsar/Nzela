@@ -3,6 +3,14 @@
 import { BOL } from '@/types';
 import jsPDF from 'jspdf';
 import JsBarcode from 'jsbarcode';
+import frCommon from '@/locales/fr/common.json';
+import enCommon from '@/locales/en/common.json';
+
+type BolMessages = Record<string, string>;
+function getBolMessages(locale: string): BolMessages {
+  const root = locale === 'en' ? (enCommon as { bol?: BolMessages }) : (frCommon as { bol?: BolMessages });
+  return root.bol || (frCommon as { bol: BolMessages }).bol;
+}
 
 // ── Helpers ──
 function safe(val: any): any {
@@ -39,9 +47,10 @@ function getBarcodeDataUrl(bolNumber: string): string | null {
 
 /**
  * Génère un PDF BOL professionnel style "Bill of Lading - Shipping Form"
- * Adapté pour la RDC - Tout en français
+ * FR/EN selon locale.
  */
-export function generateBOLPDF(bol: BOL) {
+export function generateBOLPDF(bol: BOL, locale: string = 'fr') {
+  const msg = getBolMessages(locale);
   const doc = new jsPDF('p', 'mm', 'a4');
   const W = 210;
   const margin = 12;
@@ -102,9 +111,9 @@ export function generateBOLPDF(bol: BOL) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(255, 255, 255);
-  doc.text('BORDEREAU DE CHARGEMENT - FORMULAIRE D\'EXPEDITION', W / 2, y + 5.5, { align: 'center' });
+  doc.text(msg.title || 'BILL OF LADING - SHIPPING FORM', W / 2, y + 5.5, { align: 'center' });
   doc.setFontSize(7);
-  doc.text('Republique Democratique du Congo', W / 2, y + 10, { align: 'center' });
+  doc.text(msg.subtitle || 'Democratic Republic of Congo / Zambia', W / 2, y + 10, { align: 'center' });
   doc.setTextColor(0, 0, 0);
   y += 14;
 
@@ -116,7 +125,7 @@ export function generateBOLPDF(bol: BOL) {
   drawThickRect(margin + halfW, y, halfW, blockH1);
 
   // Header gauche
-  sectionHeader('Expedier de (Expediteur)', margin, y, halfW);
+  sectionHeader(msg.shipFrom || 'Ship from (Shipper)', margin, y, halfW);
   let yL = y + 9;
   label('Nom:', margin + 2, yL); value(shipper.name || '', margin + 15, yL);
   yL += 5;
@@ -128,7 +137,7 @@ export function generateBOLPDF(bol: BOL) {
   if (shipper.email) { label('Email:', margin + 50, yL); value(shipper.email, margin + 62, yL); }
 
   // Header droite
-  sectionHeader('Numero du Bordereau', margin + halfW, y, halfW);
+  sectionHeader(msg.bolNumber || 'BOL Number', margin + halfW, y, halfW);
   let yR = y + 10;
   const bolId = (bol?.id && typeof bol.id === 'string') ? bol.id : '';
   const bolNum = (bol as any).bolNumber || (bol as any).bol_number || `BOL-${bolId.substring(0, 8).toUpperCase() || 'N'}`;
@@ -166,7 +175,7 @@ export function generateBOLPDF(bol: BOL) {
     doc.rect(barcodeX, yR, barcodeW, barcodeH, 'S');
     doc.setFontSize(5);
     doc.setTextColor(150);
-    doc.text('ESPACE CODE-BARRES', margin + halfW + halfW / 2, yR + 5, { align: 'center' });
+    doc.text(msg.barcodeSpace || 'BARCODE SPACE', margin + halfW + halfW / 2, yR + 5, { align: 'center' });
     doc.setTextColor(0, 0, 0);
   }
 
@@ -199,7 +208,7 @@ export function generateBOLPDF(bol: BOL) {
   drawThickRect(margin, y, halfW, blockH2);
   drawThickRect(margin + halfW, y, halfW, blockH2);
 
-  sectionHeader('*Expedier a (Destinataire)', margin, y, halfW);
+  sectionHeader('*' + (msg.shipTo || 'Ship to (Consignee)'), margin, y, halfW);
   yL = y + 9;
   const dest = consignee.name ? consignee : destination;
   label('Nom:', margin + 2, yL); value(dest.name || dest.city || '', margin + 15, yL);
@@ -210,7 +219,7 @@ export function generateBOLPDF(bol: BOL) {
   yL += 5;
   if (dest.phone) { label('Tel:', margin + 2, yL); value(dest.phone, margin + 12, yL); }
 
-  sectionHeader('Nom du Transporteur', margin + halfW, y, halfW);
+  sectionHeader(msg.carrierName || 'Carrier Name', margin + halfW, y, halfW);
   yR = y + 10;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
@@ -246,7 +255,7 @@ export function generateBOLPDF(bol: BOL) {
   // ══════════════════════════════════════════
   // TABLEAU DES ARTICLES
   // ══════════════════════════════════════════
-  sectionHeader('Information commande client', margin, y, innerW);
+  sectionHeader(msg.customerOrderInfo || 'Customer order information', margin, y, innerW);
   y += 7;
 
   // Table Header
@@ -316,7 +325,7 @@ export function generateBOLPDF(bol: BOL) {
   // ══════════════════════════════════════════
   // INFORMATION TRANSPORTEUR
   // ══════════════════════════════════════════
-  sectionHeader('Information transporteur', margin, y, innerW);
+  sectionHeader(msg.carrierInfo || 'Carrier information', margin, y, innerW);
   y += 7;
 
   const infoH = 16;
@@ -400,11 +409,11 @@ export function generateBOLPDF(bol: BOL) {
   return doc;
 }
 
-export function downloadBOLPDF(bol: BOL) {
+export function downloadBOLPDF(bol: BOL, locale: string = 'fr') {
   if (typeof window === 'undefined') return;
   let doc: ReturnType<typeof generateBOLPDF> | null = null;
   try {
-    doc = generateBOLPDF(bol);
+    doc = generateBOLPDF(bol, locale);
   } catch (err) {
     console.error('Erreur génération BOL PDF:', err);
     if (window.alert) {

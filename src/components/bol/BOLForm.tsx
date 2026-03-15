@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/lib/i18n/routing';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -67,6 +68,8 @@ interface BOLFormProps {
 }
 
 export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
+  const t = useTranslations('bol');
+  const locale = useLocale();
   const router = useRouter();
   const supabase = createClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -269,7 +272,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         createdAt: new Date(bol.created_at),
         bol_number: bol.bol_number,
       };
-      downloadBOLPDF(pdfPayload as BOL);
+      downloadBOLPDF(pdfPayload as BOL, locale);
 
       if (onSuccess) {
         onSuccess(bol as BOL);
@@ -303,14 +306,14 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
 
         {/* Titre */}
         <div className="bg-gray-900 text-white text-center py-3">
-          <h1 className="text-xl font-black tracking-wide">BORDEREAU DE CHARGEMENT - FORMULAIRE D&apos;EXPEDITION</h1>
-          <p className="text-[10px] text-gray-300 mt-0.5">BILL OF LADING - SHIPPING FORM | Republique Democratique du Congo</p>
+          <h1 className="text-xl font-black tracking-wide">{t('title')}</h1>
+          <p className="text-[10px] text-gray-300 mt-0.5">{t('subtitle')}</p>
         </div>
 
         {/* ── Selection Load / Truck ── */}
         <div className="grid grid-cols-2 border-b-2 border-gray-900">
           <div className="p-3 border-r border-gray-300">
-            <label className={labelCls}>Chargement *</label>
+            <label className={labelCls}>{t('load')} *</label>
             <select className={inputCls} {...register('loadId')} onChange={(e) => {
               setValue('loadId', e.target.value);
               const load = loads.find((l) => l.id === e.target.value) as any;
@@ -323,7 +326,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
                 if (dest) { setValue('consigneeCity', dest.city || ''); setValue('consigneeAddress', dest.address || ''); }
               }
             }}>
-              <option value="">-- Selectionner --</option>
+              <option value="">{t('select')}</option>
               {loads.map((load: any) => {
                 const o = typeof load.origin === 'string' ? JSON.parse(load.origin) : load.origin;
                 const d = typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination;
@@ -334,7 +337,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
             {errors.loadId && <p className="text-[10px] text-red-600 mt-0.5">{errors.loadId.message}</p>}
           </div>
           <div className="p-3">
-            <label className={labelCls}>Camion / Vehicule *</label>
+            <label className={labelCls}>{t('truck')} *</label>
             <select
               className={inputCls}
               {...register('truckId', {
@@ -346,7 +349,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
                 },
               })}
             >
-              <option value="">-- Selectionner --</option>
+              <option value="">{t('select')}</option>
               {trucks.map((truck: any) => {
                 const locRaw = truck.current_location ?? truck.currentLocation;
                 const loc = typeof locRaw === 'string' ? (() => { try { return JSON.parse(locRaw); } catch { return {}; } })() : (locRaw || {});
@@ -362,7 +365,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
               })}
             </select>
             {trucks.length === 0 && (
-              <p className="text-[10px] text-amber-600 mt-1">Aucun camion disponible. Les entreprises doivent publier des camions sur le Truck Board.</p>
+              <p className="text-[10px] text-amber-600 mt-1">{t('noTrucks')}</p>
             )}
             {errors.truckId && <p className="text-[10px] text-red-600 mt-0.5">{errors.truckId.message}</p>}
           </div>
@@ -371,34 +374,34 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         {/* ── EXPEDITEUR / N° BOL ── */}
         <div className="grid grid-cols-2 border-b border-gray-900">
           <div className="border-r border-gray-900">
-            <div className={sectionTitle}>Expedier de (Expediteur)</div>
+            <div className={sectionTitle}>{t('shipFrom')}</div>
             <div className="p-3 space-y-2">
               <div>
-                <label className={labelCls}>Nom / Societe</label>
+                <label className={labelCls}>{t('nameCompany')}</label>
                 <input className={inputCls} {...register('shipperName')} />
               </div>
               <div>
-                <label className={labelCls}>Adresse</label>
+                <label className={labelCls}>{t('address')}</label>
                 <input className={inputCls} {...register('shipperAddress')} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className={labelCls}>Ville</label>
+                  <label className={labelCls}>{t('city')}</label>
                   <input className={inputCls} {...register('shipperCity')} />
                 </div>
                 <div>
-                  <label className={labelCls}>Telephone</label>
+                  <label className={labelCls}>{t('phone')}</label>
                   <input className={inputCls} {...register('shipperPhone')} />
                 </div>
               </div>
             </div>
           </div>
           <div>
-            <div className={sectionTitle}>Numero du Bordereau</div>
+            <div className={sectionTitle}>{t('bolNumber')}</div>
             <div className="p-3">
-              <p className="text-xs text-gray-500 mb-2">Genere automatiquement a la creation</p>
+              <p className="text-xs text-gray-500 mb-2">{t('bolNumberAuto')}</p>
               <div className="border-2 border-dashed border-gray-300 p-4 text-center text-gray-400 text-sm">
-                ESPACE CODE-BARRES
+                {t('barcodeSpace')}
               </div>
             </div>
           </div>
@@ -407,37 +410,37 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         {/* ── DESTINATAIRE / TRANSPORTEUR ── */}
         <div className="grid grid-cols-2 border-b border-gray-900">
           <div className="border-r border-gray-900">
-            <div className={sectionTitle}>*Expedier a (Destinataire)</div>
+            <div className={sectionTitle}>*{t('shipTo')}</div>
             <div className="p-3 space-y-2">
               <div>
-                <label className={labelCls}>Nom / Societe</label>
+                <label className={labelCls}>{t('nameCompany')}</label>
                 <input className={inputCls} {...register('consigneeName')} />
               </div>
               <div>
-                <label className={labelCls}>Adresse</label>
+                <label className={labelCls}>{t('address')}</label>
                 <input className={inputCls} {...register('consigneeAddress')} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className={labelCls}>Ville</label>
+                  <label className={labelCls}>{t('city')}</label>
                   <input className={inputCls} {...register('consigneeCity')} />
                 </div>
                 <div>
-                  <label className={labelCls}>Telephone</label>
+                  <label className={labelCls}>{t('phone')}</label>
                   <input className={inputCls} {...register('consigneePhone')} />
                 </div>
               </div>
             </div>
           </div>
           <div>
-            <div className={sectionTitle}>Nom du Transporteur</div>
+            <div className={sectionTitle}>{t('carrierName')}</div>
             <div className="p-3 space-y-2">
               <div>
-                <label className={labelCls}>Transporteur</label>
-                <input className={inputCls} {...register('carrierName')} />
+                <label className={labelCls}>{t('carrier')}</label>
+                <input className={inputCls} {...register('carrierName')} placeholder="Ex: RCCM-LUB-001" />
               </div>
               <div>
-                <label className={labelCls}>SCAC / Immatriculation</label>
+                <label className={labelCls}>{t('scac')}</label>
                 <input className={inputCls} {...register('carrierScac')} placeholder="Ex: RCCM-LUB-001" />
               </div>
             </div>
@@ -447,27 +450,27 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         {/* ── TIERS PAYEUR / SCAC ── */}
         <div className="grid grid-cols-2 border-b border-gray-900">
           <div className="border-r border-gray-900">
-            <div className={sectionTitle}>Frais de transport a facturer a un tiers</div>
+            <div className={sectionTitle}>{t('chargeToThirdParty')}</div>
             <div className="p-3 grid grid-cols-2 gap-2">
               <div>
-                <label className={labelCls}>Nom</label>
+                <label className={labelCls}>{t('nameCompany')}</label>
                 <input className={inputCls} {...register('thirdPartyName')} />
               </div>
               <div>
-                <label className={labelCls}>Adresse</label>
+                <label className={labelCls}>{t('address')}</label>
                 <input className={inputCls} {...register('thirdPartyAddress')} />
               </div>
             </div>
           </div>
           <div>
-            <div className={sectionTitle}>Conditions de fret</div>
+            <div className={sectionTitle}>{t('freightTerms')}</div>
             <div className="p-3 space-y-2">
               <div>
-                <label className={labelCls}>Conditions</label>
+                <label className={labelCls}>{t('freightTerms')}</label>
                 <select className={inputCls} {...register('freightTerms')}>
-                  <option value="Prepaye">Prepaye</option>
-                  <option value="A percevoir">A percevoir</option>
-                  <option value="Tiers payeur">Tiers payeur</option>
+                  <option value="Prepaye">{t('freightPrepaid')}</option>
+                  <option value="A percevoir">{t('freightCollect')}</option>
+                  <option value="Tiers payeur">{t('freightThirdParty')}</option>
                 </select>
               </div>
             </div>
@@ -476,23 +479,23 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
 
         {/* ── INSTRUCTIONS SPECIALES ── */}
         <div className="border-b border-gray-900 p-3">
-          <label className={labelCls}>Instructions speciales :</label>
+          <label className={labelCls}>{t('specialInstructions')} :</label>
           <textarea className={`${inputCls} resize-none`} rows={2} {...register('specialInstructions')} placeholder="Ex: Marchandise fragile, maintenir au sec..." />
         </div>
 
         {/* ── INFORMATION COMMANDE CLIENT ── */}
-        <div className={sectionTitle}>Information commande client</div>
+        <div className={sectionTitle}>{t('customerOrderInfo')}</div>
 
         {/* Table Header */}
         <div className="grid grid-cols-12 border-b border-gray-900 text-[10px] font-bold uppercase bg-gray-100">
-          <div className="col-span-2 px-2 py-1.5 border-r border-gray-300">N° Commande</div>
-          <div className="col-span-4 px-2 py-1.5 border-r border-gray-300">Description marchandise</div>
-          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">Nb Colis</div>
-          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">Type</div>
-          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">Poids (kg)</div>
-          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">Palette</div>
-          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">Classe</div>
-          <div className="col-span-1 px-2 py-1.5 text-center">Action</div>
+          <div className="col-span-2 px-2 py-1.5 border-r border-gray-300">{t('orderNo')}</div>
+          <div className="col-span-4 px-2 py-1.5 border-r border-gray-300">{t('description')}</div>
+          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">{t('qty')}</div>
+          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">{t('type')}</div>
+          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">{t('weight')}</div>
+          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">{t('pallet')}</div>
+          <div className="col-span-1 px-2 py-1.5 border-r border-gray-300 text-center">{t('class')}</div>
+          <div className="col-span-1 px-2 py-1.5 text-center">{t('action')}</div>
         </div>
 
         {/* Item Rows */}
@@ -509,12 +512,12 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
             </div>
             <div className="col-span-1 border-r border-gray-300">
               <select className="w-full px-1 py-1.5 text-[10px] text-gray-900 bg-white outline-none" value={item.packageType || 'Palette'} onChange={(e) => updateItem(i, 'packageType', e.target.value)}>
-                <option>Palette</option>
-                <option>Carton</option>
-                <option>Sac</option>
-                <option>Fut</option>
-                <option>Vrac</option>
-                <option>Autre</option>
+                <option>{t('packages')}</option>
+                <option>{t('carton')}</option>
+                <option>{t('bag')}</option>
+                <option>{t('drum')}</option>
+                <option>{t('bulk')}</option>
+                <option>{t('other')}</option>
               </select>
             </div>
             <div className="col-span-1 border-r border-gray-300">
@@ -540,32 +543,32 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         <div className="border-b border-gray-900">
           <div className="flex items-center justify-between px-3 py-2">
             <button type="button" onClick={addItem} className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-semibold">
-              <Plus className="w-3.5 h-3.5" /> Ajouter un article
+              <Plus className="w-3.5 h-3.5" /> {t('addItem')}
             </button>
             <div className="flex items-center gap-6 text-sm">
-              <span className="font-bold">Total poids : <span className="text-primary-700">{totalWeight.toLocaleString()} kg</span></span>
-              <span className="font-bold">Total valeur : <span className="text-primary-700">{totalValue.toLocaleString()} CDF</span></span>
+              <span className="font-bold">{t('totalWeight')} : <span className="text-primary-700">{totalWeight.toLocaleString()} kg</span></span>
+              <span className="font-bold">{t('totalValue')} : <span className="text-primary-700">{totalValue.toLocaleString()} CDF</span></span>
             </div>
           </div>
         </div>
 
         {/* ── INFORMATION TRANSPORTEUR ── */}
-        <div className={sectionTitle}>Information transporteur</div>
+        <div className={sectionTitle}>{t('carrierInfo')}</div>
 
         <div className="grid grid-cols-2 border-b border-gray-900">
           <div className="border-r border-gray-900 p-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Montant contre remboursement (CDF)</label>
+                <label className={labelCls}>{t('codAmount')}</label>
                 <input className={inputCls} {...register('codAmount')} placeholder="0" />
               </div>
               <div>
-                <label className={labelCls}>Modalites de paiement</label>
+                <label className={labelCls}>{t('paymentTerms')}</label>
                 <select className={inputCls} {...register('feeTerms')}>
-                  <option value="">-- Selectionner --</option>
-                  <option value="A percevoir">A percevoir</option>
-                  <option value="Prepaye">Prepaye</option>
-                  <option value="Cheque accepte">Cheque accepte</option>
+                  <option value="">{t('select')}</option>
+                  <option value="A percevoir">{t('freightCollect')}</option>
+                  <option value="Prepaye">{t('freightPrepaid')}</option>
+                  <option value="Cheque accepte">{t('checkAccepted')}</option>
                 </select>
               </div>
             </div>
@@ -573,12 +576,12 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
           <div className="p-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Date de ramassage *</label>
+                <label className={labelCls}>{t('pickupDate')} *</label>
                 <input type="datetime-local" className={inputCls} {...register('pickupDate')} />
                 {errors.pickupDate && <p className="text-[10px] text-red-600">{errors.pickupDate.message}</p>}
               </div>
               <div>
-                <label className={labelCls}>Date de livraison *</label>
+                <label className={labelCls}>{t('deliveryDate')} *</label>
                 <input type="datetime-local" className={inputCls} {...register('deliveryDate')} />
                 {errors.deliveryDate && <p className="text-[10px] text-red-600">{errors.deliveryDate.message}</p>}
               </div>
@@ -589,7 +592,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         {/* ── MENTIONS LEGALES ── */}
         <div className="border-b border-gray-900 px-3 py-2">
           <p className="text-[9px] text-gray-500 leading-tight">
-            <strong>Note :</strong> La limitation de responsabilite pour perte ou dommage a cette expedition peut etre applicable. Voir 49 USC § 14706(c)(1)(A) et (B). Le transporteur ne fera pas la livraison de cette expedition sans paiement des frais de transport et de tous les autres frais legaux.
+            <strong>Note :</strong> {t('legalNote')}
           </p>
         </div>
 
@@ -597,35 +600,35 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         <div className="grid grid-cols-2 border-b border-gray-900">
           <div className="border-r border-gray-900 p-3">
             <div className="flex items-center gap-4 mb-2">
-              <label className={labelCls}>Remorque chargee par :</label>
+              <label className={labelCls}>{t('trailerLoadedBy')}</label>
               <label className="flex items-center gap-1 text-xs">
-                <input type="radio" value="Par expediteur" {...register('trailerLoaded')} /> Expediteur
+                <input type="radio" value="Par expediteur" {...register('trailerLoaded')} /> {t('byShipper')}
               </label>
               <label className="flex items-center gap-1 text-xs">
-                <input type="radio" value="Par chauffeur" {...register('trailerLoaded')} /> Chauffeur
+                <input type="radio" value="Par chauffeur" {...register('trailerLoaded')} /> {t('byDriver')}
               </label>
             </div>
             <div className="flex items-center gap-4">
-              <label className={labelCls}>Fret compte par :</label>
+              <label className={labelCls}>{t('freightCountedBy')}</label>
               <label className="flex items-center gap-1 text-xs">
-                <input type="radio" value="Par expediteur" {...register('freightCounted')} /> Expediteur
+                <input type="radio" value="Par expediteur" {...register('freightCounted')} /> {t('byShipper')}
               </label>
               <label className="flex items-center gap-1 text-xs">
-                <input type="radio" value="Par chauffeur" {...register('freightCounted')} /> Chauffeur
+                <input type="radio" value="Par chauffeur" {...register('freightCounted')} /> {t('byDriver')}
               </label>
               <label className="flex items-center gap-1 text-xs">
-                <input type="radio" value="Par palettes" {...register('freightCounted')} /> Palettes
+                <input type="radio" value="Par palettes" {...register('freightCounted')} /> {t('byPallets')}
               </label>
             </div>
           </div>
           <div className="p-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Signature Expediteur / Date</label>
+                <label className={labelCls}>{t('shipperSignature')}</label>
                 <div className="border border-gray-300 h-12 mt-1 bg-gray-50"></div>
               </div>
               <div>
-                <label className={labelCls}>Signature Transporteur / Date</label>
+                <label className={labelCls}>{t('carrierSignature')}</label>
                 <div className="border border-gray-300 h-12 mt-1 bg-gray-50"></div>
               </div>
             </div>
@@ -635,7 +638,7 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         {/* ── CERTIFICATION ── */}
         <div className="px-3 py-2">
           <p className="text-[9px] text-gray-500 leading-tight">
-            Le soussigne certifie que les matieres ci-dessus designees sont correctement classifiees, emballees, marquees et etiquetees, et sont en bon etat pour le transport conformement aux reglementations applicables du Ministere des Transports de la RDC.
+            {t('certification')}
           </p>
         </div>
       </div>
@@ -643,10 +646,10 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
       {/* ── BOUTONS ── */}
       <div className="flex gap-3 mt-6">
         <Button type="submit" isLoading={isLoading} className="flex-1 flex items-center justify-center gap-2">
-          <Save className="w-4 h-4" /> Creer le Bordereau
+          <Save className="w-4 h-4" /> {t('createBOL')}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()} className="flex items-center gap-2">
-          <X className="w-4 h-4" /> Annuler
+          <X className="w-4 h-4" /> {t('cancel')}
         </Button>
       </div>
     </form>

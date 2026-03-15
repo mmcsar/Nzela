@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations, useLocale } from 'next-intl';
 import { BOL } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FileText, Download, Printer, MapPin, Calendar, Package, DollarSign } from 'lucide-react';
@@ -11,6 +12,8 @@ interface BOLViewProps {
 }
 
 export function BOLView({ bol, showActions = true }: BOLViewProps) {
+  const t = useTranslations('bol');
+  const locale = useLocale();
   const origin = typeof bol.origin === 'string' ? JSON.parse(bol.origin) : bol.origin;
   const destination = typeof bol.destination === 'string' ? JSON.parse(bol.destination) : bol.destination;
   const shipper = typeof bol.shipper === 'string' ? JSON.parse(bol.shipper) : bol.shipper;
@@ -28,22 +31,22 @@ export function BOLView({ bol, showActions = true }: BOLViewProps) {
         <div className="border-b-2 border-gray-800 pb-4 mb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold">BORDEREAU DE CHARGEMENT</h1>
+              <h1 className="text-3xl font-bold">{t('title')}</h1>
               <p className="text-gray-600 mt-1">BOL #{bol.id.substring(0, 8).toUpperCase()}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">Date de création</p>
+              <p className="text-sm text-gray-600">{t('dateCreated')}</p>
               <p className="font-semibold">
-                {new Date(bol.createdAt).toLocaleDateString('fr-FR')}
+                {new Date(bol.createdAt).toLocaleDateString()}
               </p>
               <span className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-medium ${
                 bol.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
                 bol.status === 'signed' ? 'bg-green-100 text-green-800' :
                 'bg-blue-100 text-blue-800'
               }`}>
-                {bol.status === 'draft' ? 'Brouillon' :
-                 bol.status === 'signed' ? 'Signé' :
-                 'Complété'}
+                {bol.status === 'draft' ? t('draft') :
+                 bol.status === 'signed' ? t('signed') :
+                 t('completed')}
               </span>
             </div>
           </div>
@@ -52,19 +55,19 @@ export function BOLView({ bol, showActions = true }: BOLViewProps) {
         {/* Shipper and Carrier */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="border rounded-lg p-4">
-            <h3 className="font-bold text-lg mb-2">Expéditeur (Shipper)</h3>
+            <h3 className="font-bold text-lg mb-2">{t('shipper')}</h3>
             <p className="font-semibold">{shipper.name}</p>
             <p className="text-sm text-gray-600">{shipper.address}</p>
             <p className="text-sm text-gray-600">{shipper.city}, {shipper.province}</p>
-            <p className="text-sm text-gray-600">Tél: {shipper.phone}</p>
+            <p className="text-sm text-gray-600">{t('tel')}: {shipper.phone}</p>
             <p className="text-sm text-gray-600">Email: {shipper.email}</p>
           </div>
           <div className="border rounded-lg p-4">
-            <h3 className="font-bold text-lg mb-2">Transporteur (Carrier)</h3>
+            <h3 className="font-bold text-lg mb-2">{t('carrierLabel')}</h3>
             <p className="font-semibold">{carrier.name}</p>
             <p className="text-sm text-gray-600">{carrier.address}</p>
             <p className="text-sm text-gray-600">{carrier.city}, {carrier.province}</p>
-            <p className="text-sm text-gray-600">Tél: {carrier.phone}</p>
+            <p className="text-sm text-gray-600">{t('tel')}: {carrier.phone}</p>
             <p className="text-sm text-gray-600">Email: {carrier.email}</p>
           </div>
         </div>
@@ -74,7 +77,7 @@ export function BOLView({ bol, showActions = true }: BOLViewProps) {
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 text-primary-600 mt-1" />
             <div>
-              <p className="text-sm font-medium text-gray-500">Origine</p>
+              <p className="text-sm font-medium text-gray-500">{t('origin')}</p>
               <p className="text-lg font-semibold">{origin.city}</p>
               <p className="text-sm text-gray-600">{origin.address}</p>
               <p className="text-sm text-gray-600">{origin.province}</p>
@@ -83,7 +86,7 @@ export function BOLView({ bol, showActions = true }: BOLViewProps) {
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 text-orange-600 mt-1" />
             <div>
-              <p className="text-sm font-medium text-gray-500">Destination</p>
+              <p className="text-sm font-medium text-gray-500">{t('destination')}</p>
               <p className="text-lg font-semibold">{destination.city}</p>
               <p className="text-sm text-gray-600">{destination.address}</p>
               <p className="text-sm text-gray-600">{destination.province}</p>
@@ -179,9 +182,9 @@ export function BOLView({ bol, showActions = true }: BOLViewProps) {
             <Printer className="w-4 h-4 mr-2" />
             Imprimer
           </Button>
-          <Button variant="outline" onClick={() => downloadBOLPDF(bol)}>
+          <Button variant="outline" onClick={() => downloadBOLPDF(bol, locale)}>
             <Download className="w-4 h-4 mr-2" />
-            Télécharger PDF
+            {t('download')} PDF
           </Button>
           {bol.status === 'draft' && (
             <Button variant="outline">

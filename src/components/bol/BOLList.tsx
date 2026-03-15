@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { BOL } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
@@ -9,6 +10,8 @@ import { FileText, Eye, Plus, Download } from 'lucide-react';
 import { downloadBOLPDF } from './BOLPrint';
 
 export function BOLList() {
+  const t = useTranslations('bol');
+  const locale = useLocale();
   const [bols, setBols] = useState<BOL[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
@@ -64,7 +67,7 @@ export function BOLList() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">Chargement...</p>
+        <p className="text-gray-500">{t('loading')}</p>
       </div>
     );
   }
@@ -72,29 +75,29 @@ export function BOLList() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Mes Bordereaux de Chargement</h1>
+        <h1 className="text-3xl font-bold">{t('myBOLs')}</h1>
         <Link
           href="/dashboard/broker/bol/create"
           className="inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Créer un BOL
+          {t('createBOLButton')}
         </Link>
       </div>
 
       {bols.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-12 text-center">
           <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Aucun BOL créé</h3>
+          <h3 className="text-xl font-semibold mb-2">{t('noBOLs')}</h3>
           <p className="text-gray-600 mb-6">
-            Créez votre premier bordereau de chargement pour suivre vos expéditions
+            {t('createFirst')}
           </p>
           <Link
             href="/dashboard/broker/bol/create"
             className="inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Créer un BOL
+            {t('createBOLButton')}
           </Link>
         </div>
       ) : (
@@ -103,25 +106,25 @@ export function BOLList() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Numéro
+                  {t('number')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Origine → Destination
+                  {t('originDest')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Poids total
+                  {t('totalWeightCol')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Valeur totale
+                  {t('totalValueCol')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date de création
+                  {t('dateCreated')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Statut
+                  {t('status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('action')}
                 </th>
               </tr>
             </thead>
@@ -153,9 +156,9 @@ export function BOLList() {
                         bol.status === 'signed' ? 'bg-green-100 text-green-800' :
                         'bg-blue-100 text-blue-800'
                       }`}>
-                        {bol.status === 'draft' ? 'Brouillon' :
-                         bol.status === 'signed' ? 'Signé' :
-                         'Complété'}
+                        {bol.status === 'draft' ? t('draft') :
+                         bol.status === 'signed' ? t('signed') :
+                         t('completed')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -163,7 +166,7 @@ export function BOLList() {
                         <Link href={`/dashboard/broker/bol/${bol.id}`}>
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4 mr-1" />
-                            Voir
+                            {t('view')}
                           </Button>
                         </Link>
                         <Button
@@ -190,11 +193,11 @@ export function BOLList() {
                             };
                             (pdfBol as any).bol_number = raw.bol_number ?? `BOL-${bol.id.substring(0, 8).toUpperCase()}`;
                             (pdfBol as any).bolNumber = (pdfBol as any).bol_number;
-                            downloadBOLPDF(pdfBol as BOL);
+                            downloadBOLPDF(pdfBol as BOL, locale);
                           }}
                         >
                           <Download className="w-4 h-4 mr-1" />
-                          Télécharger PDF
+                          {t('download')} PDF
                         </Button>
                       </div>
                     </td>
