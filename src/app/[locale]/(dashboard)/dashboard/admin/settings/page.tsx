@@ -14,7 +14,7 @@ import {
   Table2, Key, Link2, Hash, BarChart3, Activity,
   ArrowUpRight, ArrowDownRight, Layers, GitBranch,
 } from 'lucide-react';
-import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
+import { ALL_REGION_IDS, ALL_REGION_NAMES } from '@/lib/constants/rdc-provinces';
 
 // ── Toggle Switch Component ──
 function Toggle({ enabled, onChange, disabled = false }: { enabled: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -799,11 +799,11 @@ export default function AdminSettingsPage() {
   const [subscriptionGateLoading, setSubscriptionGateLoading] = useState(false);
   const [subscriptionGateSaving, setSubscriptionGateSaving] = useState(false);
 
-  // Provinces actives (par défaut toute la RDC)
-  const [activeProvinces, setActiveProvinces] = useState<string[]>([...PROVINCES_RDC_IDS]);
+  // Provinces/régions actives (RDC + Zambie)
+  const [activeProvinces, setActiveProvinces] = useState<string[]>([...ALL_REGION_IDS]);
 
-  const allProvinces = [...PROVINCES_RDC_IDS];
-  const provinceNames = PROVINCES_RDC_NAMES;
+  const allProvinces = [...ALL_REGION_IDS];
+  const provinceNames = ALL_REGION_NAMES;
 
   const supabase = createClient();
 

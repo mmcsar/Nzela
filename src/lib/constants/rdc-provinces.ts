@@ -1,3 +1,5 @@
+import { REGIONS_ZAMBIA_IDS, REGIONS_ZAMBIA_NAMES } from './zambie-regions';
+
 /**
  * Liste des 26 provinces de la RDC – source unique pour toute la plateforme.
  * Nzela couvre toute la RDC.
@@ -64,3 +66,11 @@ export const PROVINCES_RDC_NAMES: Record<ProvinceId, string> = {
 
 /** Nombre de provinces (26). */
 export const PROVINCES_RDC_COUNT = PROVINCES_RDC_IDS.length;
+
+/** Toutes les régions (RDC + Zambie) pour origine/destination loads et camions */
+export const ALL_REGION_IDS = [...PROVINCES_RDC_IDS, ...REGIONS_ZAMBIA_IDS] as const;
+export type AllRegionId = (typeof ALL_REGION_IDS)[number];
+export const ALL_REGION_NAMES: Record<AllRegionId, string> = {
+  ...PROVINCES_RDC_NAMES,
+  ...REGIONS_ZAMBIA_NAMES,
+};

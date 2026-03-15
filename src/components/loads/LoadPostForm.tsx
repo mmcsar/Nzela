@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { Load } from '@/types';
-import { PROVINCES_RDC_IDS, PROVINCES_RDC_NAMES } from '@/lib/constants/rdc-provinces';
+import { ALL_REGION_IDS, ALL_REGION_NAMES } from '@/lib/constants/rdc-provinces';
 
 /** RCCM officiel de la plateforme (MMC SARL) */
 const PLATFORM_RCCM = 'LSHI 17-B-6981';
@@ -35,7 +35,7 @@ const loadSchema = z.object({
   origin: z.object({
     address: z.string().min(1, 'L\'adresse d\'origine est requise'),
     city: z.string().min(1, 'La ville d\'origine est requise'),
-    province: z.enum(PROVINCES_RDC_IDS as unknown as [string, ...string[]]),
+    province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]),
     coordinates: z.object({
       lat: z.number().optional(),
       lng: z.number().optional(),
@@ -44,7 +44,7 @@ const loadSchema = z.object({
   destination: z.object({
     address: z.string().min(1, 'L\'adresse de destination est requise'),
     city: z.string().min(1, 'La ville de destination est requise'),
-    province: z.enum(PROVINCES_RDC_IDS as unknown as [string, ...string[]]),
+    province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]),
     coordinates: z.object({
       lat: z.number().optional(),
       lng: z.number().optional(),
@@ -401,8 +401,8 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...register('origin.province')}
                 >
-                  {PROVINCES_RDC_IDS.map((id) => (
-                    <option key={id} value={id}>{PROVINCES_RDC_NAMES[id]}</option>
+                  {ALL_REGION_IDS.map((id) => (
+                    <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
                   ))}
                 </select>
               </div>
@@ -432,8 +432,8 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...register('destination.province')}
                 >
-                  {PROVINCES_RDC_IDS.map((id) => (
-                    <option key={id} value={id}>{PROVINCES_RDC_NAMES[id]}</option>
+                  {ALL_REGION_IDS.map((id) => (
+                    <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
                   ))}
                 </select>
               </div>

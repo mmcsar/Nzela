@@ -5,6 +5,7 @@ import { PrefetchLink } from '@/components/navigation/PrefetchLink';
 export const dynamic = 'force-dynamic';
 import { DashboardAuthProvider } from '@/components/dashboard/DashboardAuthProvider';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import {
   Home, Truck, Package, FileText, CreditCard, Settings,
   Building2, Users, Car, BarChart3, Zap, Wrench, Navigation,
@@ -272,6 +273,7 @@ export default async function DashboardLayout({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <LanguageSwitcher compact />
               <NotificationBell />
               {role === 'admin' && (
                 <span className="hidden sm:inline-flex px-2 py-0.5 bg-red-50 text-red-700 text-[10px] font-bold rounded-full border border-red-200">

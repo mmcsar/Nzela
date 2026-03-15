@@ -54,6 +54,10 @@ const PROVINCE_ABBR: Record<string, string> = {
   'bas-uele': 'BU', 'haut-uele': 'HU', 'mongala': 'MG', 'nord-ubangi': 'NU',
   'sud-ubangi': 'SU', 'equateur': 'EQ', 'tshuapa': 'TH', 'kwango': 'KG',
   'kwilu': 'KL', 'mai-ndombe': 'MND',
+  // Zambie
+  'zambie-central': 'ZC', 'zambie-copperbelt': 'CB', 'zambie-eastern': 'EA', 'zambie-luapula': 'LP',
+  'zambie-lusaka': 'LS', 'zambie-muchinga': 'MU', 'zambie-northern': 'NO', 'zambie-north-western': 'NW',
+  'zambie-southern': 'SO', 'zambie-western': 'WE',
 };
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; dot: string; ring: string }> = {
