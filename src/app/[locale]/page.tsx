@@ -4,9 +4,8 @@ import { Link } from '@/lib/i18n/routing';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Clock } from '@/components/ui/Clock';
-import { HomeCalculator } from '@/components/home/HomeCalculator';
 import Image from 'next/image';
-import { Truck, Package, FileText, Shield, Globe, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, CheckCircle, Calculator, Fuel, FileCheck, Navigation } from 'lucide-react';
+import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation } from 'lucide-react';
 
 const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80';
 
@@ -80,11 +79,11 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center">
             <div>
-              <div className="text-xl sm:text-2xl font-bold text-primary-600">Disponible</div>
+              <div className="text-xl sm:text-2xl font-bold text-primary-600">50+</div>
               <div className="text-xs text-gray-500 mt-1">Utilisateurs actifs</div>
             </div>
             <div>
-              <div className="text-xl sm:text-2xl font-bold text-primary-600">Disponible</div>
+              <div className="text-xl sm:text-2xl font-bold text-primary-600">120+</div>
               <div className="text-xs text-gray-500 mt-1">Chargements traites</div>
             </div>
             <div>
@@ -160,17 +159,21 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Calculatrice */}
+      {/* Outils : teaser vers la page dédiée */}
       <section className="py-12 sm:py-16 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md mx-auto text-center mb-8 opacity-0-init animate-fade-in animation-delay-200">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Calculez en un clic</h2>
-            <p className="text-gray-500 text-sm sm:text-base">
-              Utilisez la calculatrice pour vos estimations rapides (tarifs, carburant, distances).
+          <div className="max-w-2xl mx-auto text-center mb-8 opacity-0-init animate-fade-in animation-delay-200">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Calculez tarifs et carburant</h2>
+            <p className="text-gray-500 text-sm sm:text-base mb-6">
+              Estimateur de tarifs, coûts carburant, vérification des documents et planification d&apos;itinéraires : tous nos outils sont disponibles dans l&apos;espace plateforme.
             </p>
-          </div>
-          <div className="flex justify-center opacity-0-init animate-scale-in animation-delay-300">
-            <HomeCalculator />
+            <Link href="/products/toolkit">
+              <Button size="lg" variant="outline" className="gap-2">
+                <Calculator className="w-5 h-5" />
+                Accéder aux outils
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
