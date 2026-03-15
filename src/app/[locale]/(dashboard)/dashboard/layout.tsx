@@ -1,5 +1,6 @@
 import { getAuthUser } from '@/lib/supabase/server';
 import { redirect } from '@/lib/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { PrefetchLink } from '@/components/navigation/PrefetchLink';
 
 export const dynamic = 'force-dynamic';
@@ -14,97 +15,99 @@ import {
   Bell, Handshake, TrendingUp, Shield, LayoutGrid,
 } from 'lucide-react';
 
-// Navigation config par role
-function getNavLinks(role: string) {
-  const shared = [
-    { href: '/dashboard/publish', icon: Plus, label: 'Publier' },
-    { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
-    { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },
-    { href: '/dashboard/loads/alerts', icon: Bell, label: 'Alertes' },
-    { href: '/dashboard/rates', icon: TrendingUp, label: 'Tarifs' },
-    { href: '/dashboard/offers', icon: Handshake, label: 'Offres' },
-    { href: '/dashboard/tracking', icon: Satellite, label: 'Tracking' },
-    { href: '/dashboard/matching', icon: Zap, label: 'Matching' },
-    { href: '/dashboard/pod', icon: FileSignature, label: 'POD' },
-    { href: '/dashboard/messages', icon: MessageSquare, label: 'Messages' },
-    { href: '/dashboard/payments', icon: Wallet, label: 'Paiements' },
-    { href: '/dashboard/credit-check', icon: Shield, label: 'Credit' },
-    { href: '/dashboard/verification', icon: ShieldCheck, label: 'KYC' },
-  ];
+type NavT = (key: string) => string;
 
+function getNavLinks(role: string, t: NavT) {
   if (role === 'company') {
     return [
-      { href: '/dashboard/company', icon: Home, label: 'Dashboard' },
-      { href: '/dashboard/publish', icon: Plus, label: 'Publier' },
-      { href: '/dashboard/company/trucks/post', icon: Truck, label: 'Publier un camion' },
-      { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
-      { href: '/dashboard/tms', icon: LayoutGrid, label: 'TMS' },
-      { href: '/dashboard/company/trucks/search', icon: Truck, label: 'Camions' },
-      { href: '/dashboard/company/vehicles', icon: Car, label: 'Vehicules' },
-      { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },
-      { href: '/dashboard/loads/alerts', icon: Bell, label: 'Alertes' },
-      { href: '/dashboard/rates', icon: TrendingUp, label: 'Tarifs' },
-      { href: '/dashboard/offers', icon: Handshake, label: 'Offres' },
-      { href: '/dashboard/tracking', icon: Satellite, label: 'Tracking' },
-      { href: '/dashboard/matching', icon: Zap, label: 'Matching' },
-      { href: '/dashboard/pod', icon: FileSignature, label: 'POD' },
-      { href: '/dashboard/messages', icon: MessageSquare, label: 'Messages' },
-      { href: '/dashboard/payments', icon: Wallet, label: 'Paiements' },
-      { href: '/dashboard/credit-check', icon: Shield, label: 'Credit' },
-      { href: '/dashboard/verification', icon: ShieldCheck, label: 'KYC' },
-      { href: '/dashboard/subscription', icon: CreditCard, label: 'Abonnement' },
+      { href: '/dashboard/company', icon: Home, label: t('dashboard') },
+      { href: '/dashboard/publish', icon: Plus, label: t('publish') },
+      { href: '/dashboard/company/trucks/post', icon: Truck, label: t('postTruck') },
+      { href: '/dashboard/loads/board', icon: Package, label: t('loadBoard') },
+      { href: '/dashboard/tms', icon: LayoutGrid, label: t('tms') },
+      { href: '/dashboard/company/trucks/search', icon: Truck, label: t('trucks') },
+      { href: '/dashboard/company/vehicles', icon: Car, label: t('vehicles') },
+      { href: '/dashboard/trucks/board', icon: Truck, label: t('truckBoard') },
+      { href: '/dashboard/loads/alerts', icon: Bell, label: t('alerts') },
+      { href: '/dashboard/rates', icon: TrendingUp, label: t('rates') },
+      { href: '/dashboard/offers', icon: Handshake, label: t('offers') },
+      { href: '/dashboard/tracking', icon: Satellite, label: t('tracking') },
+      { href: '/dashboard/matching', icon: Zap, label: t('matching') },
+      { href: '/dashboard/pod', icon: FileSignature, label: t('pod') },
+      { href: '/dashboard/messages', icon: MessageSquare, label: t('messages') },
+      { href: '/dashboard/payments', icon: Wallet, label: t('payments') },
+      { href: '/dashboard/credit-check', icon: Shield, label: t('credit') },
+      { href: '/dashboard/verification', icon: ShieldCheck, label: t('verification') },
+      { href: '/dashboard/subscription', icon: CreditCard, label: t('subscription') },
     ];
   }
 
   if (role === 'broker') {
     return [
-      { href: '/dashboard/broker', icon: Home, label: 'Dashboard' },
-      { href: '/dashboard/publish', icon: Plus, label: 'Publier' },
-      { href: '/dashboard/broker/loads/post', icon: Package, label: 'Publier un chargement' },
-      { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
-      { href: '/dashboard/tms', icon: LayoutGrid, label: 'TMS' },
-      { href: '/dashboard/broker/loads/search', icon: Navigation, label: 'Recherche Loads' },
-      { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },
-      { href: '/dashboard/loads/alerts', icon: Bell, label: 'Alertes' },
-      { href: '/dashboard/rates', icon: TrendingUp, label: 'Tarifs' },
-      { href: '/dashboard/offers', icon: Handshake, label: 'Offres' },
-      { href: '/dashboard/tracking', icon: Satellite, label: 'Tracking' },
-      { href: '/dashboard/broker/bol/list', icon: FileText, label: 'BOL' },
-      { href: '/dashboard/pod', icon: FileSignature, label: 'POD' },
-      { href: '/dashboard/matching', icon: Zap, label: 'Matching' },
-      { href: '/dashboard/messages', icon: MessageSquare, label: 'Messages' },
-      { href: '/dashboard/payments', icon: Wallet, label: 'Paiements' },
-      { href: '/dashboard/credit-check', icon: Shield, label: 'Credit' },
-      { href: '/dashboard/verification', icon: ShieldCheck, label: 'KYC' },
-      { href: '/dashboard/subscription', icon: CreditCard, label: 'Abonnement' },
+      { href: '/dashboard/broker', icon: Home, label: t('dashboard') },
+      { href: '/dashboard/publish', icon: Plus, label: t('publish') },
+      { href: '/dashboard/broker/loads/post', icon: Package, label: t('postLoad') },
+      { href: '/dashboard/loads/board', icon: Package, label: t('loadBoard') },
+      { href: '/dashboard/tms', icon: LayoutGrid, label: t('tms') },
+      { href: '/dashboard/broker/loads/search', icon: Navigation, label: t('searchLoads') },
+      { href: '/dashboard/trucks/board', icon: Truck, label: t('truckBoard') },
+      { href: '/dashboard/loads/alerts', icon: Bell, label: t('alerts') },
+      { href: '/dashboard/rates', icon: TrendingUp, label: t('rates') },
+      { href: '/dashboard/offers', icon: Handshake, label: t('offers') },
+      { href: '/dashboard/tracking', icon: Satellite, label: t('tracking') },
+      { href: '/dashboard/broker/bol/list', icon: FileText, label: t('bol') },
+      { href: '/dashboard/pod', icon: FileSignature, label: t('pod') },
+      { href: '/dashboard/matching', icon: Zap, label: t('matching') },
+      { href: '/dashboard/messages', icon: MessageSquare, label: t('messages') },
+      { href: '/dashboard/payments', icon: Wallet, label: t('payments') },
+      { href: '/dashboard/credit-check', icon: Shield, label: t('credit') },
+      { href: '/dashboard/verification', icon: ShieldCheck, label: t('verification') },
+      { href: '/dashboard/subscription', icon: CreditCard, label: t('subscription') },
     ];
   }
 
-  // Admin - acces complet
+  if (role === 'admin') {
+    return [
+      { href: '/dashboard/admin', icon: Home, label: t('dashboard') },
+      { href: '/dashboard/loads/board', icon: Package, label: t('loadBoard') },
+      { href: '/dashboard/tms', icon: LayoutGrid, label: t('tms') },
+      { href: '/dashboard/trucks/board', icon: Truck, label: t('truckBoard') },
+      { href: '/dashboard/loads/alerts', icon: Bell, label: t('alerts') },
+      { href: '/dashboard/rates', icon: TrendingUp, label: t('rates') },
+      { href: '/dashboard/offers', icon: Handshake, label: t('offers') },
+      { href: '/dashboard/tracking', icon: Satellite, label: t('trackingGps') },
+      { href: '/dashboard/admin/companies', icon: Building2, label: t('companies') },
+      { href: '/dashboard/admin/users', icon: Users, label: t('users') },
+      { href: '/dashboard/admin/brokers', icon: Users, label: t('brokers') },
+      { href: '/dashboard/admin/trucks', icon: Truck, label: t('trucks') },
+      { href: '/dashboard/admin/loads', icon: Navigation, label: t('loads') },
+      { href: '/dashboard/admin/bol', icon: FileText, label: t('bol') },
+      { href: '/dashboard/pod', icon: FileSignature, label: t('pod') },
+      { href: '/dashboard/matching', icon: Zap, label: t('matching') },
+      { href: '/dashboard/messages', icon: MessageSquare, label: t('messages') },
+      { href: '/dashboard/payments', icon: Wallet, label: t('payments') },
+      { href: '/dashboard/credit-check', icon: Shield, label: t('creditCheck') },
+      { href: '/dashboard/admin/payments', icon: CreditCard, label: t('adminPayments') },
+      { href: '/dashboard/admin/kyc', icon: ShieldCheck, label: t('adminKyc') },
+      { href: '/dashboard/admin/analytics', icon: BarChart3, label: t('analytics') },
+      { href: '/dashboard/admin/settings', icon: Settings, label: t('settings') },
+    ];
+  }
+
   return [
-    { href: '/dashboard/admin', icon: Home, label: 'Dashboard' },
-    { href: '/dashboard/loads/board', icon: Package, label: 'Load Board' },
-    { href: '/dashboard/tms', icon: LayoutGrid, label: 'TMS' },
-    { href: '/dashboard/trucks/board', icon: Truck, label: 'Truck Board' },
-    { href: '/dashboard/loads/alerts', icon: Bell, label: 'Alertes' },
-    { href: '/dashboard/rates', icon: TrendingUp, label: 'Tarifs' },
-    { href: '/dashboard/offers', icon: Handshake, label: 'Offres' },
-    { href: '/dashboard/tracking', icon: Satellite, label: 'Tracking GPS' },
-    { href: '/dashboard/admin/companies', icon: Building2, label: 'Entreprises' },
-    { href: '/dashboard/admin/users', icon: Users, label: 'Utilisateurs' },
-    { href: '/dashboard/admin/brokers', icon: Users, label: 'Courtiers' },
-    { href: '/dashboard/admin/trucks', icon: Truck, label: 'Camions' },
-    { href: '/dashboard/admin/loads', icon: Navigation, label: 'Chargements' },
-    { href: '/dashboard/admin/bol', icon: FileText, label: 'BOL' },
-    { href: '/dashboard/pod', icon: FileSignature, label: 'POD' },
-    { href: '/dashboard/matching', icon: Zap, label: 'Matching' },
-    { href: '/dashboard/messages', icon: MessageSquare, label: 'Messages' },
-    { href: '/dashboard/payments', icon: Wallet, label: 'Paiements' },
-    { href: '/dashboard/credit-check', icon: Shield, label: 'Credit Check' },
-    { href: '/dashboard/admin/payments', icon: CreditCard, label: 'Admin Paiements' },
-    { href: '/dashboard/admin/kyc', icon: ShieldCheck, label: 'Admin KYC' },
-    { href: '/dashboard/admin/analytics', icon: BarChart3, label: 'Analytics' },
-    { href: '/dashboard/admin/settings', icon: Settings, label: 'Parametres' },
+    { href: '/dashboard/publish', icon: Plus, label: t('publish') },
+    { href: '/dashboard/loads/board', icon: Package, label: t('loadBoard') },
+    { href: '/dashboard/trucks/board', icon: Truck, label: t('truckBoard') },
+    { href: '/dashboard/loads/alerts', icon: Bell, label: t('alerts') },
+    { href: '/dashboard/rates', icon: TrendingUp, label: t('rates') },
+    { href: '/dashboard/offers', icon: Handshake, label: t('offers') },
+    { href: '/dashboard/tracking', icon: Satellite, label: t('tracking') },
+    { href: '/dashboard/matching', icon: Zap, label: t('matching') },
+    { href: '/dashboard/pod', icon: FileSignature, label: t('pod') },
+    { href: '/dashboard/messages', icon: MessageSquare, label: t('messages') },
+    { href: '/dashboard/payments', icon: Wallet, label: t('payments') },
+    { href: '/dashboard/credit-check', icon: Shield, label: t('credit') },
+    { href: '/dashboard/verification', icon: ShieldCheck, label: t('verification') },
   ];
 }
 
@@ -122,6 +125,7 @@ export default async function DashboardLayout({
     return redirect({ href: '/login', locale });
   }
 
+  const tAuth = await getTranslations({ locale, namespace: 'auth' });
   const isPending = accountStatus === 'pending';
 
   // Bloquer l'acces aux comptes suspendus ou en attente — afficher la page appropriee
@@ -144,7 +148,7 @@ export default async function DashboardLayout({
                     type="submit"
                     className="text-xs text-gray-500 hover:text-red-600 font-medium transition-colors px-2 py-1 rounded hover:bg-red-50"
                   >
-                    Deconnexion
+                    {tAuth('logout')}
                   </button>
                 </form>
               </div>
@@ -217,7 +221,7 @@ export default async function DashboardLayout({
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
-                      Se deconnecter
+                      {tAuth('logout')}
                     </button>
                   </form>
                 </div>
@@ -229,7 +233,8 @@ export default async function DashboardLayout({
     );
   }
 
-  const navLinks = getNavLinks(role);
+  const tNav = await getTranslations({ locale, namespace: 'nav' });
+  const navLinks = getNavLinks(role, (key) => tNav(key));
 
   // Premiere ligne (principaux) et deuxieme ligne (reste) si > 8 liens
   const primaryLinks = navLinks.slice(0, 8);
@@ -286,7 +291,7 @@ export default async function DashboardLayout({
                   type="submit"
                   className="text-xs text-gray-500 hover:text-red-600 font-medium transition-colors px-2 py-1 rounded hover:bg-red-50"
                 >
-                  Deconnexion
+                  {tAuth('logout')}
                 </button>
               </form>
             </div>
