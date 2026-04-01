@@ -10,18 +10,27 @@ import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, A
 const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80';
 
 export default async function HomePage() {
+  const t = await getTranslations('home');
   const te = await getTranslations('estimators');
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Bandeau annonce passante — formation numérique */}
-      <div className="bg-primary-700 text-white py-2.5 border-b border-primary-600" role="region" aria-label="Annonce">
+      {/* Bandeau défilant — bienvenue & sortie (texte doré sur fond profond) */}
+      <div
+        className="bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 py-2.5 border-b border-amber-600/40 shadow-[inset_0_1px_0_rgba(253,230,138,0.12)]"
+        role="region"
+        aria-label="Annonce"
+      >
         <div className="ticker-wrap">
           <div className="ticker-inner">
-            <span>Formation numérique Nzela : démarrage en avril — Inscriptions bientôt ouvertes</span>
-            <span>Formation numérique Nzela : démarrage en avril — Inscriptions bientôt ouvertes</span>
+            <span className="bg-gradient-to-r from-amber-100 via-yellow-300 to-amber-200 bg-clip-text font-semibold tracking-wide text-transparent drop-shadow-[0_0_12px_rgba(251,191,36,0.35)]">
+              {t('ticker')}
+            </span>
+            <span className="bg-gradient-to-r from-amber-100 via-yellow-300 to-amber-200 bg-clip-text font-semibold tracking-wide text-transparent drop-shadow-[0_0_12px_rgba(251,191,36,0.35)]">
+              {t('ticker')}
+            </span>
           </div>
         </div>
       </div>
@@ -51,14 +60,17 @@ export default async function HomePage() {
             <Clock />
           </div>
           <div className="max-w-3xl opacity-0-init animate-fade-in-left animation-delay-100">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              Une bourse de fret avec tout ce dont vous avez besoin
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight bg-gradient-to-br from-amber-50 via-yellow-200 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_2px_24px_rgba(251,191,36,0.25)] [text-shadow:none]">
+              {t('heroTitle')}
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl mb-4 text-primary-100">
-              La plateforme logistique pour toute la RDC
+            <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-4">
+              {t('heroTagline')}
             </p>
-            <p className="text-base sm:text-lg mb-8 text-primary-200">
-              Connectez transporteurs et courtiers. Trouvez du fret. Gardez vos roues en mouvement.
+            <p className="text-base sm:text-lg md:text-xl mb-4 text-amber-50/90">
+              {t('heroLaunch')}
+            </p>
+            <p className="text-base sm:text-lg mb-8 text-primary-100/90">
+              {t('heroLead')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link href="/register/broker">

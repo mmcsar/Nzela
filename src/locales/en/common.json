@@ -737,6 +737,13 @@
       "rateLimiting": "Rate limiting"
     }
   },
+  "home": {
+    "ticker": "Welcome to Nzela — official launch May 2 — join us: a platform connecting freight and talent in the DRC, with you",
+    "heroTitle": "Welcome to Nzela",
+    "heroTagline": "A freight exchange with everything you need",
+    "heroLaunch": "May 2 is our official launch: a milestone to simplify logistics and celebrate those who keep the country moving.",
+    "heroLead": "Connect carriers and brokers. Find loads. Keep your wheels turning."
+  },
   "estimators": {
     "optgroupRdc": "Democratic Republic of the Congo",
     "optgroupZambia": "Zambia",

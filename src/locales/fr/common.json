@@ -736,6 +736,13 @@
       "rateLimiting": "Limitation du debit"
     }
   },
+  "home": {
+    "ticker": "Bienvenue sur Nzela — sortie officielle le 2 mai — rejoignez l'aventure : une plateforme qui connecte le fret et les talents en RDC, avec vous",
+    "heroTitle": "Bienvenue sur Nzela",
+    "heroTagline": "Une bourse de fret avec tout ce dont vous avez besoin",
+    "heroLaunch": "Le 2 mai, la sortie officielle : une étape importante pour simplifier la logistique et célébrer ceux qui font rouler le pays.",
+    "heroLead": "Connectez transporteurs et courtiers. Trouvez du fret. Gardez vos roues en mouvement."
+  },
   "estimators": {
     "optgroupRdc": "République démocratique du Congo",
     "optgroupZambia": "Zambie",
