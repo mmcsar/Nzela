@@ -24,11 +24,21 @@ export default function ToolkitPage() {
           <p className="text-xl text-primary-100 max-w-3xl mx-auto mb-8">
             Plus de 20 outils pour gérer votre activité de transport efficacement.
           </p>
-          <Link href="/register">
-            <Button size="lg" variant="secondary">
-              Découvrir les outils <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Link href="/dashboard/tools">
+              <Button size="lg" variant="secondary">
+                Ouvrir les calculateurs <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10">
+                Créer un compte
+              </Button>
+            </Link>
+          </div>
+          <p className="text-primary-200/90 text-sm mt-4 max-w-xl mx-auto">
+            Connectez-vous pour accéder au calculateur de tarifs, à l&apos;estimateur de carburant et aux autres outils dans votre espace.
+          </p>
         </div>
       </section>
 
@@ -55,9 +65,16 @@ export default function ToolkitPage() {
           <p className="text-primary-100 text-lg mb-6 max-w-2xl mx-auto">
             Calculateur de tarifs, estimateur de carburant, vérification des documents, planificateur de routes et app PWA : tout pour la route et le bureau.
           </p>
-          <Link href="/register">
-            <Button size="lg" variant="secondary">Commencer gratuitement</Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/dashboard/tools">
+              <Button size="lg" variant="secondary">Accéder aux outils (connecté)</Button>
+            </Link>
+            <Link href="/register">
+              <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10">
+                S&apos;inscrire
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 

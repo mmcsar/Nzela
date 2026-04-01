@@ -7,6 +7,7 @@ import {
   Bell, Plus, Trash2, RefreshCw, MapPin, Package,
   BellRing, BellOff, Mail, Smartphone, Check
 } from 'lucide-react';
+import { CitySelectOptions } from '@/components/rates/CitySelectOptions';
 
 interface LoadAlert {
   id: string;
@@ -41,7 +42,6 @@ export function AlertManager({ onAlertMatch }: AlertManagerProps) {
   const [frequency, setFrequency] = useState('instant');
   const [channels, setChannels] = useState<string[]>(['push']);
 
-  const cities = ['', 'Lubumbashi', 'Kolwezi', 'Likasi', 'Kipushi', 'Kasumbalesa', 'Fungurume', 'Kambove'];
   const allCargoTypes = ['minerais', 'ciment', 'carburant', 'marchandises', 'agriculture', 'equipements', 'conteneur'];
 
   useEffect(() => {
@@ -159,14 +159,14 @@ export function AlertManager({ onAlertMatch }: AlertManagerProps) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Ville d&apos;origine</label>
               <select className="w-full px-3 py-2 border rounded-lg" value={originCity} onChange={(e) => setOriginCity(e.target.value)}>
                 <option value="">Toutes</option>
-                {cities.filter(Boolean).map((c) => <option key={c} value={c}>{c}</option>)}
+                <CitySelectOptions valueMode="display" />
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Ville de destination</label>
               <select className="w-full px-3 py-2 border rounded-lg" value={destCity} onChange={(e) => setDestCity(e.target.value)}>
                 <option value="">Toutes</option>
-                {cities.filter(Boolean).map((c) => <option key={c} value={c}>{c}</option>)}
+                <CitySelectOptions valueMode="display" excludeSlug={originCity || undefined} />
               </select>
             </div>
           </div>

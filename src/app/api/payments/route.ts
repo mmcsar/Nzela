@@ -152,6 +152,8 @@ export async function POST(request: Request) {
 
     // ── Initier le paiement Mobile Money via Flutterwave ──
     if (method === 'mobile-money') {
+      const appOrigin =
+        process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || new URL(request.url).origin;
       const flwResponse = await initiateMobileMoneyCharge({
         amount,
         currency: currency as 'CDF' | 'USD',
@@ -160,6 +162,7 @@ export async function POST(request: Request) {
         tx_ref: txRef,
         network: detectedNetwork as any,
         fullname: user.user_metadata?.full_name || '',
+        redirect_url: `${appOrigin}/fr/dashboard/payments/callback`,
         meta: {
           payment_id: payment.id,
           payment_type,

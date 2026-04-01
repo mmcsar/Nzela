@@ -7,6 +7,7 @@ import {
   Copy, Plus, Play, Clock, RefreshCw, MapPin,
   Package, Repeat, Trash2, Star
 } from 'lucide-react';
+import { CitySelectOptions } from '@/components/rates/CitySelectOptions';
 
 interface LoadTemplate {
   id: string;
@@ -43,8 +44,6 @@ export function TemplateManager({ onUseTemplate }: TemplateManagerProps) {
   const [price, setPrice] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState('weekly');
-
-  const cities = ['Lubumbashi', 'Kolwezi', 'Likasi', 'Kipushi', 'Kasumbalesa', 'Fungurume', 'Kambove'];
 
   useEffect(() => {
     fetchTemplates();
@@ -158,13 +157,13 @@ export function TemplateManager({ onUseTemplate }: TemplateManagerProps) {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Origine</label>
               <select className="w-full px-3 py-2 border rounded-lg" value={originCity} onChange={(e) => setOriginCity(e.target.value)}>
-                {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                <CitySelectOptions valueMode="display" />
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
               <select className="w-full px-3 py-2 border rounded-lg" value={destCity} onChange={(e) => setDestCity(e.target.value)}>
-                {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                <CitySelectOptions valueMode="display" excludeSlug={originCity} />
               </select>
             </div>
           </div>

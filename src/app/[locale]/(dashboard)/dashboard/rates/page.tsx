@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
-import { TrendingUp, TrendingDown, Minus, BarChart3, RefreshCw, Search, Route, DollarSign, Scale, Package } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, BarChart3, RefreshCw, Search, Route, DollarSign, Scale, Package, Fuel } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
+import { Link } from '@/lib/i18n/routing';
+import { useTranslations } from 'next-intl';
 import {
   BarChart,
   Bar,
@@ -36,6 +38,7 @@ interface TopRoute {
 }
 
 export default function RateHistoryPage() {
+  const te = useTranslations('estimators');
   const { isLoading: authLoading } = useRequireRole(['broker', 'company', 'admin']);
   const [rates, setRates] = useState<RateData[]>([]);
   const [topRoutes, setTopRoutes] = useState<TopRoute[]>([]);
@@ -76,6 +79,20 @@ export default function RateHistoryPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1">Analysez l&apos;evolution des prix de transport par route</p>
         </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2 p-4 rounded-xl border border-amber-200 bg-amber-50/80 text-sm text-amber-950">
+        <span className="font-medium flex items-center gap-2">
+          <Fuel className="w-4 h-4 shrink-0" />
+          {te('ratesBannerQuestion')}
+        </span>
+        <Link
+          href="/dashboard/tms/couts?tab=fuel"
+          className="inline-flex items-center justify-center rounded-lg bg-amber-700 text-white px-3 py-1.5 text-sm font-semibold hover:bg-amber-800 w-fit"
+        >
+          {te('ratesBannerCta')}
+        </Link>
+        <span className="text-amber-800/90 hidden sm:inline">{te('ratesBannerHint')}</span>
       </div>
 
       {/* Filtres */}

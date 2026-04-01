@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+
 /**
  * Classe d'erreur standardisée pour toutes les API routes
  * Usage: throw new ApiError(404, 'Load not found', 'LOAD_NOT_FOUND');
@@ -69,10 +71,6 @@ function extractErrorMessage(error: unknown): string {
  * Usage: return handleApiError(error);
  */
 export function handleApiError(error: unknown): Response {
-  // Dynamically import NextResponse to avoid circular deps
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { NextResponse } = require('next/server');
-
   if (error instanceof ApiError) {
     return NextResponse.json(error.toJSON(), { status: error.statusCode });
   }

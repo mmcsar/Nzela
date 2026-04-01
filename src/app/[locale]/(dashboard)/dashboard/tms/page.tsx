@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/lib/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { useRequireRole } from '@/hooks/useRequireRole';
@@ -20,6 +21,8 @@ import {
   TrendingUp,
   Calendar,
   Users,
+  Calculator,
+  Fuel,
 } from 'lucide-react';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
 
@@ -77,6 +80,7 @@ interface LoadRow {
 }
 
 export default function TMSPage() {
+  const te = useTranslations('estimators');
   const router = useRouter();
   const { isLoading: authLoading, isAuthorized, role, brokerId, companyId } = useRequireRole(['broker', 'company', 'admin']);
   const [loads, setLoads] = useState<LoadRow[]>([]);
@@ -187,6 +191,16 @@ export default function TMSPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Link href="/dashboard/tms/couts">
+            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 shadow-sm">
+              <Calculator className="w-4 h-4" /> {te('tmsBtnRatesFuel')}
+            </span>
+          </Link>
+          <Link href="/dashboard/tms/couts?tab=fuel">
+            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-900 bg-amber-100 border border-amber-200 rounded-lg hover:bg-amber-200">
+              <Fuel className="w-4 h-4" /> {te('tmsBtnFuel')}
+            </span>
+          </Link>
           <Link href="/dashboard/tms/pro">
             <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800">
               <LayoutGrid className="w-4 h-4" /> Vue détaillée

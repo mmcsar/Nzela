@@ -10,7 +10,7 @@ import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, A
 const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80';
 
 export default async function HomePage() {
-  const t = await getTranslations('common');
+  const te = await getTranslations('estimators');
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -163,17 +163,23 @@ export default async function HomePage() {
       <section className="py-12 sm:py-16 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto text-center mb-8 opacity-0-init animate-fade-in animation-delay-200">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Calculez tarifs et carburant</h2>
-            <p className="text-gray-500 text-sm sm:text-base mb-6">
-              Estimateur de tarifs, coûts carburant, vérification des documents et planification d&apos;itinéraires : tous nos outils sont disponibles dans l&apos;espace plateforme.
-            </p>
-            <Link href="/products/toolkit">
-              <Button size="lg" variant="outline" className="gap-2">
-                <Calculator className="w-5 h-5" />
-                Accéder aux outils
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{te('homeToolsTitle')}</h2>
+            <p className="text-gray-500 text-sm sm:text-base mb-6">{te('homeToolsIntro')}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <Link href="/dashboard/tools">
+                <Button size="lg" className="gap-2">
+                  <Calculator className="w-5 h-5" />
+                  {te('homeToolsCta')}
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/products/toolkit">
+                <Button size="lg" variant="outline" className="gap-2">
+                  {te('homeToolsToolkit')}
+                </Button>
+              </Link>
+            </div>
+            <p className="text-gray-400 text-xs mt-4 max-w-lg mx-auto">{te('homeToolsFootnote')}</p>
           </div>
         </div>
       </section>
@@ -181,29 +187,29 @@ export default async function HomePage() {
       {/* Des outils pour la route et le bureau */}
       <section className="py-12 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">Des outils pour la route et le bureau</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">{te('toolsSectionTitle')}</h2>
           <p className="text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
-            Estimez les tarifs, calculez le carburant, vérifiez les documents, optimisez les itinéraires et accédez à tout depuis l&apos;app PWA.
+            {te('toolsSectionIntro')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
             {[
-              { icon: Calculator, title: 'Calculateur de tarifs', desc: 'Prix du marché selon distance, type de marchandise et saison.' },
-              { icon: Fuel, title: 'Estimateur de carburant', desc: 'Coûts carburant selon distance et consommation du véhicule.' },
-              { icon: FileCheck, title: 'Vérification des documents', desc: 'Authenticité des licences et permis des partenaires.' },
-              { icon: Navigation, title: 'Planificateur de routes', desc: 'Itinéraires optimisés pour réduire coûts et délais.' },
-              { icon: Smartphone, title: 'Application mobile', desc: 'Tous les outils sur smartphone avec l&apos;app PWA Nzela.' },
+              { icon: Calculator, titleKey: 'toolTileRatesTitle' as const, descKey: 'toolTileRatesDesc' as const },
+              { icon: Fuel, titleKey: 'toolTileFuelTitle' as const, descKey: 'toolTileFuelDesc' as const },
+              { icon: FileCheck, titleKey: 'toolTileDocsTitle' as const, descKey: 'toolTileDocsDesc' as const },
+              { icon: Navigation, titleKey: 'toolTileNavTitle' as const, descKey: 'toolTileNavDesc' as const },
+              { icon: Smartphone, titleKey: 'toolTileMobileTitle' as const, descKey: 'toolTileMobileDesc' as const },
             ].map((f, i) => (
-              <div key={f.title} className="bg-white rounded-xl p-5 hover:shadow-md transition-shadow border border-gray-100 opacity-0-init animate-scale-in" style={{ animationDelay: `${400 + i * 60}ms` }}>
+              <div key={f.titleKey} className="bg-white rounded-xl p-5 hover:shadow-md transition-shadow border border-gray-100 opacity-0-init animate-scale-in" style={{ animationDelay: `${400 + i * 60}ms` }}>
                 <f.icon className="w-10 h-10 text-primary-600 mb-3" />
-                <h3 className="font-semibold text-gray-900 mb-1">{f.title}</h3>
-                <p className="text-sm text-gray-500">{f.desc}</p>
+                <h3 className="font-semibold text-gray-900 mb-1">{te(f.titleKey)}</h3>
+                <p className="text-sm text-gray-500">{te(f.descKey)}</p>
               </div>
             ))}
           </div>
           <div className="text-center mt-8 sm:mt-10">
             <Link href="/products/toolkit">
               <Button size="lg" variant="outline">
-                Découvrir tous les outils <ArrowRight className="w-4 h-4 ml-2" />
+                {te('discoverAllTools')} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
           </div>

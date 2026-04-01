@@ -21,6 +21,25 @@ const withSerwist = withSerwistInit({
 const createNextIntlPlugin = require('next-intl/plugin');
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
+/** Alias Next Pages internes (webpack + turbopack) — hot-reloader / résolution edge cases */
+function getNextPagesAliases() {
+  try {
+    const nextRoot = path.dirname(require.resolve('next/package.json'));
+    return {
+      'next/dist/pages/_app': path.join(nextRoot, 'dist/pages/_app.js'),
+      'next/dist/pages/_error': path.join(nextRoot, 'dist/pages/_error.js'),
+    };
+  } catch {
+    return {};
+  }
+}
+const nextPagesAliases = getNextPagesAliases();
+
+/** Relatif à la racine du projet — Turbopack sur Windows n’accepte pas les chemins absolus pour resolveAlias (voir message « windows imports »). */
+const nextIntlRequestRelative = './src/i18n/request.ts';
+/** Alias Webpack : chemin absolu OK */
+const nextIntlRequestPath = path.join(__dirname, 'src', 'i18n', 'request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Corrige le warning "multiple lockfiles" - utilise le dossier nzela comme racine
@@ -28,6 +47,15 @@ const nextConfig = {
 
   // ─── NEXT.JS 16.1 FEATURES ───
   // reactCompiler: true, // Temporairement désactivé pour debug
+
+  // Next 16 : Turbopack par défaut ; si une config webpack existe (ci-dessous / plugins),
+  // il faut aussi une section turbopack (voir message d'erreur sans ceci).
+  turbopack: {
+    resolveAlias: {
+      ...nextPagesAliases,
+      'next-intl/config': nextIntlRequestRelative,
+    },
+  },
 
   // ─── IMAGES ───
   images: {
@@ -117,6 +145,19 @@ const nextConfig = {
       { source: '/fr/sw.js', destination: '/sw.js' },
       { source: '/en/sw.js', destination: '/sw.js' },
     ];
+  },
+
+  /**
+   * Webpack (`next build --webpack`, `next dev --webpack`) : mêmes alias que turbopack.
+   */
+  webpack: (config) => {
+    const alias = config.resolve.alias || (config.resolve.alias = {});
+    Object.assign(alias, nextPagesAliases);
+    // next-intl : withNextIntl ajoute déjà l'alias ; on le duplique si le plugin est contourné
+    if (!alias['next-intl/config']) {
+      alias['next-intl/config'] = nextIntlRequestPath;
+    }
+    return config;
   },
 };
 

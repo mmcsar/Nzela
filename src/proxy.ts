@@ -33,7 +33,7 @@ function isDashboardRoute(pathname: string): boolean {
 
 const LOCALE_PREFIX = /^\/(fr|en)(\/|$)/;
 
-export default async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // 0. Si l'URL n'a pas de locale (ex: /reset-password, /forgot-password), rediriger vers /fr/...
@@ -62,7 +62,7 @@ export default async function middleware(request: NextRequest) {
 
       return intlResponse;
     } catch (err) {
-      console.error('[Middleware] Erreur updateSession:', err);
+      console.error('[Proxy] Erreur updateSession:', err);
       return intlMiddleware(request);
     }
   }
