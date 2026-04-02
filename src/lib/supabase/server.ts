@@ -58,6 +58,30 @@ export async function createClient() {
   );
 }
 
+/**
+ * Client Supabase pour Route Handlers (POST/GET API) : écriture cookies sans try/catch silencieux,
+ * nécessaire pour que `signOut()` efface bien la session (sinon l'utilisateur reste connecté).
+ */
+export async function createClientForRouteHandler() {
+  const cookieStore = await cookies();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase: NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY doivent etre definis dans .env.local');
+  }
+
+  return createServerClient(url, key, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
+        cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+      },
+    },
+  });
+}
+
 // Cached per-request: avoids duplicate Supabase calls in layout + page
 export const getAuthUser = cache(async () => {
   const fallback = { user: null, role: 'company' as string, suspended: false, accountStatus: 'active' as const, companyId: null, brokerId: null };
