@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { Button } from '@/components/ui/Button';
+import { useTracking } from '@/lib/react-query/hooks';
 
 // Lazy load TrackingMap (Leaflet is heavy and doesn't work in SSR)
 const TrackingMap = dynamic(
@@ -50,13 +51,24 @@ export default function TrackingPage() {
   const { isAuthorized, isLoading: authLoading } = useRequireRole(['admin', 'broker', 'company']);
   const [loads, setLoads] = useState<LoadItem[]>([]);
   const [selectedLoadId, setSelectedLoadId] = useState<string>('');
-  const [tracking, setTracking] = useState<TrackingData | null>(null);
-  const [isSimulated, setIsSimulated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingLoads, setIsLoadingLoads] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [searchFilter, setSearchFilter] = useState('');
+
+  const {
+    data: trackingPayload,
+    isLoading: trackingLoading,
+    isFetching: trackingFetching,
+    refetch: refetchTracking,
+    dataUpdatedAt,
+  } = useTracking(selectedLoadId, {
+    realtime: autoRefresh,
+    pollIntervalMs: autoRefresh ? 5000 : false,
+  });
+
+  const tracking = (trackingPayload?.tracking as TrackingData | undefined) ?? null;
+  const isSimulated = !!trackingPayload?.simulated;
+  const lastRefresh = dataUpdatedAt ? new Date(dataUpdatedAt) : null;
 
   // Fetch loads
   useEffect(() => {
@@ -80,34 +92,6 @@ export default function TrackingPage() {
     }
     fetchLoads();
   }, []);
-
-  // Fetch tracking data
-  const fetchTracking = async (loadId: string) => {
-    if (!loadId) return;
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/tracking?loadId=${loadId}`);
-      const data = await res.json();
-      setTracking(data.tracking);
-      setIsSimulated(!!data.simulated);
-      setLastRefresh(new Date());
-    } catch (e) {
-      console.error('Error fetching tracking:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedLoadId) fetchTracking(selectedLoadId);
-  }, [selectedLoadId]);
-
-  // Auto-refresh every 15s
-  useEffect(() => {
-    if (!autoRefresh || !selectedLoadId || !tracking || tracking.status !== 'active') return;
-    const interval = setInterval(() => fetchTracking(selectedLoadId), 15000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, selectedLoadId, tracking]);
 
   const parseLocation = (loc: any) => {
     if (typeof loc === 'string') {
@@ -144,7 +128,9 @@ export default function TrackingPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Tracking GPS</h1>
-            <p className="text-sm text-gray-500">Suivi en temps reel des chargements</p>
+            <p className="text-sm text-gray-500">
+              Positions poussées en direct ; secours automatique toutes les 5 s si besoin
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -162,10 +148,10 @@ export default function TrackingPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => selectedLoadId && fetchTracking(selectedLoadId)}
-            disabled={isLoading}
+            onClick={() => refetchTracking()}
+            disabled={!selectedLoadId || trackingFetching}
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${trackingFetching ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
@@ -289,7 +275,7 @@ export default function TrackingPage() {
                   destLabel={(() => { const l = loads.find(l => l.id === selectedLoadId); return l ? parseLocation(l.destination).city : 'Destination'; })()}
                   height="380px"
                 />
-              ) : isLoading ? (
+              ) : trackingLoading ? (
                 <div className="bg-gray-100 rounded-xl flex items-center justify-center" style={{ height: 380 }}>
                   <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
                 </div>

@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
 import { toErrorMessage } from '@/lib/api/error';
 
 // ==========================================
@@ -201,20 +203,82 @@ export function useCreateConversation() {
 }
 
 // ==========================================
-// TRACKING
+// TRACKING (Realtime + polling secours)
 // ==========================================
 
-export function useTracking(loadId: string) {
+export type UseTrackingOptions = {
+  /** Abonnement Supabase Realtime sur les nouvelles positions. Défaut : true. */
+  realtime?: boolean;
+  /** Intervalle de requête API si trajet actif (secours si Realtime indisponible). false = désactivé. Défaut : 5000 ms. */
+  pollIntervalMs?: number | false;
+};
+
+function useTrackingRealtimeSubscription(loadId: string | undefined, enabled: boolean) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!loadId || !enabled) return;
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`tracking-live-${loadId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tracking_updates',
+          filter: `load_id=eq.${loadId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['tracking', loadId] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tracking_sessions',
+          filter: `load_id=eq.${loadId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['tracking', loadId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [loadId, enabled, queryClient]);
+}
+
+export function useTracking(loadId: string, options?: UseTrackingOptions) {
+  const realtime = options?.realtime !== false;
+  const pollDefault = options?.pollIntervalMs === undefined ? 5000 : options.pollIntervalMs;
+
+  useTrackingRealtimeSubscription(loadId || undefined, realtime);
+
   return useQuery({
     queryKey: ['tracking', loadId],
     queryFn: async () => {
       const res = await fetch(`/api/tracking?loadId=${loadId}`);
       if (!res.ok) throw new Error('Erreur tracking');
-      return res.json();
+      return res.json() as Promise<{
+        tracking: Record<string, unknown>;
+        load?: unknown;
+        simulated?: boolean;
+      }>;
     },
     enabled: !!loadId,
-    staleTime: 10 * 1000, // 10s pour le tracking
-    refetchInterval: 15_000, // Refetch toutes les 15s (mieux que setInterval)
+    staleTime: 1500,
+    refetchInterval: (query) => {
+      if (pollDefault === false) return false;
+      const ms = typeof pollDefault === 'number' ? pollDefault : 5000;
+      const status = (query.state.data as { tracking?: { status?: string } } | undefined)?.tracking?.status;
+      return status === 'active' ? ms : false;
+    },
   });
 }
 

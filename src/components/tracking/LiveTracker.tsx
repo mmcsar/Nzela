@@ -55,7 +55,7 @@ export function LiveTracker({ loadId, compact = false }: LiveTrackerProps) {
   // React Query: auto-refetch toutes les 15s, cache, retry, etc.
   const { data, isLoading, error: queryError, refetch } = useTracking(loadId);
 
-  const tracking: TrackingData | null = data?.tracking || null;
+  const tracking = (data?.tracking as TrackingData | undefined) ?? null;
   const loadRow = data?.load as { origin?: unknown; destination?: unknown } | undefined;
   const isSimulated = !!data?.simulated;
   const error = queryError ? (queryError as Error).message : (!tracking && !isLoading ? 'Tracking non disponible' : '');
