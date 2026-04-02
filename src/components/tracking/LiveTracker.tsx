@@ -1,8 +1,20 @@
 'use client';
 
-import { MapPin, Navigation, Clock, Truck, AlertCircle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import dynamic from 'next/dynamic';
+import { MapPin, Navigation, Clock, Truck, AlertCircle, RefreshCw, Activity } from 'lucide-react';
 import { useTracking } from '@/lib/react-query/hooks';
+
+const TrackingMap = dynamic(
+  () => import('@/components/tracking/TrackingMap').then((mod) => mod.TrackingMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[300px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400 text-sm">
+        Chargement de la carte…
+      </div>
+    ),
+  }
+);
 
 interface TrackingData {
   status: string;
@@ -23,11 +35,29 @@ interface LiveTrackerProps {
   compact?: boolean;
 }
 
+function parseLocCity(loc: unknown): string {
+  if (!loc) return '';
+  if (typeof loc === 'string') {
+    try {
+      const o = JSON.parse(loc);
+      return typeof o?.city === 'string' ? o.city : loc;
+    } catch {
+      return loc;
+    }
+  }
+  if (typeof loc === 'object' && loc !== null && 'city' in loc) {
+    return String((loc as { city?: string }).city || '');
+  }
+  return '';
+}
+
 export function LiveTracker({ loadId, compact = false }: LiveTrackerProps) {
   // React Query: auto-refetch toutes les 15s, cache, retry, etc.
   const { data, isLoading, error: queryError, refetch } = useTracking(loadId);
 
   const tracking: TrackingData | null = data?.tracking || null;
+  const loadRow = data?.load as { origin?: unknown; destination?: unknown } | undefined;
+  const isSimulated = !!data?.simulated;
   const error = queryError ? (queryError as Error).message : (!tracking && !isLoading ? 'Tracking non disponible' : '');
 
   if (isLoading) {
@@ -68,80 +98,38 @@ export function LiveTracker({ loadId, compact = false }: LiveTrackerProps) {
     );
   }
 
+  const originLabel = parseLocCity(loadRow?.origin) || 'Origine';
+  const destLabel = parseLocCity(loadRow?.destination) || 'Destination';
+
   return (
     <div className="space-y-4">
-      {/* Carte simulée */}
-      <div className="relative bg-gradient-to-br from-blue-50 to-emerald-50 rounded-xl border-2 border-blue-200 overflow-hidden" style={{ height: 300 }}>
-        {/* Grille de fond */}
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)',
-          backgroundSize: '30px 30px'
-        }} />
-
-        {/* Route line */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 300" preserveAspectRatio="none">
-          <line x1="60" y1="240" x2="340" y2="60" stroke="#3b82f6" strokeWidth="3" strokeDasharray="8 4" opacity="0.5" />
-          {/* Progress line */}
-          <line
-            x1="60" y1="240"
-            x2={60 + (340 - 60) * tracking.progress / 100}
-            y2={240 + (60 - 240) * tracking.progress / 100}
-            stroke="#10b981" strokeWidth="4"
-          />
-        </svg>
-
-        {/* Origin marker */}
-        <div className="absolute bottom-[40px] left-[40px] flex flex-col items-center">
-          <div className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full mb-1 whitespace-nowrap font-medium">
-            Origine
-          </div>
-          <div className="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-lg" />
+      {isSimulated && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2 text-sm text-amber-800">
+          <Activity className="w-4 h-4 shrink-0" />
+          <span>
+            <strong>Mode simulation</strong> — Pas de session GPS en base ; positions estimées sur la carte (RDC).
+          </span>
         </div>
+      )}
 
-        {/* Destination marker */}
-        <div className="absolute top-[40px] right-[40px] flex flex-col items-center">
-          <div className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full mb-1 whitespace-nowrap font-medium">
-            Destination
-          </div>
-          <div className="w-4 h-4 bg-red-600 rounded-full border-2 border-white shadow-lg" />
-        </div>
-
-        {/* Current position marker */}
-        {tracking.status === 'active' && (
-          <div
-            className="absolute flex flex-col items-center transition-all duration-1000"
-            style={{
-              left: `${40 + (340 - 40) * tracking.progress / 100}px`,
-              bottom: `${40 + (260 - 40) * tracking.progress / 100}px`,
-              transform: 'translate(-50%, 50%)',
-            }}
-          >
-            <div className="relative">
-              <div className="absolute -inset-3 bg-emerald-400 rounded-full animate-ping opacity-25" />
-              <div className="w-6 h-6 bg-emerald-500 rounded-full border-3 border-white shadow-xl flex items-center justify-center">
-                <Truck className="w-3 h-3 text-white" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Status badge */}
-        <div className="absolute top-3 left-3">
-          <div className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${
-            tracking.status === 'active'
-              ? 'bg-emerald-500 text-white'
-              : tracking.status === 'completed'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-500 text-white'
-          }`}>
-            {tracking.status === 'active' ? '● EN DIRECT' : tracking.status === 'completed' ? 'LIVRÉ' : 'EN ATTENTE'}
-          </div>
-        </div>
-
-        {/* Refresh button */}
+      <div className="relative">
+        <TrackingMap
+          origin={tracking.origin}
+          destination={tracking.destination}
+          currentPosition={tracking.currentPosition}
+          route={tracking.route}
+          progress={tracking.progress}
+          status={tracking.status}
+          speed={tracking.speed}
+          originLabel={originLabel}
+          destLabel={destLabel}
+          height="300px"
+        />
         <button
+          type="button"
           onClick={() => refetch()}
-          className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors"
+          className="absolute top-3 right-3 z-[1100] p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors border border-gray-100"
+          title="Actualiser"
         >
           <RefreshCw className="w-4 h-4 text-gray-600" />
         </button>

@@ -50,6 +50,9 @@ export function TrackingMap({
       maxZoom: 18,
     }).addTo(map);
 
+    // Vue par défaut RDC (évite carte vide avant fitBounds ; CSP doit autoriser OSM)
+    map.setView([-2.5, 23.5], 5);
+
     mapInstanceRef.current = map;
     markersRef.current = L.layerGroup().addTo(map);
     queueMicrotask(() => setMapReady(true));
@@ -59,6 +62,20 @@ export function TrackingMap({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Onglets / layout : recalculer la taille Leaflet quand le conteneur change
+  useEffect(() => {
+    const el = mapRef.current;
+    const map = mapInstanceRef.current;
+    if (!el || !map) return;
+    const fix = () => {
+      requestAnimationFrame(() => map.invalidateSize());
+    };
+    fix();
+    const ro = new ResizeObserver(() => fix());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [mapReady]);
 
   // Update markers and route
   useEffect(() => {
@@ -157,7 +174,14 @@ export function TrackingMap({
     if (currentPosition) {
       bounds.extend([currentPosition.lat, currentPosition.lng]);
     }
-    map.fitBounds(bounds, { padding: [40, 40] });
+    try {
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+      }
+    } catch {
+      map.setView([origin.lat, origin.lng], 8);
+    }
+    requestAnimationFrame(() => map.invalidateSize());
 
   }, [origin, destination, currentPosition, route, progress, status, speed, originLabel, destLabel, mapReady]);
 
