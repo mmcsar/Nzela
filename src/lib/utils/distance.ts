@@ -1,5 +1,6 @@
 import { Location } from '@/types';
 import { ROUTES_RDC, Route } from '@/lib/constants/rdc-routes';
+import { getCorridorCoords } from '@/lib/constants/corridor-cities';
 
 /**
  * Calcul de distance entre deux coordonnées GPS (formule Haversine)
@@ -119,7 +120,6 @@ export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Kambove': { lat: -10.8833, lng: 26.5833 },
   'Kasumbalesa': { lat: -12.5833, lng: 28.5167 },
   'Kalemie': { lat: -5.9333, lng: 29.2000 },
-  'Jadotville': { lat: -10.9833, lng: 26.7333 }, // Ancien nom de Likasi
   'Tenke': { lat: -10.5833, lng: 26.1833 },
   'Matadi': { lat: -5.8167, lng: 13.4500 },
 };
@@ -129,5 +129,9 @@ export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
  */
 export function getCityCoordinates(city: string): { lat: number; lng: number } | undefined {
   const normalized = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
-  return CITY_COORDINATES[normalized] || CITY_COORDINATES[city];
+  return (
+    CITY_COORDINATES[normalized] ||
+    CITY_COORDINATES[city] ||
+    getCorridorCoords(city)
+  );
 }

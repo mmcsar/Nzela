@@ -27,6 +27,12 @@ const CITY_COORDS: Record<string, [number, number]> = {
   'solwezi': [-12.1720, 25.8680],
   'ndola': [-12.9587, 28.6366],
   'kitwe': [-12.8024, 28.2132],
+  'chililabombwe': [-12.55, 27.87],
+  'chingola': [-12.54, 27.85],
+  'chipata': [-13.64, 32.65],
+  'livingstone': [-17.85, 25.85],
+  'lusaka': [-15.4167, 28.2833],
+  'mufulira': [-12.55, 28.24],
 };
 
 function getCityCoords(cityName: string): [number, number] | null {

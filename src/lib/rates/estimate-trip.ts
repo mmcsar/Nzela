@@ -3,8 +3,9 @@
  */
 
 import { ROUTES_RDC } from '@/lib/constants/rdc-routes';
-import { CORRIDOR_CITIES_ALL } from '@/lib/constants/corridor-cities';
+import { CORRIDOR_CITIES_ALL, getCorridorCoords } from '@/lib/constants/corridor-cities';
 import { cdfToUsd } from '@/lib/utils/pricing';
+import { haversineDistance } from '@/lib/utils/distance';
 
 /** Villes proposées dans les estimateurs (RDC + Zambie) */
 export const ESTIMATOR_CITIES = CORRIDOR_CITIES_ALL;
@@ -40,6 +41,15 @@ export function getRouteDistanceKm(origin: string, destination: string): { km: n
   const key = `${normCity(origin)}|${normCity(destination)}`;
   const km = DISTANCE_MAP.get(key);
   if (km != null && km > 0) return { km, source: 'known_route' };
+
+  // Paire avec coordonnées (ex. Zambie–Zambie ou hors barème ROUTES_RDC) : haversine
+  const o = getCorridorCoords(origin);
+  const d = getCorridorCoords(destination);
+  if (o && d) {
+    const h = haversineDistance(o.lat, o.lng, d.lat, d.lng);
+    if (h > 0) return { km: h, source: 'approximate' };
+  }
+
   // Ordre de grandeur si villes connues mais pas la paire : moyenne des tronçons depuis l'origine
   const fromOrigin = [...DISTANCE_MAP.entries()]
     .filter(([k]) => k.startsWith(`${normCity(origin)}|`))

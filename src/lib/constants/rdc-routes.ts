@@ -9,7 +9,6 @@ export const ROUTES_RDC = [
   { from: 'Lubumbashi', to: 'Kasumbalesa', distance: '80 km', duration: '1h45' },
   { from: 'Lubumbashi', to: 'Kalemie', distance: '870 km', duration: '18h' },
   { from: 'Kolwezi', to: 'Likasi', distance: '180 km', duration: '4h' },
-  { from: 'Lubumbashi', to: 'Jadotville', distance: '110 km', duration: '2h15' },
   { from: 'Kolwezi', to: 'Lubumbashi', distance: '300 km', duration: '6h' },
   { from: 'Likasi', to: 'Kipushi', distance: '70 km', duration: '1h30' },
   { from: 'Lubumbashi', to: 'Sakania', distance: '42 km', duration: '1h' },
