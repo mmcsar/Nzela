@@ -8,12 +8,17 @@ import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/lib/i18n/routing';
 
+function normalizeRccm(value: string) {
+  return value.trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
 export default function LoginPage() {
   const t = useTranslations('auth');
   const tCommon = useTranslations('common');
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rccm, setRccm] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +53,65 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        // Utiliser le router de next-intl pour préserver la locale
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('role, broker_id, company_id')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          await supabase.auth.signOut();
+          setError(profileError.message || tCommon('error'));
+          return;
+        }
+
+        const role = profile?.role as string | undefined;
+
+        if (role === 'admin') {
+          router.push('/dashboard');
+          router.refresh();
+          return;
+        }
+
+        let expected: string | null | undefined;
+        if (role === 'broker' && profile?.broker_id) {
+          const { data: row } = await supabase
+            .from('brokers')
+            .select('registration_number')
+            .eq('id', profile.broker_id)
+            .maybeSingle();
+          expected = row?.registration_number;
+        } else if (role === 'company' && profile?.company_id) {
+          const { data: row } = await supabase
+            .from('companies')
+            .select('registration_number')
+            .eq('id', profile.company_id)
+            .maybeSingle();
+          expected = row?.registration_number;
+        }
+
+        const dbRccm = expected != null ? String(expected).trim() : '';
+
+        // Pas de RCCM enregistré en base : on ne bloque pas les comptes existants (connexion email/mot de passe comme avant).
+        if (!dbRccm) {
+          router.push('/dashboard');
+          router.refresh();
+          return;
+        }
+
+        // RCCM présent en base : vérification obligatoire (sécurité renforcée pour les profils à jour).
+        const entered = normalizeRccm(rccm);
+        if (!entered) {
+          await supabase.auth.signOut();
+          setError(t('rccmRequired'));
+          return;
+        }
+        if (normalizeRccm(dbRccm) !== entered) {
+          await supabase.auth.signOut();
+          setError(t('rccmMismatch'));
+          return;
+        }
+
         router.push('/dashboard');
         router.refresh();
       }
@@ -127,6 +190,17 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <div>
+              <Input
+                label={t('rccm')}
+                type="text"
+                autoComplete="off"
+                value={rccm}
+                onChange={(e) => setRccm(e.target.value)}
+                placeholder="ex. LSHI 17-B-6981"
+              />
+              <p className="mt-1.5 text-xs text-gray-500">{t('rccmHint')}</p>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <div className="text-sm">

@@ -1,6 +1,6 @@
 import { createClient, getAuthUser } from '@/lib/supabase/server';
 import { redirect } from '@/lib/i18n/routing';
-import { LoadCard } from '@/components/loads/LoadCard';
+import { AdminLoadsGrid } from '@/components/admin/AdminLoadsGrid';
 import { Load } from '@/types';
 import { getLocale } from 'next-intl/server';
 
@@ -22,18 +22,13 @@ export default async function AdminLoadsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Tous les Chargements</h1>
-        <p className="text-gray-600 mt-1">Voir tous les chargements postés sur la plateforme</p>
+        <p className="text-gray-600 mt-1">
+          Supprimer un chargement non disponible depuis la carte (admin) pour le retirer de la plateforme. La clé
+          service Supabase doit être configurée sur le serveur.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loads && loads.length > 0 ? (
-          loads.map((load) => (
-            <LoadCard key={load.id} load={load as Load} />
-          ))
-        ) : (
-          <p className="text-gray-500">Aucun chargement trouvé</p>
-        )}
-      </div>
+      <AdminLoadsGrid loads={(loads || []) as Load[]} />
     </div>
   );
 }

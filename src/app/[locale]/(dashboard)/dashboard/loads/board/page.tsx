@@ -196,7 +196,8 @@ export default function LoadBoardPage() {
   const [filters, setFilters] = useState({
     startDate: '', endDate: '',
     originCity: '', destCity: '',
-    status: 'all', trailerType: '', search: '',
+    /** Par défaut : offres ouvertes (évite d'encombrer avec réservés / en transit). « Tous » reste disponible. */
+    status: 'available', trailerType: '', search: '',
     minWeight: '', maxWeight: '',
     minPrice: '', maxPrice: '',
   });
@@ -371,12 +372,16 @@ export default function LoadBoardPage() {
   const clearFilters = () => {
     setFilters({
       startDate: '', endDate: '', originCity: '', destCity: '',
-      status: 'all', trailerType: '', search: '',
+      status: 'available', trailerType: '', search: '',
       minWeight: '', maxWeight: '', minPrice: '', maxPrice: '',
     });
   };
 
-  const activeFilterCount = Object.entries(filters).filter(([, v]) => v && v !== 'all').length;
+  const activeFilterCount = Object.entries(filters).filter(([key, v]) => {
+    if (!v || v === 'all') return false;
+    if (key === 'status' && v === 'available') return false;
+    return true;
+  }).length;
 
   // ── Export ──
   const exportCSV = () => {

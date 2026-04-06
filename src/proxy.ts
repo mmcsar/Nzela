@@ -36,6 +36,20 @@ const LOCALE_PREFIX = /^\/(fr|en)(\/|$)/;
 export default async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Callback Supabase (confirmation email, reset password) : pas de préfixe /fr — évite 404 sur /fr/auth/callback
+  if (pathname === '/auth/callback' || pathname.startsWith('/auth/callback/')) {
+    try {
+      const sessionResponse = await updateSession(request);
+      const res = NextResponse.next({ request });
+      sessionResponse.cookies.getAll().forEach((cookie) => {
+        res.cookies.set(cookie.name, cookie.value, cookie);
+      });
+      return res;
+    } catch {
+      return NextResponse.next({ request });
+    }
+  }
+
   // 0. Si l'URL n'a pas de locale (ex: /reset-password, /forgot-password), rediriger vers /fr/...
   const publicWithoutLocale = ['/reset-password', '/forgot-password', '/login', '/register'];
   if (!LOCALE_PREFIX.test(pathname) && publicWithoutLocale.some((r) => pathname === r || pathname.startsWith(r + '/'))) {

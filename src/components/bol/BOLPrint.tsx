@@ -34,10 +34,11 @@ function getBarcodeDataUrl(bolNumber: string): string | null {
       .slice(0, 30) || '0';
     JsBarcode(canvas, code, {
       format: 'CODE128',
-      width: 1.5,
-      height: 28,
+      width: 2,
+      height: 32,
       displayValue: false,
-      margin: 0,
+      margin: 4,
+      background: '#ffffff',
     });
     return canvas.toDataURL('image/png');
   } catch {
@@ -120,7 +121,8 @@ export function generateBOLPDF(bol: BOL, locale: string = 'fr') {
   // ══════════════════════════════════════════
   // EXPEDITEUR (gauche) | N° BORDEREAU (droite)
   // ══════════════════════════════════════════
-  const blockH1 = 32;
+  // Titre + date + WAYBILL + code-barres + 1–2 lignes numéro (évite chevauchement avec « Trajet »)
+  const blockH1 = 50;
   drawThickRect(margin, y, halfW, blockH1);
   drawThickRect(margin + halfW, y, halfW, blockH1);
 
@@ -156,9 +158,9 @@ export function generateBOLPDF(bol: BOL, locale: string = 'fr') {
   doc.text('WAYBILL', margin + halfW + halfW / 2, yR, { align: 'center' });
   doc.setTextColor(0, 0, 0);
   yR += 3;
-  const barcodeW = halfW - 30;
-  const barcodeH = 8;
-  const barcodeX = margin + halfW + 15;
+  const barcodeW = halfW - 24;
+  const barcodeH = 9;
+  const barcodeX = margin + halfW + 12;
   let barcodeDrawn = false;
   try {
     const barcodeDataUrl = getBarcodeDataUrl(bolNum);
@@ -178,6 +180,21 @@ export function generateBOLPDF(bol: BOL, locale: string = 'fr') {
     doc.text(msg.barcodeSpace || 'BARCODE SPACE', margin + halfW + halfW / 2, yR + 5, { align: 'center' });
     doc.setTextColor(0, 0, 0);
   }
+
+  // Numéro lisible sous les barres (plusieurs lignes si besoin)
+  let humanReadableY = yR + barcodeH + 2;
+  const readable = String(bolNum).replace(/\s+/g, ' ').trim();
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(30, 30, 30);
+  const readableMaxW = halfW - 8;
+  const readableLines = doc.splitTextToSize(readable, readableMaxW);
+  readableLines.forEach((line: string) => {
+    doc.text(line, margin + halfW + halfW / 2, humanReadableY, { align: 'center' });
+    humanReadableY += 3.2;
+  });
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(0, 0, 0);
 
   y += blockH1 + 1;
 
@@ -396,13 +413,18 @@ export function generateBOLPDF(bol: BOL, locale: string = 'fr') {
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(7);
+    doc.setFontSize(6);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(130);
-    doc.text(
-      `Page ${i}/${pageCount}  |  Nzela - Plateforme de Logistique RDC  |  ${bolNum}`,
-      W / 2, 290, { align: 'center' }
-    );
+    doc.text(`Page ${i}/${pageCount}  |  Nzela - Plateforme de Logistique RDC`, W / 2, 285, {
+      align: 'center',
+      maxWidth: W - margin * 2,
+    });
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(130);
+    doc.text(String(bolNum), W / 2, 291, { align: 'center', maxWidth: W - margin * 2 });
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(0);
   }
 

@@ -23,6 +23,15 @@ const CONDITION_OPTIONS = [
   { value: 'partial', label: 'Partiel', emoji: '⚠️', desc: 'Livraison incomplete', ring: 'ring-amber-500/20 border-amber-500 bg-amber-50', text: 'text-amber-700' },
 ];
 
+/** Pour champs <input type="datetime-local" /> */
+function toDatetimeLocalInput(iso: string | undefined | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function PODPage() {
   const { isLoading: authLoading, isAuthorized } = useRequireRole(['broker', 'company', 'admin']);
   const supabase = useMemo(() => createClient(), []);
@@ -34,7 +43,8 @@ export default function PODPage() {
   const [loadsError, setLoadsError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  /** Panneau détails transport ouvert par défaut ; tout est facultatif sauf le récepteur (étape 2). */
+  const [showAdvanced, setShowAdvanced] = useState(true);
   const [isDrawing, setIsDrawing] = useState(false);
   const [freeMode, setFreeMode] = useState(false); // POD sans chargement lie
 
@@ -50,10 +60,17 @@ export default function PODPage() {
     notes: '',
     driverName: '',
     truckNumber: '',
+    /** Identification transport (PDF : N° Licence, Immatric., Permis) */
+    licenseNumber: '',
+    mcNumber: '',
+    driverLicense: '',
     shipperTimeIn: '',
     shipperTimeOut: '',
     receiverTimeIn: '',
     receiverTimeOut: '',
+    /** Saisie manuelle ramassage / livraison (datetime-local), sinon valeurs du chargement */
+    pickupDateOverride: '',
+    deliveryDateOverride: '',
     freightCharges: '',
     // Champs mode libre
     shipperName: '',
@@ -109,6 +126,8 @@ export default function PODPage() {
       setSelectedLoad(load || null);
       const updates: Partial<typeof form> = {};
       if (load?.price) updates.freightCharges = String(load.price);
+      if (load?.pickup_date) updates.pickupDateOverride = toDatetimeLocalInput(load.pickup_date);
+      if (load?.delivery_date) updates.deliveryDateOverride = toDatetimeLocalInput(load.delivery_date);
       // Pré-remplir depuis les données saisies aux étapes du workflow (ex: Livré)
       const stepData = load?.workflow_step_data as Record<string, { receiverName?: string; receiverPhone?: string; deliveryTime?: string; pickupTime?: string }> | undefined;
       const delivered = stepData?.delivered;
@@ -205,6 +224,14 @@ export default function PODPage() {
     const signature = canvasRef.current ? canvasRef.current.toDataURL('image/png') : undefined;
     const controlNum = selectedLoadId ? selectedLoadId.substring(0, 8).toUpperCase() : `POD-${Date.now().toString(36).toUpperCase().substring(0, 6)}`;
 
+    const safeIso = (local: string, fallback: string | undefined) => {
+      if (!local?.trim()) return fallback;
+      const d = new Date(local);
+      return Number.isNaN(d.getTime()) ? fallback : d.toISOString();
+    };
+    const pickupIso = safeIso(form.pickupDateOverride, selectedLoad?.pickup_date);
+    const deliveryIso = safeIso(form.deliveryDateOverride, selectedLoad?.delivery_date || new Date().toISOString());
+
     return {
       loadId: selectedLoadId || undefined,
       controlNumber: controlNum,
@@ -214,10 +241,13 @@ export default function PODPage() {
       companyAddress: selectedLoad?.broker?.address || '',
       companyCity: origin.city,
       companyProvince: origin.province,
+      licenseNumber: form.licenseNumber || undefined,
+      mcNumber: form.mcNumber || undefined,
+      driverLicense: form.driverLicense || undefined,
       driverName: form.driverName,
       truckNumber: form.truckNumber,
-      pickupDate: selectedLoad?.pickup_date,
-      deliveryDate: selectedLoad?.delivery_date || new Date().toISOString(),
+      pickupDate: pickupIso,
+      deliveryDate: deliveryIso,
       shipperTimeIn: form.shipperTimeIn,
       shipperTimeOut: form.shipperTimeOut,
       receiverTimeIn: form.receiverTimeIn,
@@ -268,6 +298,11 @@ export default function PODPage() {
             metadata: {
               driverName: form.driverName,
               truckNumber: form.truckNumber,
+              licenseNumber: form.licenseNumber,
+              mcNumber: form.mcNumber,
+              driverLicense: form.driverLicense,
+              pickupDateOverride: form.pickupDateOverride,
+              deliveryDateOverride: form.deliveryDateOverride,
               receiverPhone: form.receiverPhone,
               items: form.items,
               freightCharges: form.freightCharges,
@@ -293,10 +328,12 @@ export default function PODPage() {
     setSelectedLoadId('');
     setSelectedLoad(null);
     setFreeMode(false);
+    setShowAdvanced(true);
     setForm({
       receiverName: '', receiverPhone: '', condition: 'good', conditionNotes: '', notes: '',
-      driverName: '', truckNumber: '', shipperTimeIn: '', shipperTimeOut: '',
-      receiverTimeIn: '', receiverTimeOut: '', freightCharges: '',
+      driverName: '', truckNumber: '', licenseNumber: '', mcNumber: '', driverLicense: '',
+      shipperTimeIn: '', shipperTimeOut: '', receiverTimeIn: '', receiverTimeOut: '',
+      pickupDateOverride: '', deliveryDateOverride: '', freightCharges: '',
       shipperName: '', originCity: '', originProvince: '', destCity: '', destProvince: '', weight: '',
       items: [{ description: '', quantity: 1, weight: 0, grossWeight: 0, specialMarks: '' }],
     });
@@ -411,7 +448,13 @@ export default function PODPage() {
                   {/* Bouton mode libre */}
                   <button
                     type="button"
-                    onClick={() => setFreeMode(true)}
+                    onClick={() => {
+                      setFreeMode(true);
+                      setForm((p) => ({
+                        ...p,
+                        deliveryDateOverride: p.deliveryDateOverride || toDatetimeLocalInput(new Date().toISOString()),
+                      }));
+                    }}
                     className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl text-emerald-700 font-semibold text-sm transition-all hover:border-emerald-400"
                   >
                     <Plus className="w-4 h-4" />
@@ -618,48 +661,92 @@ export default function PODPage() {
       {/* ══════════════════════════════════════ */}
       {formVisible && (
         <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full flex items-center justify-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors py-2"
+          type="button"
+          onClick={() => setShowAdvanced((v) => !v)}
+          className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl py-3 px-4 transition-colors shadow-sm"
         >
-          {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          {showAdvanced ? 'Masquer les champs avances' : 'Champs avances (chauffeur, heures, frais...)'}
+          {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {showAdvanced ? 'Masquer les détails transport (facultatif)' : 'Afficher les détails transport (facultatif)'}
         </button>
       )}
 
-      {selectedLoadId && showAdvanced && (
+      {formVisible && showAdvanced && (
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
           <div className="bg-blue-50 px-5 py-3 border-b">
             <h2 className="text-sm font-bold text-blue-800 flex items-center gap-2">
-              <Info className="w-4 h-4" /> Informations avancees
+              <Info className="w-4 h-4" /> Identification, dates &amp; heures <span className="font-normal text-blue-600">(facultatif)</span>
             </h2>
+            <p className="text-[11px] text-blue-700/80 mt-1">
+              Rien d&apos;obligatoire ici : les dates viennent du chargement quand elles existent. Complétez seulement si vous devez corriger ou ajouter licence, permis, heures d&apos;entrée/sortie — le PDF utilise ce qui est disponible.
+            </p>
           </div>
           <div className="p-5 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5"><User className="w-3 h-3" /> Nom du chauffeur</label>
-                <input className={inputCls} value={form.driverName} onChange={(e) => updateForm('driverName', e.target.value)} placeholder="Jean Mukendi..." />
-              </div>
-              <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5"><Truck className="w-3 h-3" /> N° Camion / Plaque</label>
-                <input className={inputCls} value={form.truckNumber} onChange={(e) => updateForm('truckNumber', e.target.value)} placeholder="KN-1234-AB" />
+            <div>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Identification transport</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5"><User className="w-3 h-3" /> Nom du chauffeur</label>
+                  <input className={inputCls} value={form.driverName} onChange={(e) => updateForm('driverName', e.target.value)} placeholder="Jean Mukendi..." />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5"><Truck className="w-3 h-3" /> N° Camion / Plaque</label>
+                  <input className={inputCls} value={form.truckNumber} onChange={(e) => updateForm('truckNumber', e.target.value)} placeholder="KN-1234-AB" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 mb-1.5">N° Licence (transport)</label>
+                  <input className={inputCls} value={form.licenseNumber} onChange={(e) => updateForm('licenseNumber', e.target.value)} placeholder="Ex. licence exploitant" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 mb-1.5">N° Immatriculation</label>
+                  <input className={inputCls} value={form.mcNumber} onChange={(e) => updateForm('mcNumber', e.target.value)} placeholder="Immat. véhicule / remorque" />
+                </div>
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <label className="text-xs font-semibold text-gray-600 mb-1.5">Permis chauffeur N°</label>
+                  <input className={inputCls} value={form.driverLicense} onChange={(e) => updateForm('driverLicense', e.target.value)} placeholder="N° permis de conduire" />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Exp. Entree</label>
-                <input type="time" className={inputCls} value={form.shipperTimeIn} onChange={(e) => updateForm('shipperTimeIn', e.target.value)} />
+            <div>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Dates &amp; heures</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5"><Calendar className="w-3 h-3" /> Ramassage</label>
+                  <input
+                    type="datetime-local"
+                    className={inputCls}
+                    value={form.pickupDateOverride}
+                    onChange={(e) => updateForm('pickupDateOverride', e.target.value)}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Optionnel : prérempli depuis le chargement — modifiez seulement si nécessaire.</p>
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5"><Calendar className="w-3 h-3" /> Livraison</label>
+                  <input
+                    type="datetime-local"
+                    className={inputCls}
+                    value={form.deliveryDateOverride}
+                    onChange={(e) => updateForm('deliveryDateOverride', e.target.value)}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Optionnel : date du chargement ou maintenant (mode libre) — ajustez si besoin.</p>
+                </div>
               </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Exp. Sortie</label>
-                <input type="time" className={inputCls} value={form.shipperTimeOut} onChange={(e) => updateForm('shipperTimeOut', e.target.value)} />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Dest. Entree</label>
-                <input type="time" className={inputCls} value={form.receiverTimeIn} onChange={(e) => updateForm('receiverTimeIn', e.target.value)} />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Dest. Sortie</label>
-                <input type="time" className={inputCls} value={form.receiverTimeOut} onChange={(e) => updateForm('receiverTimeOut', e.target.value)} />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Exp. Entrée</label>
+                  <input type="time" className={inputCls} value={form.shipperTimeIn} onChange={(e) => updateForm('shipperTimeIn', e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Exp. Sortie</label>
+                  <input type="time" className={inputCls} value={form.shipperTimeOut} onChange={(e) => updateForm('shipperTimeOut', e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Dest. Entrée</label>
+                  <input type="time" className={inputCls} value={form.receiverTimeIn} onChange={(e) => updateForm('receiverTimeIn', e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Dest. Sortie</label>
+                  <input type="time" className={inputCls} value={form.receiverTimeOut} onChange={(e) => updateForm('receiverTimeOut', e.target.value)} />
+                </div>
               </div>
             </div>
             <div>

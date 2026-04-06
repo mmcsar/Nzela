@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
@@ -127,10 +127,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // Vérifier la propriété
     const { data: existingLoad } = await supabase
       .from('loads')
-      .select('broker_id')
+      .select('broker_id, status')
       .eq('id', id)
       .single();
 
@@ -140,12 +139,41 @@ export async function DELETE(
 
     const { data: userData } = await supabase
       .from('users')
-      .select('broker_id')
+      .select('broker_id, role')
       .eq('id', user.id)
       .single();
 
-    if (userData?.broker_id !== existingLoad.broker_id) {
+    const isAdmin = userData?.role === 'admin';
+    const isOwner =
+      userData?.broker_id != null && userData.broker_id === existingLoad.broker_id;
+
+    if (!isAdmin && !isOwner) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
+    // Admin (sans être le courtier propriétaire) : nettoyer les chargements déjà pris — pas les offres encore « disponibles »
+    if (isAdmin && !isOwner) {
+      if (existingLoad.status === 'available') {
+        return NextResponse.json(
+          {
+            error:
+              'Un chargement encore disponible doit être retiré par le courtier propriétaire.',
+          },
+          { status: 403 }
+        );
+      }
+      let adminClient;
+      try {
+        adminClient = createServiceRoleClient();
+      } catch {
+        return NextResponse.json(
+          { error: 'Suppression admin indisponible (configuration serveur).' },
+          { status: 503 }
+        );
+      }
+      const { error } = await adminClient.from('loads').delete().eq('id', id);
+      if (error) throw error;
+      return NextResponse.json({ message: 'Load supprimé avec succès' });
     }
 
     const { error } = await supabase.from('loads').delete().eq('id', id);

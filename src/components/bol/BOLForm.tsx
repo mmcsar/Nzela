@@ -314,18 +314,27 @@ export function BOLForm({ loadId, truckId, onSuccess }: BOLFormProps) {
         <div className="grid grid-cols-2 border-b-2 border-gray-900">
           <div className="p-3 border-r border-gray-300">
             <label className={labelCls}>{t('load')} *</label>
-            <select className={inputCls} {...register('loadId')} onChange={(e) => {
-              setValue('loadId', e.target.value);
-              const load = loads.find((l) => l.id === e.target.value) as any;
-              if (load) {
-                const pickupRaw = load.pickupDate || load.pickup_date;
-                const deliveryRaw = load.deliveryDate || load.delivery_date;
-                if (pickupRaw) setValue('pickupDate', new Date(pickupRaw).toISOString().slice(0, 16));
-                if (deliveryRaw) setValue('deliveryDate', new Date(deliveryRaw).toISOString().slice(0, 16));
-                const dest = typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination;
-                if (dest) { setValue('consigneeCity', dest.city || ''); setValue('consigneeAddress', dest.address || ''); }
-              }
-            }}>
+            <select
+              className={inputCls}
+              {...register('loadId', {
+                onChange: (e) => {
+                  const val = e.target.value;
+                  setValue('loadId', val, { shouldValidate: true });
+                  const load = loads.find((l) => l.id === val) as any;
+                  if (load) {
+                    const pickupRaw = load.pickupDate || load.pickup_date;
+                    const deliveryRaw = load.deliveryDate || load.delivery_date;
+                    if (pickupRaw) setValue('pickupDate', new Date(pickupRaw).toISOString().slice(0, 16));
+                    if (deliveryRaw) setValue('deliveryDate', new Date(deliveryRaw).toISOString().slice(0, 16));
+                    const dest = typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination;
+                    if (dest) {
+                      setValue('consigneeCity', dest.city || '');
+                      setValue('consigneeAddress', dest.address || '');
+                    }
+                  }
+                },
+              })}
+            >
               <option value="">{t('select')}</option>
               {loads.map((load: any) => {
                 const o = typeof load.origin === 'string' ? JSON.parse(load.origin) : load.origin;

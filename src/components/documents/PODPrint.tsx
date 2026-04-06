@@ -107,6 +107,11 @@ function fmtPrice(n: number | undefined) {
   return n.toLocaleString('fr-FR');
 }
 
+/** Signature canvas → data URL pour addImage jsPDF */
+function isDataUrlImage(s: string | undefined): s is string {
+  return !!s && /^data:image\/(png|jpeg|jpg|webp);base64,/i.test(s);
+}
+
 // ══════════════════════════════════════════
 // GENERATEUR PDF POD
 // ══════════════════════════════════════════
@@ -499,13 +504,22 @@ export function generatePODPDF(pod: PODData): jsPDF {
   lbl('Date:', M + halfW - 35, y + 18);
   val(fmtDate(pod.deliveryDate) || '___/___/______', M + halfW - 23, y + 18, 7.5);
 
-  // Si signature electronique chauffeur
-  if (pod.driverSignature) {
+  // Signature chauffeur (image PNG data URL)
+  const driverSig = pod.driverSignature as string | undefined;
+  if (driverSig && isDataUrlImage(driverSig)) {
+    try {
+      doc.addImage(driverSig, 'PNG', M + 5, y + 7, halfW - 12, 6);
+    } catch {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7);
+      doc.setTextColor(0, 100, 0);
+      doc.text('[Signature image — erreur rendu]', M + halfW / 2, y + 11, { align: 'center' });
+      doc.setTextColor(0);
+    }
+  } else if (driverSig && !driverSig.startsWith('data:')) {
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
-    doc.setTextColor(0, 100, 0);
-    doc.text('[Signe electroniquement]', M + halfW / 2, y + 12, { align: 'center' });
-    doc.setTextColor(0);
+    doc.text(driverSig.slice(0, 80), M + halfW / 2, y + 11, { align: 'center', maxWidth: halfW - 8 });
   }
 
   // Droite: Signature destinataire / recepteur
@@ -521,13 +535,22 @@ export function generatePODPDF(pod: PODData): jsPDF {
   lbl('Date:', M + IW - 35, y + 18);
   val(fmtDate(pod.deliveryDate) || '___/___/______', M + IW - 23, y + 18, 7.5);
 
-  // Si signature electronique recepteur
-  if (pod.receiverSignature) {
+  // Signature destinataire : image PNG du canvas
+  const recvSig = pod.receiverSignature as string | undefined;
+  if (recvSig && isDataUrlImage(recvSig)) {
+    try {
+      doc.addImage(recvSig, 'PNG', M + halfW + 5, y + 7, halfW - 12, 6);
+    } catch {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7);
+      doc.setTextColor(180, 0, 0);
+      doc.text('[Signature — erreur rendu PDF]', M + halfW + halfW / 2, y + 11, { align: 'center' });
+      doc.setTextColor(0);
+    }
+  } else if (recvSig && !recvSig.startsWith('data:')) {
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
-    doc.setTextColor(0, 100, 0);
-    doc.text('[Signe electroniquement]', M + halfW + halfW / 2, y + 12, { align: 'center' });
-    doc.setTextColor(0);
+    doc.text(recvSig.slice(0, 80), M + halfW + halfW / 2, y + 11, { align: 'center', maxWidth: halfW - 8 });
   }
 
   y += sigH + 2;
