@@ -28,7 +28,10 @@ export function NotificationBell() {
 
   const fetchNotifications = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch('/api/notifications?limit=10');
+      const response = await fetch('/api/notifications?limit=10', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
       if (response.status === 401) return false; // Non connecté : arrêter le polling
       const data = await response.json();
       if (response.ok) {
@@ -55,13 +58,18 @@ export function NotificationBell() {
   }, [fetchNotifications]);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (ref.current && target && !ref.current.contains(target)) {
         setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -95,6 +103,7 @@ export function NotificationBell() {
       try {
         await fetch('/api/notifications', {
           method: 'PUT',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notificationId: notif.id }),
         });
@@ -116,6 +125,7 @@ export function NotificationBell() {
     try {
       const res = await fetch('/api/admin/entity-status', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entityType, entityId, status: 'active' }),
       });
@@ -126,6 +136,7 @@ export function NotificationBell() {
       }
       await fetch('/api/notifications', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notificationId: notif.id }),
       });
@@ -147,10 +158,31 @@ export function NotificationBell() {
     return `${days}j`;
   };
 
+  const handleMarkAllRead = async () => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAllRead: true }),
+      });
+      setIsOpen(false);
+      fetchNotifications();
+    } catch {
+      /* ignore */
+    }
+  };
+
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative z-[100]">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        type="button"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen((v) => !v);
+        }}
         className="relative p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
       >
         <Bell className="w-5 h-5" />
@@ -162,7 +194,7 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-gray-200 z-[200] overflow-hidden">
           <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
             <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
             {unreadCount > 0 && (
@@ -222,9 +254,27 @@ export function NotificationBell() {
           </div>
 
           {notifications.length > 0 && (
-            <div className="px-4 py-2.5 border-t bg-gray-50 text-center">
-              <button className="text-xs text-primary-600 font-medium hover:text-primary-700">
-                Voir toutes les notifications
+            <div className="px-4 py-2.5 border-t bg-gray-50 flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleMarkAllRead();
+                }}
+                className="w-full text-xs text-gray-600 font-medium hover:text-gray-900 py-1"
+              >
+                Tout marquer comme lu
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                  router.push('/messages');
+                }}
+                className="w-full text-xs text-primary-600 font-medium hover:text-primary-700 py-1"
+              >
+                Voir les messages
               </button>
             </div>
           )}

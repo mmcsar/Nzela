@@ -72,7 +72,8 @@
     "resetEmailSent": "If an account exists, a reset email has been sent.",
     "invalidOrExpiredLink": "Invalid or expired link. Please request a new one.",
     "passwordsDoNotMatch": "Passwords do not match.",
-    "passwordMinLength": "Password must be at least 6 characters."
+    "passwordMinLength": "Password must be at least 6 characters.",
+    "adminSessionLabel": "Administrator session"
   },
   "roles": {
     "admin": "Administrator",

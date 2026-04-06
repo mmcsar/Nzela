@@ -146,7 +146,9 @@ export default async function DashboardLayout({
                 <span className="text-xl font-bold text-primary-600">Nzela</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500 hidden sm:inline">{user.email}</span>
+                <span className="text-xs text-gray-500 hidden sm:inline">
+                  {role === 'admin' ? tAuth('adminSessionLabel') : user.email}
+                </span>
                 <form action="/api/auth/logout" method="post">
                   <button
                     type="submit"
@@ -254,10 +256,10 @@ export default async function DashboardLayout({
   return (
     <DashboardAuthProvider value={authContextValue}>
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="relative z-40 bg-white shadow-sm border-b overflow-visible">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
           {/* Ligne principale */}
-          <div className="flex justify-between h-14">
+          <div className="flex justify-between h-14 overflow-visible">
             <div className="flex items-center gap-6">
               <PrefetchLink href="/dashboard" className="text-xl font-bold text-primary-600 flex items-center gap-2">
                 <div className="w-7 h-7 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
@@ -281,7 +283,7 @@ export default async function DashboardLayout({
                 })}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="relative z-50 flex shrink-0 items-center gap-2 overflow-visible">
               <LanguageSwitcher compact />
               <NotificationBell />
               {role === 'admin' && (
@@ -289,7 +291,9 @@ export default async function DashboardLayout({
                   ADMIN
                 </span>
               )}
-              <span className="text-xs text-gray-500 hidden sm:inline">{user.email}</span>
+              <span className="text-xs text-gray-500 hidden sm:inline">
+                {role === 'admin' ? tAuth('adminSessionLabel') : user.email}
+              </span>
               <form action="/api/auth/logout" method="post">
                 <button
                   type="submit"

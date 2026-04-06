@@ -72,7 +72,8 @@
     "resetEmailSent": "Si un compte existe, un email de reinitialisation a ete envoye.",
     "invalidOrExpiredLink": "Lien invalide ou expire. Demandez un nouveau lien.",
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas.",
-    "passwordMinLength": "Le mot de passe doit contenir au moins 6 caracteres."
+    "passwordMinLength": "Le mot de passe doit contenir au moins 6 caracteres.",
+    "adminSessionLabel": "Session administrateur"
   },
   "roles": {
     "admin": "Administrateur",
