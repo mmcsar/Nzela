@@ -73,7 +73,14 @@
     "invalidOrExpiredLink": "Invalid or expired link. Please request a new one.",
     "passwordsDoNotMatch": "Passwords do not match.",
     "passwordMinLength": "Password must be at least 6 characters.",
-    "adminSessionLabel": "Administrator session"
+    "adminSessionLabel": "Administrator session",
+    "registerHubSubtitle": "Two steps: your user account, then your organization name and RCCM.",
+    "registerHubCompanyHint": "RCCM and company contact details.",
+    "registerHubBrokerHint": "RCCM and agency contact details.",
+    "registerAsCompany": "I am a company (transport, fleet)",
+    "registerAsBroker": "I am a broker (agency)",
+    "registerHubFooter": "Already have an account?",
+    "registerHubBack": "Back to home"
   },
   "roles": {
     "admin": "Administrator",

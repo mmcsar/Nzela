@@ -1,127 +1,93 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { createClient } from '@/lib/supabase/client';
+import { Link } from '@/lib/i18n/routing';
+import { Building2, Users, ArrowRight } from 'lucide-react';
 
-export default function RegisterPage() {
+function RegisterHubInner() {
   const t = useTranslations('auth');
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'company' | 'broker'>('company');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const appUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || '';
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { role },
-          emailRedirectTo: `${appUrl}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        router.push('/login?registered=true');
-      }
-    } catch (error: any) {
-      setError(error.message || 'Une erreur est survenue');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const searchParams = useSearchParams();
+  const plan = searchParams.get('plan');
+  const query = plan ? `?plan=${encodeURIComponent(plan)}` : '';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {t('register')}
-          </h2>
+      <div className="max-w-lg w-full space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-extrabold text-gray-900">{t('register')}</h1>
+          <p className="mt-2 text-sm text-gray-600">{t('registerHubSubtitle')}</p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
+
+        <div className="grid gap-4 sm:grid-cols-1">
+          <Link
+            href={`/register/company${query}`}
+            className="group flex items-center gap-4 rounded-2xl border-2 border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-primary-400 hover:shadow-md"
+          >
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-100">
+              <Building2 className="h-7 w-7 text-blue-600" />
             </div>
-          )}
-          <div className="space-y-4">
-            <Input
-              label={t('email')}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type de compte
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                value={role}
-                onChange={(e) => setRole(e.target.value as 'company' | 'broker')}
-              >
-                <option value="company">Entreprise</option>
-                <option value="broker">Courtier</option>
-              </select>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="font-semibold text-gray-900">{t('registerAsCompany')}</p>
+              <p className="text-xs text-gray-500">{t('registerHubCompanyHint')}</p>
             </div>
-            <Input
-              label={t('password')}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <Input
-              label="Confirmer le mot de passe"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Button
-              type="submit"
-              className="w-full"
-              isLoading={isLoading}
-            >
-              {t('register')}
-            </Button>
-          </div>
-        </form>
+            <ArrowRight className="h-5 w-5 shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-primary-600" />
+          </Link>
+
+          <Link
+            href={`/register/broker${query}`}
+            className="group flex items-center gap-4 rounded-2xl border-2 border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-amber-400 hover:shadow-md"
+          >
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+              <Users className="h-7 w-7 text-amber-600" />
+            </div>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="font-semibold text-gray-900">{t('registerAsBroker')}</p>
+              <p className="text-xs text-gray-500">{t('registerHubBrokerHint')}</p>
+            </div>
+            <ArrowRight className="h-5 w-5 shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-primary-600" />
+          </Link>
+        </div>
+
+        <p className="text-center text-sm text-gray-600">
+          {t('registerHubFooter')}{' '}
+          <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
+            {t('login')}
+          </Link>
+        </p>
+
+        <p className="text-center">
+          <Link href="/" className="text-xs text-gray-500 hover:text-gray-700">
+            {t('registerHubBack')}
+          </Link>
+        </p>
       </div>
     </div>
   );
 }
 
+function RegisterHubFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div className="max-w-lg w-full space-y-4 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded mx-auto w-48" />
+        <div className="h-4 bg-gray-100 rounded mx-auto w-72" />
+        <div className="h-24 bg-gray-100 rounded-2xl" />
+        <div className="h-24 bg-gray-100 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
 
-
-
+/**
+ * Hub d'inscription : oriente vers les parcours 2 etapes (entreprise / courtier).
+ * Aucune modification des comptes existants — uniquement le parcours des nouveaux inscrits.
+ */
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterHubFallback />}>
+      <RegisterHubInner />
+    </Suspense>
+  );
+}

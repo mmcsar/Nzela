@@ -73,7 +73,14 @@
     "invalidOrExpiredLink": "Lien invalide ou expire. Demandez un nouveau lien.",
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas.",
     "passwordMinLength": "Le mot de passe doit contenir au moins 6 caracteres.",
-    "adminSessionLabel": "Session administrateur"
+    "adminSessionLabel": "Session administrateur",
+    "registerHubSubtitle": "Deux étapes : compte utilisateur, puis nom et RCCM de votre structure.",
+    "registerHubCompanyHint": "RCCM et coordonnées de l'entreprise.",
+    "registerHubBrokerHint": "RCCM et coordonnées du cabinet.",
+    "registerAsCompany": "Je suis une entreprise (transport, flotte)",
+    "registerAsBroker": "Je suis un courtier (cabinet)",
+    "registerHubFooter": "Déjà un compte ?",
+    "registerHubBack": "Retour à l'accueil"
   },
   "roles": {
     "admin": "Administrateur",
