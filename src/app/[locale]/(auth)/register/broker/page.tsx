@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { createClient } from '@/lib/supabase/client';
 import { ALL_REGION_IDS, ALL_REGION_NAMES, type AllRegionId } from '@/lib/constants/rdc-provinces';
 import { Users, ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +12,6 @@ import Link from 'next/link';
 export default function RegisterBrokerPage() {
   const t = useTranslations('auth');
   const router = useRouter();
-  const supabase = createClient();
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,65 +54,28 @@ export default function RegisterBrokerPage() {
     setIsLoading(true);
 
     try {
-      const appUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || '';
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { role: 'broker', full_name: fullName },
-          emailRedirectTo: `${appUrl}/auth/callback`,
-        },
-      });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Erreur lors de la création du compte');
-
-      await supabase.from('users').insert({
-        id: authData.user.id,
-        email,
-        full_name: fullName,
-        role: 'broker',
-      });
-
-      const { data: broker, error: brokerError } = await supabase
-        .from('brokers')
-        .insert({
-          name: brokerName,
-          registration_number: registrationNumber,
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'broker',
+          email,
+          password,
+          fullName,
+          entityName: brokerName,
+          registrationNumber,
           address,
           city,
           province,
           phone,
-          email: brokerEmail || email,
-          owner_id: authData.user.id,
-          status: 'pending', // en attente de validation par l'admin (visible dans Dashboard > Courtiers)
-        })
-        .select()
-        .single();
+          professionalEmail: brokerEmail.trim() || undefined,
+        }),
+      });
 
-      if (brokerError) throw brokerError;
-
-      await supabase
-        .from('users')
-        .update({ broker_id: broker.id })
-        .eq('id', authData.user.id);
-
-      // Notifier les admins (token dans l'en-tête car la session peut ne pas être dans les cookies tout de suite)
-      try {
-        const headers: HeadersInit = { 'Content-Type': 'application/json' };
-        if (authData.session?.access_token) {
-          headers['Authorization'] = `Bearer ${authData.session.access_token}`;
-        }
-        await fetch('/api/auth/notify-signup', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            type: 'broker',
-            entityId: broker.id,
-            entityName: brokerName,
-          }),
-        });
-      } catch { /* non bloquant */ }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Erreur lors de la création du compte');
+      }
 
       setSuccess(true);
       setTimeout(() => router.push('/login?registered=true'), 2000);

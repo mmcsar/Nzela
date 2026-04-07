@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { createClient } from '@/lib/supabase/client';
 import { ALL_REGION_IDS, ALL_REGION_NAMES, type AllRegionId } from '@/lib/constants/rdc-provinces';
 import { Building2, ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +12,6 @@ import Link from 'next/link';
 export default function RegisterCompanyPage() {
   const t = useTranslations('auth');
   const router = useRouter();
-  const supabase = createClient();
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,69 +54,28 @@ export default function RegisterCompanyPage() {
     setIsLoading(true);
 
     try {
-      // 1. Créer le compte auth
-      const appUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || '';
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { role: 'company', full_name: fullName },
-          emailRedirectTo: `${appUrl}/auth/callback`,
-        },
-      });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Erreur lors de la création du compte');
-
-      // 2. Créer le profil utilisateur
-      await supabase.from('users').insert({
-        id: authData.user.id,
-        email,
-        full_name: fullName,
-        role: 'company',
-      });
-
-      // 3. Créer l'entreprise
-      const { data: company, error: companyError } = await supabase
-        .from('companies')
-        .insert({
-          name: companyName,
-          registration_number: registrationNumber,
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'company',
+          email,
+          password,
+          fullName,
+          entityName: companyName,
+          registrationNumber,
           address,
           city,
           province,
           phone,
-          email: companyEmail || email,
-          owner_id: authData.user.id,
-          status: 'pending', // en attente de validation par l'admin (visible dans Dashboard > Entreprises)
-        })
-        .select()
-        .single();
+          professionalEmail: companyEmail.trim() || undefined,
+        }),
+      });
 
-      if (companyError) throw companyError;
-
-      // 4. Lier l'entreprise à l'utilisateur
-      await supabase
-        .from('users')
-        .update({ company_id: company.id })
-        .eq('id', authData.user.id);
-
-      // 5. Notifier les admins pour validation (token dans l'en-tête car la session peut ne pas être dans les cookies tout de suite)
-      try {
-        const headers: HeadersInit = { 'Content-Type': 'application/json' };
-        if (authData.session?.access_token) {
-          headers['Authorization'] = `Bearer ${authData.session.access_token}`;
-        }
-        await fetch('/api/auth/notify-signup', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            type: 'company',
-            entityId: company.id,
-            entityName: companyName,
-          }),
-        });
-      } catch { /* non bloquant */ }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Erreur lors de la création du compte');
+      }
 
       setSuccess(true);
       setTimeout(() => router.push('/login?registered=true'), 2000);
