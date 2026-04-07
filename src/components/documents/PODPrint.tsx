@@ -464,25 +464,18 @@ export function generatePODPDF(pod: PODData): jsPDF {
   y += chargeH + 1;
 
   // ══════════════════════════════════════════════
-  // 8. RECEPTION CONFIRMEE
+  // 8. RECEPTION CONFIRMEE (FR + EN sur deux lignes — evite superposition et doublons)
   // ══════════════════════════════════════════════
-  fillRect(M, y, IW, 6, 0, 60, 120);
+  const receptionBannerH = 9;
+  fillRect(M, y, IW, receptionBannerH, 0, 60, 120);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
-  doc.text('RECU EN BON ETAT SAUF MENTION CONTRAIRE', W / 2, y + 4, { align: 'center' });
-  doc.text('RECEIVED IN GOOD CONDITION EXCEPT AS NOTED', W / 2, y + 4, { align: 'center' });
-  doc.setTextColor(0);
-  y += 7;
-
-  // Repeter en 2 colonnes
-  fillRect(M, y, halfW, 5, 230, 240, 250);
-  fillRect(M + halfW, y, halfW, 5, 230, 240, 250);
-  doc.setFont('helvetica', 'bold');
+  doc.text('RECU EN BON ETAT SAUF MENTION CONTRAIRE', W / 2, y + 3.3, { align: 'center' });
   doc.setFontSize(6.5);
-  doc.text('RECU EN BON ETAT SAUF MENTION CONTRAIRE', M + halfW / 2, y + 3.5, { align: 'center' });
-  doc.text('RECU EN BON ETAT SAUF MENTION CONTRAIRE', M + halfW + halfW / 2, y + 3.5, { align: 'center' });
-  y += 6;
+  doc.text('RECEIVED IN GOOD CONDITION EXCEPT AS NOTED', W / 2, y + 6.5, { align: 'center' });
+  doc.setTextColor(0);
+  y += receptionBannerH + 1;
 
   // ══════════════════════════════════════════════
   // 9. SIGNATURES - 2 colonnes
