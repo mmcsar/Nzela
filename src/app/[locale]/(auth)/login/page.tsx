@@ -7,10 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/lib/i18n/routing';
-
-function normalizeRccm(value: string) {
-  return value.trim().replace(/\s+/g, ' ').toUpperCase();
-}
+import { rccmEquals } from '@/lib/auth/rccm';
 
 export default function LoginPage() {
   const t = useTranslations('auth');
@@ -100,13 +97,13 @@ export default function LoginPage() {
         }
 
         // RCCM présent en base : vérification obligatoire (sécurité renforcée pour les profils à jour).
-        const entered = normalizeRccm(rccm);
+        const entered = rccm.trim();
         if (!entered) {
           await supabase.auth.signOut();
           setError(t('rccmRequired'));
           return;
         }
-        if (normalizeRccm(dbRccm) !== entered) {
+        if (!rccmEquals(dbRccm, entered)) {
           await supabase.auth.signOut();
           setError(t('rccmMismatch'));
           return;
@@ -156,17 +153,21 @@ export default function LoginPage() {
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              <p className="font-medium">{t('emailNotConfirmed')}</p>
-              <p className="text-sm mt-1">{error}</p>
-              {showResendButton && (
-                <button
-                  type="button"
-                  onClick={handleResendConfirmation}
-                  disabled={isResending}
-                  className="mt-3 text-sm font-medium text-red-700 hover:text-red-800 underline disabled:opacity-50"
-                >
-                  {isResending ? tCommon('loading') : t('resendConfirmation')}
-                </button>
+              {showResendButton ? (
+                <>
+                  <p className="font-medium">{t('emailNotConfirmed')}</p>
+                  <p className="text-sm mt-1">{error}</p>
+                  <button
+                    type="button"
+                    onClick={handleResendConfirmation}
+                    disabled={isResending}
+                    className="mt-3 text-sm font-medium text-red-700 hover:text-red-800 underline disabled:opacity-50"
+                  >
+                    {isResending ? tCommon('loading') : t('resendConfirmation')}
+                  </button>
+                </>
+              ) : (
+                <p className="text-sm">{error}</p>
               )}
             </div>
           )}
