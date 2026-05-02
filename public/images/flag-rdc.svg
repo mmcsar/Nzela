@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <rect width="900" height="1200" fill="#007FFF"/>
+  <g transform="translate(450,600) rotate(-53.13010235)">
+    <rect x="-1200" y="-42" width="2400" height="28" fill="#F7D116"/>
+    <rect x="-1200" y="-14" width="2400" height="28" fill="#CE1021"/>
+    <rect x="-1200" y="14" width="2400" height="28" fill="#F7D116"/>
+  </g>
+  <path fill="#F7D116" d="M135,196L146.76,231.82L184.45,231.93L154.02,254.18L165.56,290.07L135,268L104.44,290.07L115.98,254.18L85.55,231.93L123.24,231.82Z"/>
+</svg>

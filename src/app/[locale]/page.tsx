@@ -39,11 +39,21 @@ export default async function HomePage() {
 
       {/* Bandeau défilant — bienvenue & sortie (texte doré sur fond profond) */}
       <div
-        className="bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 py-2.5 border-b border-amber-600/40 shadow-[inset_0_1px_0_rgba(253,230,138,0.12)]"
+        className="flex items-stretch bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 border-b border-amber-600/40 shadow-[inset_0_1px_0_rgba(253,230,138,0.12)]"
         role="region"
         aria-label="Annonce"
       >
-        <div className="ticker-wrap">
+        <div className="flex shrink-0 items-center border-r border-amber-600/35 bg-amber-950/60 px-3 sm:px-4 py-2.5" aria-hidden>
+          {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG, small decorative */}
+          <img
+            src="/images/flag-rdc.svg"
+            alt=""
+            width={22}
+            height={29}
+            className="h-[1.35rem] w-auto rounded-sm shadow-md ring-1 ring-amber-500/45 sm:h-6"
+          />
+        </div>
+        <div className="ticker-wrap min-w-0 flex-1 py-2.5">
           <div className="ticker-inner">
             <span className="bg-gradient-to-r from-amber-100 via-yellow-300 to-amber-200 bg-clip-text font-semibold tracking-wide text-transparent drop-shadow-[0_0_12px_rgba(251,191,36,0.35)]">
               {t('ticker')}
@@ -91,8 +101,16 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="max-w-3xl opacity-0-init animate-fade-in-left animation-delay-100 rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-8 sm:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
-            <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+            <div className="inline-flex items-center gap-2.5 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-3.5 sm:px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG flag */}
+              <img
+                src="/images/flag-rdc.svg"
+                alt={t('rdcFlagAlt')}
+                width={24}
+                height={32}
+                className="h-5 w-auto shrink-0 rounded-sm shadow-sm ring-1 ring-amber-200/30 sm:h-6"
+              />
+              <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
               {t('heroBadge')}
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 leading-[1.08] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
