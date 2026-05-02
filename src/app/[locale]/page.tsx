@@ -56,10 +56,19 @@ export default async function HomePage() {
       </div>
 
       {/* Hero Section */}
-      <main className="relative overflow-hidden bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white">
+      <main className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-800 to-primary-700 text-white">
+        <div
+          className="absolute inset-0 z-0 opacity-[0.35] pointer-events-none"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.12) 1px, transparent 0)',
+            backgroundSize: '40px 40px',
+          }}
+          aria-hidden
+        />
         <div className="absolute inset-0 opacity-10 z-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-float-soft" />
-          <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-float-soft" style={{ animationDelay: '1.2s' }} />
+          <div className="absolute top-20 left-10 w-72 h-72 bg-amber-200/40 rounded-full blur-3xl animate-float-soft" />
+          <div className="absolute bottom-10 right-20 w-96 h-96 bg-primary-300/30 rounded-full blur-3xl animate-float-soft" style={{ animationDelay: '1.2s' }} />
         </div>
         {/* Real truck image background - visible */}
         <div className="absolute inset-0 z-[1] flex items-center justify-end pointer-events-none" aria-hidden>
@@ -74,105 +83,125 @@ export default async function HomePage() {
           />
         </div>
         {/* Overlay left pour garder le texte lisible */}
-        <div className="absolute inset-0 z-[2] bg-gradient-to-r from-primary-700/90 via-primary-700/40 to-transparent pointer-events-none" aria-hidden />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+        <div className="absolute inset-0 z-[2] bg-gradient-to-r from-slate-950/85 via-primary-900/55 to-transparent pointer-events-none" aria-hidden />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 md:py-36">
           <div className="absolute top-6 right-4 sm:right-6 md:right-8 z-20 animate-fade-in animation-delay-200 opacity-0-init">
-            <Clock />
-          </div>
-          <div className="max-w-3xl opacity-0-init animate-fade-in-left animation-delay-100">
-            <div className="inline-flex items-center gap-2 mb-4 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur-sm animate-glow-soft">
-              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-              Plateforme logistique nouvelle génération
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-3 py-2 shadow-lg backdrop-blur-md">
+              <Clock />
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight bg-gradient-to-br from-amber-50 via-yellow-200 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_2px_24px_rgba(251,191,36,0.25)] [text-shadow:none]">
+          </div>
+          <div className="max-w-3xl opacity-0-init animate-fade-in-left animation-delay-100 rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-8 sm:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+              {t('heroBadge')}
+            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 leading-[1.08] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
               {t('heroTitle')}
             </h1>
-            <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-4">
+            <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-4 leading-snug">
               {t('heroTagline')}
             </p>
-            <p className="text-base sm:text-lg md:text-xl mb-4 text-amber-50/90">
+            <p className="text-base sm:text-lg md:text-xl mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-4">
               {t('heroLaunch')}
             </p>
-            <p className="text-base sm:text-lg mb-8 text-primary-100/90">
+            <p className="text-base sm:text-lg mb-8 text-primary-100/95 leading-relaxed">
               {t('heroLead')}
             </p>
             <div className="flex flex-wrap gap-2 mb-8">
-              {['RDC + Zambie', 'FR / EN', 'Bourse de fret en temps réel'].map((item) => (
+              {[t('heroChip1'), t('heroChip2'), t('heroChip3')].map((item) => (
                 <span
                   key={item}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-xs sm:text-sm text-white/95 backdrop-blur-sm"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-white/10 text-xs sm:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                  <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
                   {item}
                 </span>
               ))}
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link href="/register/broker">
-                <Button size="lg" variant="secondary">
+              <Link href="/register/broker" className="sm:inline-flex">
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40">
                   Publier un chargement <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-              <Link href="/register/company">
-                <Button size="lg" variant="outline">Trouver un chargement</Button>
+              <Link href="/register/company" className="sm:inline-flex">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15">
+                  Trouver un chargement
+                </Button>
               </Link>
             </div>
+            <p className="mt-8 text-sm text-white/75">
+              <span>{t('homeLoginPrompt')}</span>{' '}
+              <Link href="/login" className="font-semibold text-amber-200 underline decoration-amber-400/60 underline-offset-4 transition hover:text-amber-100">
+                {t('homeLoginLink')}
+              </Link>
+            </p>
           </div>
         </div>
       </main>
 
       {/* Trust Bar */}
-      <section className="py-6 sm:py-8 bg-gray-50 border-b opacity-0-init animate-slide-up animation-delay-200">
+      <section className="relative py-10 sm:py-12 bg-gradient-to-b from-slate-50 to-white border-b border-slate-200/80 opacity-0-init animate-slide-up animation-delay-200">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-300/60 to-transparent" aria-hidden />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
-            <div className="rounded-xl bg-white border border-gray-100 shadow-sm py-4 px-3 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md">
-              <div className="text-xl sm:text-2xl font-bold text-primary-600">50+</div>
-              <div className="text-xs text-gray-500 mt-1">Utilisateurs actifs</div>
-            </div>
-            <div className="rounded-xl bg-white border border-gray-100 shadow-sm py-4 px-3 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md">
-              <div className="text-xl sm:text-2xl font-bold text-primary-600">120+</div>
-              <div className="text-xs text-gray-500 mt-1">Chargements traites</div>
-            </div>
-            <div className="rounded-xl bg-white border border-gray-100 shadow-sm py-4 px-3 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md">
-              <div className="text-xl sm:text-2xl font-bold text-primary-600">26</div>
-              <div className="text-xs text-gray-500 mt-1">Provinces couvertes</div>
-            </div>
-            <div className="rounded-xl bg-white border border-gray-100 shadow-sm py-4 px-3 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md">
-              <div className="text-xl sm:text-2xl font-bold text-primary-600">99.9%</div>
-              <div className="text-xs text-gray-500 mt-1">Disponibilite</div>
-            </div>
+          <div className="text-center mb-8 max-w-2xl mx-auto">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-600 mb-2">{t('homeTrustHeading')}</p>
+            <p className="text-sm sm:text-base text-slate-600">{t('homeTrustSub')}</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 text-center">
+            {[
+              { n: '50+', l: 'Utilisateurs actifs' },
+              { n: '120+', l: 'Chargements traites' },
+              { n: '26', l: 'Provinces couvertes' },
+              { n: '99.9%', l: 'Disponibilite' },
+            ].map((s) => (
+              <div
+                key={s.l}
+                className="group rounded-2xl bg-white/90 border border-slate-200/90 py-5 px-3 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-primary-100"
+              >
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-primary-600 via-primary-700 to-slate-800 bg-clip-text text-transparent tabular-nums">
+                  {s.n}
+                </div>
+                <div className="text-xs text-slate-500 mt-1.5 font-medium">{s.l}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Value Props - 3 columns */}
-      <section className="py-12 sm:py-16 bg-white">
+      <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 max-w-2xl mx-auto">
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeValueHeading')}</h2>
+            <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeValueSub')}</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
-            <div className="text-center opacity-0-init animate-scale-in animation-delay-200 rounded-2xl border border-gray-100 bg-white shadow-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-              <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="text-center opacity-0-init animate-scale-in animation-delay-200 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 p-7 sm:p-8 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center shadow-inner ring-1 ring-primary-100/80">
                 <BarChart3 className="w-8 h-8 text-primary-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Gerez facilement votre activite</h3>
-              <p className="text-gray-500 text-sm">
+              <h3 className="text-lg font-semibold mb-2 text-slate-900">Gerez facilement votre activite</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
                 Envoyez des devis ou reservez des chargements en un clic, a tout moment.
               </p>
             </div>
-            <div className="text-center opacity-0-init animate-scale-in animation-delay-300 rounded-2xl border border-gray-100 bg-white shadow-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-              <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="text-center opacity-0-init animate-scale-in animation-delay-300 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 p-7 sm:p-8 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center shadow-inner ring-1 ring-primary-100/80">
                 <FileText className="w-8 h-8 text-primary-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Ameliorez votre efficacite</h3>
-              <p className="text-gray-500 text-sm">
+              <h3 className="text-lg font-semibold mb-2 text-slate-900">Ameliorez votre efficacite</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
                 Plus de 20 outils et fonctionnalites pour gagner du temps sur la route et au bureau.
               </p>
             </div>
-            <div className="text-center opacity-0-init animate-scale-in animation-delay-400 rounded-2xl border border-gray-100 bg-white shadow-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-              <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="text-center opacity-0-init animate-scale-in animation-delay-400 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 p-7 sm:p-8 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center shadow-inner ring-1 ring-primary-100/80">
                 <Package className="w-8 h-8 text-primary-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Augmentez vos revenus</h3>
-              <p className="text-gray-500 text-sm">
+              <h3 className="text-lg font-semibold mb-2 text-slate-900">Augmentez vos revenus</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
                 Trouvez des chargements et des recharges pour remplir votre planning a l&apos;avance.
               </p>
             </div>
@@ -181,27 +210,29 @@ export default async function HomePage() {
       </section>
 
       {/* How it works */}
-      <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-gray-50 border-t border-gray-100">
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">Comment Nzela fonctionne</h2>
-          <p className="text-center text-gray-500 mb-10 max-w-2xl mx-auto text-sm sm:text-base">
-            Un flux simple, pensé pour accélérer les opérations sans complexifier le travail de vos équipes.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center mb-12 max-w-2xl mx-auto">
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeHowHeading')}</h2>
+            <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeHowSub')}</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {HOW_IT_WORKS.map((item, index) => (
               <div
                 key={item.step}
-                className="group relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 opacity-0-init animate-slide-up"
+                className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-7 shadow-md ring-1 ring-slate-100/80 transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-xl opacity-0-init animate-slide-up"
                 style={{ animationDelay: `${220 + index * 90}ms` }}
               >
+                <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary-500/5 blur-2xl transition group-hover:bg-primary-500/10" aria-hidden />
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold tracking-wider text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full group-hover:bg-primary-100 transition-colors">
-                    ETAPE {item.step}
+                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary-700 bg-gradient-to-r from-primary-50 to-amber-50 px-3 py-1.5 rounded-full border border-primary-100/80">
+                    Etape {item.step}
                   </span>
-                  <item.icon className="w-5 h-5 text-primary-500 group-hover:scale-110 transition-transform" />
+                  <item.icon className="w-6 h-6 text-primary-500 group-hover:scale-110 transition-transform" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600">{item.desc}</p>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -209,12 +240,13 @@ export default async function HomePage() {
       </section>
 
       {/* Feature Highlights */}
-      <section className="py-12 sm:py-16 bg-gray-50">
+      <section className="py-16 sm:py-20 bg-slate-100/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">Fonctionnalites principales</h2>
-          <p className="text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
-            Tout ce dont les transporteurs et courtiers ont besoin, sur une seule plateforme.
-          </p>
+          <div className="text-center mb-12 max-w-2xl mx-auto">
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeFeaturesHeading')}</h2>
+            <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeFeaturesSub')}</p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {[
               { icon: Truck, title: 'Load Board', desc: 'Acces a des chargements en temps reel. Plus de chargements fantomes.' },
@@ -224,10 +256,16 @@ export default async function HomePage() {
               { icon: Shield, title: 'Securise & RBAC', desc: 'Plateforme securisee avec controle d\'acces base sur les roles.' },
               { icon: Smartphone, title: 'PWA Mobile', desc: 'Installez l\'app sur votre telephone. Fonctionne hors connexion.' },
             ].map((f, i) => (
-              <div key={f.title} className="bg-white rounded-xl p-5 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 opacity-0-init animate-slide-up" style={{ animationDelay: `${300 + i * 80}ms` }}>
-                <f.icon className="w-10 h-10 text-primary-600 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500">{f.desc}</p>
+              <div
+                key={f.title}
+                className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-white/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100 opacity-0-init animate-slide-up"
+                style={{ animationDelay: `${300 + i * 80}ms` }}
+              >
+                <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/80 p-3 ring-1 ring-primary-100">
+                  <f.icon className="w-8 h-8 text-primary-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2 text-slate-900">{f.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -235,46 +273,43 @@ export default async function HomePage() {
       </section>
 
       {/* Why teams choose Nzela */}
-      <section className="py-12 sm:py-16 bg-white">
+      <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Pourquoi les équipes choisissent Nzela</h2>
-              <p className="text-gray-500 mb-6">
-                Nzela combine acquisition de fret, exécution documentaire et visibilité terrain dans une expérience unique.
+              <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400 lg:mx-0" aria-hidden />
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3 tracking-tight">{t('homeWhyHeading')}</h2>
+              <p className="text-slate-600 mb-8 leading-relaxed">
+                {t('homeWhySub')}
               </p>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
                   'Un seul outil pour le Load Board, le Truck Board, le BOL et le tracking GPS',
                   'Mise en relation plus rapide entre courtiers et transporteurs',
                   'Processus plus fiable avec des informations normalisées et centralisées',
                 ].map((point) => (
-                  <div key={point} className="flex items-start gap-2.5">
+                  <div key={point} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3">
                     <CheckCircle className="w-5 h-5 text-primary-600 mt-0.5 shrink-0" />
-                    <p className="text-sm text-gray-700">{point}</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">{point}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="rounded-2xl border border-primary-100 bg-gradient-to-br from-primary-50 to-white p-6 sm:p-8">
-              <p className="text-xs uppercase tracking-wider text-primary-600 font-semibold mb-4">Performance opérationnelle</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white border border-gray-100 rounded-xl p-4">
-                  <p className="text-2xl font-bold text-primary-700">+38%</p>
-                  <p className="text-xs text-gray-500 mt-1">Temps gagné sur la coordination</p>
-                </div>
-                <div className="bg-white border border-gray-100 rounded-xl p-4">
-                  <p className="text-2xl font-bold text-primary-700">-27%</p>
-                  <p className="text-xs text-gray-500 mt-1">Trajets à vide sur les flottes suivies</p>
-                </div>
-                <div className="bg-white border border-gray-100 rounded-xl p-4">
-                  <p className="text-2xl font-bold text-primary-700">24/7</p>
-                  <p className="text-xs text-gray-500 mt-1">Visibilité sur les opérations</p>
-                </div>
-                <div className="bg-white border border-gray-100 rounded-xl p-4">
-                  <p className="text-2xl font-bold text-primary-700">100%</p>
-                  <p className="text-xs text-gray-500 mt-1">Flux centralisé dans l’interface</p>
-                </div>
+            <div className="relative overflow-hidden rounded-3xl border border-primary-200/60 bg-gradient-to-br from-primary-50 via-white to-amber-50/30 p-7 sm:p-9 shadow-lg ring-1 ring-primary-100/50">
+              <div className="pointer-events-none absolute -right-10 top-0 h-40 w-40 rounded-full bg-amber-200/25 blur-3xl" aria-hidden />
+              <p className="relative text-xs uppercase tracking-[0.2em] text-primary-700 font-bold mb-5">Performance operationnelle</p>
+              <div className="relative grid grid-cols-2 gap-4">
+                {[
+                  { v: '+38%', l: 'Temps gagné sur la coordination' },
+                  { v: '-27%', l: 'Trajets à vide sur les flottes suivies' },
+                  { v: '24/7', l: 'Visibilité sur les opérations' },
+                  { v: '100%', l: 'Flux centralisé dans l’interface' },
+                ].map((k) => (
+                  <div key={k.v} className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
+                    <p className="text-2xl font-extrabold bg-gradient-to-br from-primary-600 to-slate-800 bg-clip-text text-transparent">{k.v}</p>
+                    <p className="text-xs text-slate-600 mt-1.5 leading-snug">{k.l}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -339,20 +374,30 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-12 sm:py-16 bg-white">
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10">Ce que disent nos utilisateurs</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center mb-12">
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeTestimonialsHeading')}</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {[
               { quote: 'Grace a Nzela, je ne fais plus de trajets a vide. Je trouve toujours un chargement de retour avant d\'arriver a destination.', name: 'Jean-Pierre K.', role: 'Transporteur' },
               { quote: 'L\'application est facile a utiliser. Mes chauffeurs trouvent des chargements directement depuis leur telephone.', name: 'Marie T.', role: 'Proprietaire de flotte' },
               { quote: 'Le Load Board est toujours a jour. D\'un clic, je reserve un chargement. Fini les appels telephoniques interminables.', name: 'Patrick M.', role: 'Chauffeur independant' },
-            ].map((t, i) => (
-              <div key={t.name} className="bg-gray-50 rounded-xl p-5 sm:p-6 opacity-0-init animate-slide-up transition-all duration-300 hover:shadow-md hover:-translate-y-1" style={{ animationDelay: `${500 + i * 100}ms` }}>
-                <p className="text-gray-600 text-sm italic mb-4">&quot;{t.quote}&quot;</p>
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm">{t.name}</p>
-                  <p className="text-xs text-gray-500">{t.role}</p>
+            ].map((row, i) => (
+              <div
+                key={row.name}
+                className="relative rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-slate-100 opacity-0-init animate-slide-up transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                style={{ animationDelay: `${500 + i * 100}ms` }}
+              >
+                <span className="absolute left-5 top-5 text-4xl font-serif text-primary-200/90 leading-none" aria-hidden>
+                  &ldquo;
+                </span>
+                <p className="relative text-slate-600 text-sm leading-relaxed mb-6 pl-1 pt-6">{row.quote}</p>
+                <div className="border-t border-slate-100 pt-4">
+                  <p className="font-semibold text-slate-900 text-sm">{row.name}</p>
+                  <p className="text-xs text-primary-600 font-medium mt-0.5">{row.role}</p>
                 </div>
               </div>
             ))}
@@ -361,35 +406,43 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-20 bg-primary-600 text-white opacity-0-init animate-fade-in animation-delay-300">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Le fret n&apos;a jamais ete aussi simple</h2>
-          <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-primary-100">
-            Rejoignez Nzela et transformez votre gestion logistique
+      <section className="relative overflow-hidden py-20 sm:py-24 bg-gradient-to-br from-primary-800 via-primary-600 to-indigo-900 text-white opacity-0-init animate-fade-in animation-delay-300">
+        <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden>
+          <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
+          <div className="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-primary-300/25 blur-3xl" />
+        </div>
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-white to-amber-100 bg-clip-text text-transparent">
+            {t('homeCtaTitle')}
+          </h2>
+          <p className="text-lg sm:text-xl mb-10 sm:mb-12 text-primary-100/95 max-w-2xl mx-auto leading-relaxed">
+            {t('homeCtaSub')}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-            <div className="rounded-2xl bg-white/10 border border-white/20 p-5 sm:p-6">
-              <p className="text-xs uppercase tracking-wider text-primary-100 mb-2">Je suis courtier</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 text-left">
+            <div className="rounded-2xl bg-white/10 border border-white/25 p-6 sm:p-7 shadow-lg backdrop-blur-md ring-1 ring-white/10 transition hover:bg-white/[0.14]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">Je suis courtier</p>
               <h3 className="text-xl font-semibold mb-2">Publiez plus vite, remplissez plus vite</h3>
-              <p className="text-sm text-primary-100 mb-4">Diffusez vos chargements, trouvez des transporteurs qualifiés et suivez l&apos;exécution.</p>
+              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">Diffusez vos chargements, trouvez des transporteurs qualifiés et suivez l&apos;exécution.</p>
               <Link href="/register/broker">
-                <Button size="lg" variant="secondary">
+                <Button size="lg" variant="secondary" className="shadow-lg">
                   Commencer en tant que courtier <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
             </div>
-            <div className="rounded-2xl bg-white/10 border border-white/20 p-5 sm:p-6">
-              <p className="text-xs uppercase tracking-wider text-primary-100 mb-2">Je suis transporteur</p>
+            <div className="rounded-2xl bg-white/10 border border-white/25 p-6 sm:p-7 shadow-lg backdrop-blur-md ring-1 ring-white/10 transition hover:bg-white/[0.14]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">Je suis transporteur</p>
               <h3 className="text-xl font-semibold mb-2">Réduisez les trajets à vide</h3>
-              <p className="text-sm text-primary-100 mb-4">Accédez aux chargements en temps réel et pilotez votre flotte depuis un seul tableau de bord.</p>
-              <div className="flex flex-wrap gap-3">
+              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">Accédez aux chargements en temps réel et pilotez votre flotte depuis un seul tableau de bord.</p>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                 <Link href="/register/company">
-                  <Button size="lg" variant="secondary">
+                  <Button size="lg" variant="secondary" className="shadow-lg">
                     Créer mon compte transporteur <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
                 <Link href="/pricing">
-                  <Button size="lg" variant="outline">Abonnement unique 50 USD/mois</Button>
+                  <Button size="lg" variant="outline" className="border-white/40 bg-white/5 text-white hover:bg-white/15">
+                    Abonnement unique 50 USD/mois
+                  </Button>
                 </Link>
               </div>
             </div>
