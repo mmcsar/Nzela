@@ -1,7 +1,7 @@
 {
-  "name": "Nzela - Plateforme de Logistique RDC",
+  "name": "Nzela — Fret et talents",
   "short_name": "Nzela",
-  "description": "Plateforme de transport et logistique pour la RDC. Load Board, BOL, POD, Matching, Messagerie.",
+  "description": "Fret et talents en RDC. Lancement officiel le 2 mai 2026. Load Board, outils et messagerie sécurisée.",
   "start_url": "/fr/dashboard?source=pwa",
   "scope": "/",
   "display": "standalone",
