@@ -15,6 +15,8 @@ const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0
  */
 const HOME_PHOTO = {
   editorial: 'https://images.unsplash.com/photo-1570805252434-9e62f73aa955?w=1600&q=80',
+  /** Bandeau logistique au-dessus des 3 cartes « valeur » */
+  valueSectionBanner: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&q=80',
   valueOps: 'https://images.unsplash.com/photo-1587578769987-776c5bcd4c6e?w=900&q=80',
   valueDesk: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=900&q=80',
   valueRoad: 'https://images.unsplash.com/photo-1695395860103-38d172403a46?w=900&q=80',
@@ -260,10 +262,19 @@ export default async function HomePage() {
       {/* Value Props - 3 columns */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 max-w-2xl mx-auto">
+          <div className="text-center mb-8 max-w-2xl mx-auto">
             <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeValueHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeValueSub')}</p>
+          </div>
+          <div className="relative mb-10 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 opacity-0-init animate-scale-in animation-delay-150 aspect-[16/9] min-h-[180px] sm:min-h-[220px] md:aspect-[21/9] md:min-h-[240px]">
+            <Image
+              src={HOME_PHOTO.valueSectionBanner}
+              alt={t('homePhotoValueBannerAlt')}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1280px) 100vw, 1152px"
+            />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
             {VALUE_CARDS.map((card, index) => (
