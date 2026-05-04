@@ -13,14 +13,15 @@ const HERO_TRUCK_IMAGE = `${UNSPLASH_TRUCK}?w=800&q=80`;
 
 /**
  * Photos Unsplash (images.unsplash.com — déjà autorisé dans next.config).
- * Visuels avec personnes noires / africaines en contexte logistique ou pro.
+ * Visuels pro / logistique (certaines scènes avec équipes ou opérateurs).
  */
 const HOME_PHOTO = {
   editorial: 'https://images.unsplash.com/photo-1570805252434-9e62f73aa955?w=1600&q=80',
   /** Bandeau logistique au-dessus des 3 cartes « valeur » */
   valueSectionBanner: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&q=80',
   valueOps: 'https://images.unsplash.com/photo-1587578769987-776c5bcd4c6e?w=900&q=80',
-  valueDesk: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=900&q=80',
+  /** Carte « Améliorez votre efficacité » : pilotage / indicateurs sur laptop */
+  valueDesk: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=85',
   /** Carte « Augmentez vos revenus » : poids lourd sur route */
   valueRoad: `${UNSPLASH_TRUCK}?w=900&q=80`,
   howPublish: 'https://images.unsplash.com/photo-1587467762686-0daaced649e7?w=800&q=80',
