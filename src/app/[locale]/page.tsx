@@ -7,7 +7,9 @@ import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles } from 'lucide-react';
 
-const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80';
+/** Camion route (même visuel hero / carte revenus — neutre, sans marque) */
+const UNSPLASH_TRUCK = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7' as const;
+const HERO_TRUCK_IMAGE = `${UNSPLASH_TRUCK}?w=800&q=80`;
 
 /**
  * Photos Unsplash (images.unsplash.com — déjà autorisé dans next.config).
@@ -19,11 +21,12 @@ const HOME_PHOTO = {
   valueSectionBanner: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&q=80',
   valueOps: 'https://images.unsplash.com/photo-1587578769987-776c5bcd4c6e?w=900&q=80',
   valueDesk: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=900&q=80',
-  valueRoad: 'https://images.unsplash.com/photo-1695395860103-38d172403a46?w=900&q=80',
+  /** Carte « Augmentez vos revenus » : poids lourd sur route */
+  valueRoad: `${UNSPLASH_TRUCK}?w=900&q=80`,
   howPublish: 'https://images.unsplash.com/photo-1587467762686-0daaced649e7?w=800&q=80',
   howMatch: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80',
   howTrack: 'https://images.unsplash.com/photo-1687422811062-a966b55cb217?w=800&q=80',
-  whyPanel: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1000&q=80',
+  whyPanel: `${UNSPLASH_TRUCK}?w=1000&q=80`,
 } as const;
 
 const HOW_IT_WORKS = [
