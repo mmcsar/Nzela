@@ -24,7 +24,8 @@ const HOME_PHOTO = {
   valueDesk: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=85',
   /** Carte « Augmentez vos revenus » : poids lourd sur route */
   valueRoad: `${UNSPLASH_TRUCK}?w=900&q=80`,
-  howPublish: 'https://images.unsplash.com/photo-1587467762686-0daaced649e7?w=800&q=80',
+  /** Étape « Publiez en quelques clics » : écran type load board / tableau de fret */
+  howPublish: 'https://images.unsplash.com/photo-1771923082503-0a3381c46cef?w=800&q=85',
   howMatch: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80',
   howTrack: 'https://images.unsplash.com/photo-1687422811062-a966b55cb217?w=800&q=80',
   whyPanel: `${UNSPLASH_TRUCK}?w=1000&q=80`,
