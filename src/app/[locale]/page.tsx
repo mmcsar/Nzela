@@ -9,15 +9,18 @@ import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, A
 
 const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80';
 
-/** Photos Unsplash (domaine déjà autorisé dans next.config) — tons neutres, sans recolorisation */
+/**
+ * Photos Unsplash (images.unsplash.com — déjà autorisé dans next.config).
+ * Visuels avec personnes noires / africaines en contexte logistique ou pro.
+ */
 const HOME_PHOTO = {
-  editorial: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c867?w=1600&q=80',
-  valueOps: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=900&q=80',
-  valueDesk: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&q=80',
-  valueRoad: 'https://images.unsplash.com/photo-1519003722824-c891e81e2736?w=900&q=80',
-  howPublish: 'https://images.unsplash.com/photo-1553877522-6934d014801b?w=800&q=80',
-  howMatch: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
-  howTrack: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
+  editorial: 'https://images.unsplash.com/photo-1570805252434-9e62f73aa955?w=1600&q=80',
+  valueOps: 'https://images.unsplash.com/photo-1587578769987-776c5bcd4c6e?w=900&q=80',
+  valueDesk: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=900&q=80',
+  valueRoad: 'https://images.unsplash.com/photo-1695395860103-38d172403a46?w=900&q=80',
+  howPublish: 'https://images.unsplash.com/photo-1587467762686-0daaced649e7?w=800&q=80',
+  howMatch: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80',
+  howTrack: 'https://images.unsplash.com/photo-1687422811062-a966b55cb217?w=800&q=80',
   whyPanel: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1000&q=80',
 } as const;
 
