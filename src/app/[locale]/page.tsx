@@ -8,26 +8,69 @@ import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles } from 'lucide-react';
 
 const HERO_TRUCK_IMAGE = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80';
+
+/** Photos Unsplash (domaine déjà autorisé dans next.config) — tons neutres, sans recolorisation */
+const HOME_PHOTO = {
+  editorial: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c867?w=1600&q=80',
+  valueOps: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=900&q=80',
+  valueDesk: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&q=80',
+  valueRoad: 'https://images.unsplash.com/photo-1519003722824-c891e81e2736?w=900&q=80',
+  howPublish: 'https://images.unsplash.com/photo-1553877522-6934d014801b?w=800&q=80',
+  howMatch: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
+  howTrack: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
+  whyPanel: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1000&q=80',
+} as const;
+
 const HOW_IT_WORKS = [
   {
     step: '01',
     title: 'Publiez en quelques clics',
     desc: 'Créez un chargement ou publiez un camion avec toutes les informations nécessaires.',
     icon: FileText,
+    image: HOME_PHOTO.howPublish,
+    altKey: 'homePhotoHow1Alt' as const,
   },
   {
     step: '02',
     title: 'Match intelligent en temps réel',
     desc: 'Nzela propose automatiquement les meilleures correspondances transporteur-courtier.',
     icon: Cpu,
+    image: HOME_PHOTO.howMatch,
+    altKey: 'homePhotoHow2Alt' as const,
   },
   {
     step: '03',
     title: 'Exécutez et suivez',
     desc: 'Gérez BOL, suivi GPS et communication depuis un seul espace opérationnel.',
     icon: MapPin,
+    image: HOME_PHOTO.howTrack,
+    altKey: 'homePhotoHow3Alt' as const,
   },
 ];
+
+const VALUE_CARDS = [
+  {
+    title: 'Gerez facilement votre activite',
+    desc: 'Envoyez des devis ou reservez des chargements en un clic, a tout moment.',
+    icon: BarChart3,
+    image: HOME_PHOTO.valueOps,
+    altKey: 'homePhotoValue1Alt' as const,
+  },
+  {
+    title: 'Ameliorez votre efficacite',
+    desc: 'Plus de 20 outils et fonctionnalites pour gagner du temps sur la route et au bureau.',
+    icon: FileText,
+    image: HOME_PHOTO.valueDesk,
+    altKey: 'homePhotoValue2Alt' as const,
+  },
+  {
+    title: 'Augmentez vos revenus',
+    desc: "Trouvez des chargements et des recharges pour remplir votre planning à l'avance.",
+    icon: Package,
+    image: HOME_PHOTO.valueRoad,
+    altKey: 'homePhotoValue3Alt' as const,
+  },
+] as const;
 
 export default async function HomePage() {
   const t = await getTranslations('home');
@@ -187,6 +230,30 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Bandeau éditorial photo + citation (overlay slate/primary existants) */}
+      <section className="relative min-h-[200px] sm:min-h-[260px] overflow-hidden border-b border-slate-200/80" aria-labelledby="home-editorial-quote">
+        <Image
+          src={HOME_PHOTO.editorial}
+          alt={t('homePhotoCorridorAlt')}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority={false}
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-slate-950/88 via-slate-900/75 to-primary-900/60"
+          aria-hidden
+        />
+        <div className="relative z-10 mx-auto flex max-w-7xl min-h-[200px] sm:min-h-[260px] items-center px-4 py-12 sm:px-6 lg:px-8">
+          <p
+            id="home-editorial-quote"
+            className="max-w-2xl text-lg font-medium leading-snug text-white drop-shadow-sm sm:text-xl md:text-2xl md:leading-snug border-l-4 border-amber-400/90 pl-5 sm:pl-6"
+          >
+            {t('homePhotoEditorialQuote')}
+          </p>
+        </div>
+      </section>
+
       {/* Value Props - 3 columns */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,33 +263,31 @@ export default async function HomePage() {
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeValueSub')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
-            <div className="text-center opacity-0-init animate-scale-in animation-delay-200 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 p-7 sm:p-8 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center shadow-inner ring-1 ring-primary-100/80">
-                <BarChart3 className="w-8 h-8 text-primary-600" />
+            {VALUE_CARDS.map((card, index) => (
+              <div
+                key={card.title}
+                className={`group overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100 opacity-0-init animate-scale-in ${
+                  index === 0 ? 'animation-delay-200' : index === 1 ? 'animation-delay-300' : 'animation-delay-400'
+                }`}
+              >
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-200">
+                  <Image
+                    src={card.image}
+                    alt={t(card.altKey)}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
+                <div className="p-7 sm:p-8 text-center">
+                  <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 shadow-inner ring-1 ring-primary-100/80">
+                    <card.icon className="h-8 w-8 text-primary-600" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900">{card.title}</h3>
+                  <p className="text-sm leading-relaxed text-slate-600">{card.desc}</p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-slate-900">Gerez facilement votre activite</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Envoyez des devis ou reservez des chargements en un clic, a tout moment.
-              </p>
-            </div>
-            <div className="text-center opacity-0-init animate-scale-in animation-delay-300 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 p-7 sm:p-8 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center shadow-inner ring-1 ring-primary-100/80">
-                <FileText className="w-8 h-8 text-primary-600" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-slate-900">Ameliorez votre efficacite</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Plus de 20 outils et fonctionnalites pour gagner du temps sur la route et au bureau.
-              </p>
-            </div>
-            <div className="text-center opacity-0-init animate-scale-in animation-delay-400 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 p-7 sm:p-8 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center shadow-inner ring-1 ring-primary-100/80">
-                <Package className="w-8 h-8 text-primary-600" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-slate-900">Augmentez vos revenus</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Trouvez des chargements et des recharges pour remplir votre planning a l&apos;avance.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -235,24 +300,40 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeHowHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeHowSub')}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {HOW_IT_WORKS.map((item, index) => (
-              <div
-                key={item.step}
-                className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-7 shadow-md ring-1 ring-slate-100/80 transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-xl opacity-0-init animate-slide-up"
-                style={{ animationDelay: `${220 + index * 90}ms` }}
-              >
-                <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary-500/5 blur-2xl transition group-hover:bg-primary-500/10" aria-hidden />
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary-700 bg-gradient-to-r from-primary-50 to-amber-50 px-3 py-1.5 rounded-full border border-primary-100/80">
-                    Etape {item.step}
-                  </span>
-                  <item.icon className="w-6 h-6 text-primary-500 group-hover:scale-110 transition-transform" />
+          <div className="flex flex-col gap-6 sm:gap-8">
+            {HOW_IT_WORKS.map((item, index) => {
+              const reverse = index % 2 === 1;
+              return (
+                <div
+                  key={item.step}
+                  className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md ring-1 ring-slate-100/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-xl md:flex-row md:items-stretch opacity-0-init animate-slide-up ${
+                    reverse ? 'md:flex-row-reverse' : ''
+                  }`}
+                  style={{ animationDelay: `${220 + index * 90}ms` }}
+                >
+                  <div className="relative min-h-[200px] w-full md:w-[44%] md:min-h-[240px] shrink-0 bg-slate-200">
+                    <Image
+                      src={item.image}
+                      alt={t(item.altKey)}
+                      fill
+                      className="object-cover transition duration-500 group-hover:scale-[1.02]"
+                      sizes="(max-width: 768px) 100vw, 40vw"
+                    />
+                  </div>
+                  <div className="relative flex flex-1 flex-col justify-center p-7 sm:p-8 md:p-10">
+                    <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-primary-500/5 blur-2xl transition group-hover:bg-primary-500/10" aria-hidden />
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary-700 bg-gradient-to-r from-primary-50 to-amber-50 px-3 py-1.5 rounded-full border border-primary-100/80">
+                        Etape {item.step}
+                      </span>
+                      <item.icon className="h-7 w-7 text-primary-500 transition-transform group-hover:scale-110" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-slate-900 sm:text-xl">{item.title}</h3>
+                    <p className="text-sm leading-relaxed text-slate-600 sm:text-[15px]">{item.desc}</p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -313,8 +394,22 @@ export default async function HomePage() {
                 ))}
               </div>
             </div>
-            <div className="relative overflow-hidden rounded-3xl border border-primary-200/60 bg-gradient-to-br from-primary-50 via-white to-amber-50/30 p-7 sm:p-9 shadow-lg ring-1 ring-primary-100/50">
+            <div className="relative overflow-hidden rounded-3xl border border-primary-200/60 shadow-lg ring-1 ring-primary-100/50">
+              <div className="absolute inset-0">
+                <Image
+                  src={HOME_PHOTO.whyPanel}
+                  alt={t('homePhotoWhyAlt')}
+                  fill
+                  className="object-cover object-center opacity-[0.22] sm:opacity-[0.28]"
+                  sizes="(max-width: 1024px) 100vw, 45vw"
+                />
+              </div>
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-primary-50/95 via-white/96 to-amber-50/90"
+                aria-hidden
+              />
               <div className="pointer-events-none absolute -right-10 top-0 h-40 w-40 rounded-full bg-amber-200/25 blur-3xl" aria-hidden />
+              <div className="relative p-7 sm:p-9">
               <p className="relative text-xs uppercase tracking-[0.2em] text-primary-700 font-bold mb-5">Performance operationnelle</p>
               <div className="relative grid grid-cols-2 gap-4">
                 {[
@@ -328,6 +423,7 @@ export default async function HomePage() {
                     <p className="text-xs text-slate-600 mt-1.5 leading-snug">{k.l}</p>
                   </div>
                 ))}
+              </div>
               </div>
             </div>
           </div>
