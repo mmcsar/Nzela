@@ -270,7 +270,7 @@ export default async function HomePage() {
           <div className="relative mb-10 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 opacity-0-init animate-scale-in animation-delay-150 aspect-[16/9] min-h-[180px] sm:min-h-[220px] md:aspect-[21/9] md:min-h-[240px]">
             <Image
               src={HOME_PHOTO.valueSectionBanner}
-              alt={t('homePhotoValueBannerAlt')}
+              alt={t('valueSectionBannerAlt')}
               fill
               className="object-cover"
               sizes="(max-width: 1280px) 100vw, 1152px"
