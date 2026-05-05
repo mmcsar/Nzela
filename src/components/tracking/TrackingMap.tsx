@@ -35,6 +35,16 @@ export function TrackingMap({
   const markersRef = useRef<L.LayerGroup | null>(null);
   const [mapReady, setMapReady] = useState(false);
 
+  const safeInvalidateSize = (map: L.Map | null) => {
+    if (!map) return;
+    try {
+      // Evite les erreurs Leaflet quand la map est en cours de destruction
+      map.invalidateSize();
+    } catch {
+      // no-op
+    }
+  };
+
   // Initialize map
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -68,13 +78,22 @@ export function TrackingMap({
     const el = mapRef.current;
     const map = mapInstanceRef.current;
     if (!el || !map) return;
+    let cancelled = false;
     const fix = () => {
-      requestAnimationFrame(() => map.invalidateSize());
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        // Ne pas invalider une ancienne instance déjà démontée/recréée
+        if (mapInstanceRef.current !== map) return;
+        safeInvalidateSize(map);
+      });
     };
     fix();
     const ro = new ResizeObserver(() => fix());
     ro.observe(el);
-    return () => ro.disconnect();
+    return () => {
+      cancelled = true;
+      ro.disconnect();
+    };
   }, [mapReady]);
 
   // Update markers and route
@@ -181,7 +200,10 @@ export function TrackingMap({
     } catch {
       map.setView([origin.lat, origin.lng], 8);
     }
-    requestAnimationFrame(() => map.invalidateSize());
+    requestAnimationFrame(() => {
+      if (mapInstanceRef.current !== map) return;
+      safeInvalidateSize(map);
+    });
 
   }, [origin, destination, currentPosition, route, progress, status, speed, originLabel, destLabel, mapReady]);
 
