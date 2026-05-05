@@ -2,7 +2,7 @@ import { createClient, getAuthUser } from '@/lib/supabase/server';
 import { redirect, Link } from '@/lib/i18n/routing';
 import { getLocale } from 'next-intl/server';
 import { Button } from '@/components/ui/Button';
-import { Users, Building2, Package, Truck, CreditCard, Settings } from 'lucide-react';
+import { Users, Building2, Package, Truck, CreditCard, Settings, Wrench } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
   const locale = await getLocale();
@@ -109,6 +109,13 @@ export default async function AdminDashboardPage() {
             <Truck className="w-8 h-8 text-green-600 mb-3" />
             <h3 className="text-lg font-semibold mb-2">Voir tous les camions</h3>
             <p className="text-sm text-gray-600">Consulter tous les camions postés</p>
+          </div>
+        </Link>
+        <Link href="/dashboard/admin/maintenance">
+          <div className="bg-white rounded-lg shadow p-6 hover:bg-gray-50 cursor-pointer">
+            <Wrench className="w-8 h-8 text-amber-600 mb-3" />
+            <h3 className="text-lg font-semibold mb-2">Superviser la maintenance</h3>
+            <p className="text-sm text-gray-600">Surveiller les flottes, plans, interventions et alertes</p>
           </div>
         </Link>
         <Link href="/dashboard/admin/loads">
