@@ -52,6 +52,21 @@ type WorkOrder = {
   vehicle?: { registration_number?: string };
 };
 
+type MaintenanceTask = {
+  id: string;
+  work_order_id: string;
+  title: string;
+  status: string;
+};
+
+type Part = {
+  id: string;
+  sku: string;
+  name: string;
+  stock_qty: number;
+  min_stock_qty: number;
+};
+
 export default function CompanyMaintenancePage() {
   const { isLoading: authLoading, isAuthorized } = useRequireRole(['company', 'admin']);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -59,6 +74,8 @@ export default function CompanyMaintenancePage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [interventions, setInterventions] = useState<Intervention[]>([]);
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
   const [kpi, setKpi] = useState<any>(null);
   const [reportMode, setReportMode] = useState<'view' | 'manual'>('view');
   const [reportSummary, setReportSummary] = useState<any>(null);
@@ -94,12 +111,30 @@ export default function CompanyMaintenancePage() {
     status: 'draft',
     description: '',
   });
+  const [taskWorkOrderId, setTaskWorkOrderId] = useState('');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [movement, setMovement] = useState({
+    partId: '',
+    workOrderId: '',
+    movementType: 'out',
+    quantity: '',
+    unitCost: '',
+    note: '',
+  });
+  const [newPart, setNewPart] = useState({
+    sku: '',
+    name: '',
+    stockQty: '',
+    minStockQty: '',
+    avgUnitCost: '',
+    currency: 'USD',
+  });
 
   const refreshAll = async () => {
     setLoading(true);
     setError('');
     try {
-      const [vehiclesRes, typesRes, plansRes, interventionsRes, reportRes, workOrdersRes, kpiRes] = await Promise.all([
+      const [vehiclesRes, typesRes, plansRes, interventionsRes, reportRes, workOrdersRes, kpiRes, partsRes] = await Promise.all([
         fetch('/api/company/vehicles?limit=100'),
         fetch('/api/company/maintenance/types'),
         fetch('/api/company/maintenance/plans?limit=100'),
@@ -107,9 +142,10 @@ export default function CompanyMaintenancePage() {
         fetch(`/api/company/maintenance/report?mode=${reportMode}`),
         fetch('/api/company/maintenance/work-orders?limit=100'),
         fetch('/api/company/maintenance/kpi'),
+        fetch('/api/company/maintenance/parts?limit=100'),
       ]);
 
-      const [vehiclesData, typesData, plansData, interventionsData, reportData, workOrdersData, kpiData] = await Promise.all([
+      const [vehiclesData, typesData, plansData, interventionsData, reportData, workOrdersData, kpiData, partsData] = await Promise.all([
         vehiclesRes.json(),
         typesRes.json(),
         plansRes.json(),
@@ -117,6 +153,7 @@ export default function CompanyMaintenancePage() {
         reportRes.json(),
         workOrdersRes.json(),
         kpiRes.json(),
+        partsRes.json(),
       ]);
 
       setVehicles(vehiclesData.data || []);
@@ -124,8 +161,18 @@ export default function CompanyMaintenancePage() {
       setPlans(plansData.data || []);
       setInterventions(interventionsData.data || []);
       setWorkOrders(workOrdersData.data || []);
+      setParts(partsData.data || []);
       setReportSummary(reportData.summary || null);
       setKpi(kpiData.company || null);
+      const selectedWorkOrderId = taskWorkOrderId || workOrdersData.data?.[0]?.id;
+      if (selectedWorkOrderId) {
+        const tasksRes = await fetch(`/api/company/maintenance/work-orders/${selectedWorkOrderId}/tasks`);
+        const tasksData = await tasksRes.json();
+        setTasks(tasksData.tasks || []);
+        if (!taskWorkOrderId) setTaskWorkOrderId(selectedWorkOrderId);
+      } else {
+        setTasks([]);
+      }
     } catch (e: any) {
       setError(e?.message || 'Erreur de chargement');
     } finally {
@@ -137,6 +184,23 @@ export default function CompanyMaintenancePage() {
     if (isAuthorized) void refreshAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthorized, reportMode]);
+
+  useEffect(() => {
+    const loadTasks = async () => {
+      if (!taskWorkOrderId) {
+        setTasks([]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/company/maintenance/work-orders/${taskWorkOrderId}/tasks`);
+        const data = await res.json();
+        if (res.ok) setTasks(data.tasks || []);
+      } catch {
+        setTasks([]);
+      }
+    };
+    void loadTasks();
+  }, [taskWorkOrderId]);
 
   const totalInterventionCost = useMemo(
     () =>
@@ -245,6 +309,100 @@ export default function CompanyMaintenancePage() {
       await refreshAll();
     } catch (e: any) {
       setError(e.message || 'Erreur création ordre de travail');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createTask = async () => {
+    if (!taskWorkOrderId || !newTaskTitle.trim()) return;
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/company/maintenance/work-orders/${taskWorkOrderId}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTaskTitle.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur création tâche');
+      setNewTaskTitle('');
+      await refreshAll();
+    } catch (e: any) {
+      setError(e.message || 'Erreur création tâche');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const markTaskDone = async (taskId: string) => {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/company/maintenance/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'done' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur mise à jour tâche');
+      await refreshAll();
+    } catch (e: any) {
+      setError(e.message || 'Erreur mise à jour tâche');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createPart = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/company/maintenance/parts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sku: newPart.sku,
+          name: newPart.name,
+          stockQty: newPart.stockQty ? Number(newPart.stockQty) : 0,
+          minStockQty: newPart.minStockQty ? Number(newPart.minStockQty) : 0,
+          avgUnitCost: newPart.avgUnitCost ? Number(newPart.avgUnitCost) : 0,
+          currency: newPart.currency,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur création pièce');
+      setNewPart({ sku: '', name: '', stockQty: '', minStockQty: '', avgUnitCost: '', currency: 'USD' });
+      await refreshAll();
+    } catch (e: any) {
+      setError(e.message || 'Erreur création pièce');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createMovement = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/company/maintenance/parts/movements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          partId: movement.partId,
+          workOrderId: movement.workOrderId || null,
+          movementType: movement.movementType,
+          quantity: movement.quantity ? Number(movement.quantity) : 0,
+          unitCost: movement.unitCost ? Number(movement.unitCost) : null,
+          note: movement.note || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur mouvement stock');
+      setMovement({ partId: '', workOrderId: '', movementType: 'out', quantity: '', unitCost: '', note: '' });
+      await refreshAll();
+    } catch (e: any) {
+      setError(e.message || 'Erreur mouvement stock');
     } finally {
       setSaving(false);
     }
@@ -462,6 +620,90 @@ export default function CompanyMaintenancePage() {
             </table>
           </div>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white border rounded-xl p-5 space-y-3">
+          <h2 className="font-semibold text-gray-900">Checklist WO (tâches)</h2>
+          <select
+            className="w-full border rounded-lg px-3 py-2"
+            value={taskWorkOrderId}
+            onChange={(e) => setTaskWorkOrderId(e.target.value)}
+          >
+            <option value="">Sélectionner un work order</option>
+            {workOrders.map((w) => (
+              <option key={w.id} value={w.id}>{w.work_order_no} - {w.title}</option>
+            ))}
+          </select>
+          <div className="flex gap-2">
+            <input
+              className="flex-1 border rounded-lg px-3 py-2"
+              placeholder="Nouvelle tâche checklist"
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+            />
+            <Button onClick={createTask} isLoading={saving}>Ajouter</Button>
+          </div>
+          <div className="space-y-2 max-h-64 overflow-auto">
+            {tasks.map((t) => (
+              <div key={t.id} className="border rounded-lg px-3 py-2 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{t.title}</p>
+                  <p className="text-xs text-gray-500">{t.status}</p>
+                </div>
+                {t.status !== 'done' ? (
+                  <Button size="sm" variant="outline" onClick={() => markTaskDone(t.id)}>Marquer fait</Button>
+                ) : (
+                  <span className="text-xs text-emerald-600 font-semibold">OK</span>
+                )}
+              </div>
+            ))}
+            {tasks.length === 0 && <p className="text-sm text-gray-500">Aucune tâche.</p>}
+          </div>
+        </div>
+
+        <div className="bg-white border rounded-xl p-5 space-y-3">
+          <h2 className="font-semibold text-gray-900">Pièces & stock</h2>
+          <div className="grid grid-cols-2 gap-2">
+            <input className="border rounded-lg px-3 py-2" placeholder="SKU" value={newPart.sku} onChange={(e) => setNewPart((s) => ({ ...s, sku: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2" placeholder="Nom pièce" value={newPart.name} onChange={(e) => setNewPart((s) => ({ ...s, name: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2" placeholder="Stock initial" value={newPart.stockQty} onChange={(e) => setNewPart((s) => ({ ...s, stockQty: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2" placeholder="Seuil mini" value={newPart.minStockQty} onChange={(e) => setNewPart((s) => ({ ...s, minStockQty: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2" placeholder="Coût unitaire" value={newPart.avgUnitCost} onChange={(e) => setNewPart((s) => ({ ...s, avgUnitCost: e.target.value }))} />
+            <select className="border rounded-lg px-3 py-2" value={newPart.currency} onChange={(e) => setNewPart((s) => ({ ...s, currency: e.target.value }))}>
+              <option value="USD">USD</option>
+              <option value="CDF">CDF</option>
+            </select>
+          </div>
+          <Button onClick={createPart} isLoading={saving}>Créer pièce</Button>
+
+          <div className="border-t pt-3 space-y-2">
+            <h3 className="text-sm font-semibold text-gray-700">Sortie / entrée stock liée WO</h3>
+            <select className="w-full border rounded-lg px-3 py-2" value={movement.partId} onChange={(e) => setMovement((s) => ({ ...s, partId: e.target.value }))}>
+              <option value="">Pièce</option>
+              {parts.map((p) => (
+                <option key={p.id} value={p.id}>{p.sku} - {p.name} (stock {Number(p.stock_qty || 0).toLocaleString()})</option>
+              ))}
+            </select>
+            <select className="w-full border rounded-lg px-3 py-2" value={movement.workOrderId} onChange={(e) => setMovement((s) => ({ ...s, workOrderId: e.target.value }))}>
+              <option value="">Work order (optionnel)</option>
+              {workOrders.map((w) => (
+                <option key={w.id} value={w.id}>{w.work_order_no}</option>
+              ))}
+            </select>
+            <div className="grid grid-cols-3 gap-2">
+              <select className="border rounded-lg px-3 py-2" value={movement.movementType} onChange={(e) => setMovement((s) => ({ ...s, movementType: e.target.value }))}>
+                <option value="out">Sortie</option>
+                <option value="in">Entrée</option>
+                <option value="adjustment">Ajustement</option>
+              </select>
+              <input className="border rounded-lg px-3 py-2" placeholder="Quantité" value={movement.quantity} onChange={(e) => setMovement((s) => ({ ...s, quantity: e.target.value }))} />
+              <input className="border rounded-lg px-3 py-2" placeholder="Coût unitaire" value={movement.unitCost} onChange={(e) => setMovement((s) => ({ ...s, unitCost: e.target.value }))} />
+            </div>
+            <input className="w-full border rounded-lg px-3 py-2" placeholder="Note" value={movement.note} onChange={(e) => setMovement((s) => ({ ...s, note: e.target.value }))} />
+            <Button onClick={createMovement} isLoading={saving}>Enregistrer mouvement</Button>
+          </div>
+        </div>
       </div>
     </div>
   );
