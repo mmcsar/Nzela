@@ -42,12 +42,24 @@ type Intervention = {
   vehicle?: { registration_number?: string };
 };
 
+type WorkOrder = {
+  id: string;
+  work_order_no: string;
+  title: string;
+  priority: string;
+  status: string;
+  requested_at: string;
+  vehicle?: { registration_number?: string };
+};
+
 export default function CompanyMaintenancePage() {
   const { isLoading: authLoading, isAuthorized } = useRequireRole(['company', 'admin']);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [types, setTypes] = useState<any[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [interventions, setInterventions] = useState<Intervention[]>([]);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [kpi, setKpi] = useState<any>(null);
   const [reportMode, setReportMode] = useState<'view' | 'manual'>('view');
   const [reportSummary, setReportSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -74,32 +86,46 @@ export default function CompanyMaintenancePage() {
     costOther: '',
     notes: '',
   });
+  const [newWorkOrder, setNewWorkOrder] = useState({
+    vehicleId: '',
+    maintenanceTypeId: '',
+    title: '',
+    priority: 'medium',
+    status: 'draft',
+    description: '',
+  });
 
   const refreshAll = async () => {
     setLoading(true);
     setError('');
     try {
-      const [vehiclesRes, typesRes, plansRes, interventionsRes, reportRes] = await Promise.all([
+      const [vehiclesRes, typesRes, plansRes, interventionsRes, reportRes, workOrdersRes, kpiRes] = await Promise.all([
         fetch('/api/company/vehicles?limit=100'),
         fetch('/api/company/maintenance/types'),
         fetch('/api/company/maintenance/plans?limit=100'),
         fetch('/api/company/maintenance/interventions?limit=100'),
         fetch(`/api/company/maintenance/report?mode=${reportMode}`),
+        fetch('/api/company/maintenance/work-orders?limit=100'),
+        fetch('/api/company/maintenance/kpi'),
       ]);
 
-      const [vehiclesData, typesData, plansData, interventionsData, reportData] = await Promise.all([
+      const [vehiclesData, typesData, plansData, interventionsData, reportData, workOrdersData, kpiData] = await Promise.all([
         vehiclesRes.json(),
         typesRes.json(),
         plansRes.json(),
         interventionsRes.json(),
         reportRes.json(),
+        workOrdersRes.json(),
+        kpiRes.json(),
       ]);
 
       setVehicles(vehiclesData.data || []);
       setTypes(typesData.types || []);
       setPlans(plansData.data || []);
       setInterventions(interventionsData.data || []);
+      setWorkOrders(workOrdersData.data || []);
       setReportSummary(reportData.summary || null);
+      setKpi(kpiData.company || null);
     } catch (e: any) {
       setError(e?.message || 'Erreur de chargement');
     } finally {
@@ -190,6 +216,40 @@ export default function CompanyMaintenancePage() {
     }
   };
 
+  const createWorkOrder = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/company/maintenance/work-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vehicleId: newWorkOrder.vehicleId,
+          maintenanceTypeId: newWorkOrder.maintenanceTypeId || null,
+          title: newWorkOrder.title,
+          priority: newWorkOrder.priority,
+          status: newWorkOrder.status,
+          description: newWorkOrder.description || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur création ordre de travail');
+      setNewWorkOrder({
+        vehicleId: '',
+        maintenanceTypeId: '',
+        title: '',
+        priority: 'medium',
+        status: 'draft',
+        description: '',
+      });
+      await refreshAll();
+    } catch (e: any) {
+      setError(e.message || 'Erreur création ordre de travail');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (authLoading || !isAuthorized) {
     return <div className="py-16 text-center text-gray-500">Chargement...</div>;
   }
@@ -219,7 +279,7 @@ export default function CompanyMaintenancePage() {
 
       {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div className="bg-white border rounded-xl p-4">
           <p className="text-sm text-gray-500">Véhicules</p>
           <p className="text-2xl font-bold text-gray-900">{vehicles.length}</p>
@@ -236,9 +296,17 @@ export default function CompanyMaintenancePage() {
           <p className="text-sm text-gray-500">Coût total</p>
           <p className="text-2xl font-bold text-amber-700">{Math.round(totalInterventionCost).toLocaleString()}</p>
         </div>
+        <div className="bg-white border rounded-xl p-4">
+          <p className="text-sm text-gray-500">Work orders ouverts</p>
+          <p className="text-2xl font-bold text-indigo-700">{kpi?.open_work_orders ?? 0}</p>
+        </div>
+        <div className="bg-white border rounded-xl p-4">
+          <p className="text-sm text-gray-500">Critiques</p>
+          <p className="text-2xl font-bold text-rose-700">{kpi?.critical_work_orders ?? 0}</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white border rounded-xl p-5 space-y-3">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
             <Plus className="w-4 h-4" /> Nouveau plan
@@ -284,6 +352,39 @@ export default function CompanyMaintenancePage() {
           <textarea className="w-full border rounded-lg px-3 py-2" rows={2} placeholder="Notes" value={newIntervention.notes} onChange={(e) => setNewIntervention((s) => ({ ...s, notes: e.target.value }))} />
           <Button onClick={createIntervention} isLoading={saving}>Enregistrer intervention</Button>
         </div>
+        <div className="bg-white border rounded-xl p-5 space-y-3">
+          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="w-4 h-4" /> Ordre de travail (WO)
+          </h2>
+          <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.vehicleId} onChange={(e) => setNewWorkOrder((s) => ({ ...s, vehicleId: e.target.value }))}>
+            <option value="">Véhicule</option>
+            {vehicles.map((v) => (
+              <option key={v.id} value={v.id}>{v.registration_number}</option>
+            ))}
+          </select>
+          <input className="border rounded-lg px-3 py-2" placeholder="Titre (ex: Freins avant)" value={newWorkOrder.title} onChange={(e) => setNewWorkOrder((s) => ({ ...s, title: e.target.value }))} />
+          <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.maintenanceTypeId} onChange={(e) => setNewWorkOrder((s) => ({ ...s, maintenanceTypeId: e.target.value }))}>
+            <option value="">Type (optionnel)</option>
+            {types.map((t) => (
+              <option key={t.id} value={t.id}>{t.label_fr}</option>
+            ))}
+          </select>
+          <div className="grid grid-cols-2 gap-2">
+            <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.priority} onChange={(e) => setNewWorkOrder((s) => ({ ...s, priority: e.target.value }))}>
+              <option value="low">Priorité basse</option>
+              <option value="medium">Priorité moyenne</option>
+              <option value="high">Priorité haute</option>
+              <option value="critical">Priorité critique</option>
+            </select>
+            <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.status} onChange={(e) => setNewWorkOrder((s) => ({ ...s, status: e.target.value }))}>
+              <option value="draft">Brouillon</option>
+              <option value="approved">Approuvé</option>
+              <option value="in_progress">En cours</option>
+            </select>
+          </div>
+          <textarea className="w-full border rounded-lg px-3 py-2" rows={2} placeholder="Description (optionnel)" value={newWorkOrder.description} onChange={(e) => setNewWorkOrder((s) => ({ ...s, description: e.target.value }))} />
+          <Button onClick={createWorkOrder} isLoading={saving}>Créer work order</Button>
+        </div>
       </div>
 
       <div className="bg-white border rounded-xl p-5">
@@ -325,6 +426,42 @@ export default function CompanyMaintenancePage() {
         <p className="text-sm text-gray-600">
           Interventions: <strong>{reportSummary?.totalInterventions ?? 0}</strong> | Coût total: <strong>{Math.round(reportSummary?.totalCost ?? 0).toLocaleString()}</strong>
         </p>
+      </div>
+
+      <div className="bg-white border rounded-xl p-5">
+        <h2 className="font-semibold text-gray-900 mb-3">Work orders récents</h2>
+        {loading ? (
+          <p className="text-gray-500">Chargement...</p>
+        ) : workOrders.length === 0 ? (
+          <p className="text-gray-500">Aucun ordre de travail.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b">
+                  <th className="py-2">N° WO</th>
+                  <th className="py-2">Titre</th>
+                  <th className="py-2">Véhicule</th>
+                  <th className="py-2">Priorité</th>
+                  <th className="py-2">Statut</th>
+                  <th className="py-2">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workOrders.slice(0, 12).map((w) => (
+                  <tr key={w.id} className="border-b last:border-0">
+                    <td className="py-2 font-medium">{w.work_order_no}</td>
+                    <td className="py-2">{w.title}</td>
+                    <td className="py-2">{w.vehicle?.registration_number || '-'}</td>
+                    <td className="py-2">{w.priority}</td>
+                    <td className="py-2">{w.status}</td>
+                    <td className="py-2">{w.requested_at ? new Date(w.requested_at).toLocaleDateString('fr-CD') : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
