@@ -3,7 +3,7 @@ import { redirect } from '@/lib/i18n/routing';
 import { Link } from '@/lib/i18n/routing';
 import { getLocale } from 'next-intl/server';
 import { Button } from '@/components/ui/Button';
-import { Truck, Plus, Search } from 'lucide-react';
+import { Truck, Plus, Search, Wrench } from 'lucide-react';
 import { truckTypeFr, truckStatusFr } from '@/lib/utils/translate-fr';
 
 export default async function CompanyDashboardPage() {
@@ -96,7 +96,7 @@ export default async function CompanyDashboardPage() {
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-4">Actions rapides</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link href="/dashboard/loads/board">
             <Button className="w-full" size="lg">
               <Search className="w-5 h-5 mr-2" />
@@ -107,6 +107,12 @@ export default async function CompanyDashboardPage() {
             <Button variant="outline" className="w-full" size="lg">
               <Plus className="w-5 h-5 mr-2" />
               Publier un camion
+            </Button>
+          </Link>
+          <Link href="/dashboard/company/maintenance">
+            <Button variant="outline" className="w-full" size="lg">
+              <Wrench className="w-5 h-5 mr-2" />
+              Maintenance flotte
             </Button>
           </Link>
         </div>

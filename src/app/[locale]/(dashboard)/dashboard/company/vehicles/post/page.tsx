@@ -9,7 +9,6 @@ import { Car, ArrowLeft, Check } from 'lucide-react';
 import { Link } from '@/lib/i18n/routing';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { toErrorMessage } from '@/lib/api/error';
-import { ALL_REGION_IDS, ALL_REGION_NAMES } from '@/lib/constants/rdc-provinces';
 
 export default function PostVehiclePage() {
   const { isLoading: authLoading, isAuthorized } = useRequireRole(['company', 'admin']);
@@ -18,26 +17,18 @@ export default function PostVehiclePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [type, setType] = useState('pickup');
-  const [capacity, setCapacity] = useState('');
-  const [city, setCity] = useState('Lubumbashi');
-  const [province, setProvince] = useState('haut-katanga');
-  const [address, setAddress] = useState('');
-  const [price, setPrice] = useState('');
-  const [pricePerKm, setPricePerKm] = useState('');
-  const [features, setFeatures] = useState<string[]>([]);
+  const [registrationNumber, setRegistrationNumber] = useState('');
+  const [brand, setBrand] = useState('');
+  const [model, setModel] = useState('');
+  const [year, setYear] = useState('');
+  const [currentMileageKm, setCurrentMileageKm] = useState('');
+  const [category, setCategory] = useState('truck');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [notes, setNotes] = useState('');
 
   if (authLoading || !isAuthorized) {
     return <div className="flex items-center justify-center py-16"><div className="text-gray-500">Chargement...</div></div>;
   }
-
-  const availableFeatures = ['GPS', 'Climatisation', 'Assurance', 'Bâche', 'Hayon', 'Radio'];
-
-  const toggleFeature = (feature: string) => {
-    setFeatures((prev) =>
-      prev.includes(feature) ? prev.filter((f) => f !== feature) : [...prev, feature]
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,20 +36,18 @@ export default function PostVehiclePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/vehicles', {
+      const response = await fetch('/api/company/vehicles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type,
-          capacity: parseInt(capacity),
-          currentLocation: JSON.stringify({
-            address,
-            city,
-            province,
-          }),
-          price: parseInt(price) || 0,
-          pricePerKm: parseInt(pricePerKm) || 0,
-          features,
+          registrationNumber,
+          brand,
+          model,
+          year: year ? Number(year) : null,
+          currentMileageKm: currentMileageKm ? Number(currentMileageKm) : 0,
+          category,
+          photoUrl: photoUrl || null,
+          notes: notes || null,
         }),
       });
 
@@ -98,9 +87,9 @@ export default function PostVehiclePage() {
           <ArrowLeft className="w-4 h-4 mr-1" />
           Retour aux véhicules
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <Car className="w-7 h-7 text-indigo-500" />
-          Ajouter un véhicule
+            Ajouter un véhicule flotte
         </h1>
       </div>
 
@@ -111,74 +100,45 @@ export default function PostVehiclePage() {
       )}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-5">
+        <Input
+          label="Immatriculation"
+          value={registrationNumber}
+          onChange={(e) => setRegistrationNumber(e.target.value)}
+          required
+          placeholder="Ex: 1234 AB 01"
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Marque" value={brand} onChange={(e) => setBrand(e.target.value)} required />
+          <Input label="Modèle" value={model} onChange={(e) => setModel(e.target.value)} required />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Année" type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="Ex: 2021" />
+          <Input label="Kilométrage actuel (km)" type="number" value={currentMileageKm} onChange={(e) => setCurrentMileageKm(e.target.value)} placeholder="Ex: 245000" />
+        </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Type de véhicule</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
           <select
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
           >
+            <option value="truck">Camion</option>
+            <option value="tractor">Tracteur</option>
+            <option value="trailer">Remorque</option>
+            <option value="van">Fourgon</option>
             <option value="pickup">Pickup</option>
-            <option value="van">Van / Fourgon</option>
-            <option value="small-truck">Petit camion</option>
             <option value="other">Autre</option>
           </select>
         </div>
 
-        <Input
-          label="Capacité (kg)"
-          type="number"
-          value={capacity}
-          onChange={(e) => setCapacity(e.target.value)}
-          required
-          placeholder="Ex: 2000"
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <Input label="Ville" value={city} onChange={(e) => setCity(e.target.value)} required />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Province</label>
-            <select
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              value={province}
-              onChange={(e) => setProvince(e.target.value)}
-            >
-              {ALL_REGION_IDS.map((id) => (
-                <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <Input label="Adresse" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Adresse de stationnement" />
-
-        <div className="grid grid-cols-2 gap-4">
-          <Input label="Prix total (CDF)" type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" />
-          <Input label="Prix par km (CDF)" type="number" value={pricePerKm} onChange={(e) => setPricePerKm(e.target.value)} placeholder="0" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Équipements</label>
-          <div className="flex flex-wrap gap-2">
-            {availableFeatures.map((feature) => (
-              <button
-                key={feature}
-                type="button"
-                onClick={() => toggleFeature(feature)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                  features.includes(feature)
-                    ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
-                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-300'
-                }`}
-              >
-                {feature}
-              </button>
-            ))}
-          </div>
-        </div>
+        <Input label="Photo URL (optionnel)" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." />
+        <Input label="Notes (optionnel)" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Détails utiles..." />
 
         <Button type="submit" className="w-full" isLoading={isLoading}>
-          Publier le véhicule
+          Enregistrer le véhicule
         </Button>
       </form>
     </div>

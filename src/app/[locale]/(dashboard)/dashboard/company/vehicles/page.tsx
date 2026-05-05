@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { VehicleCard } from '@/components/vehicles/VehicleCard';
 import { Button } from '@/components/ui/Button';
 import { Car, Plus, RefreshCw, Search } from 'lucide-react';
 import { Link } from '@/lib/i18n/routing';
@@ -22,11 +21,11 @@ export default function VehiclesPage() {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
 
-      const response = await fetch(`/api/vehicles?${params}`);
+      const response = await fetch(`/api/company/vehicles?limit=100&${params}`);
       const data = await response.json();
 
       if (response.ok) {
-        setVehicles(data.vehicles || []);
+        setVehicles(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching vehicles:', error);
@@ -42,12 +41,10 @@ export default function VehiclesPage() {
   }, [isAuthorized, statusFilter, fetchVehicles]);
 
   const filteredVehicles = vehicles.filter((v) => {
-    const loc = v.current_location
-      ? typeof v.current_location === 'string' ? JSON.parse(v.current_location) : v.current_location
-      : {};
     return (
-      (v.type || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (loc.city || '').toLowerCase().includes(searchTerm.toLowerCase())
+      (v.registration_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.brand || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.model || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
 
@@ -64,7 +61,7 @@ export default function VehiclesPage() {
             <Car className="w-7 h-7 text-indigo-500" />
             Mes Vehicules
           </h1>
-          <p className="text-gray-500 mt-1">Gerez vos vehicules legers (pickup, van, petit camion)</p>
+          <p className="text-gray-500 mt-1">Gerez votre parc (immat, categorie, kilometrage, statut)</p>
         </div>
         <Link href="/dashboard/company/vehicles/post">
           <Button>
@@ -81,7 +78,7 @@ export default function VehiclesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Rechercher par type ou ville..."
+              placeholder="Rechercher par immatriculation, marque ou modele..."
               className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -93,10 +90,10 @@ export default function VehiclesPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">Tous les statuts</option>
-            <option value="available">Disponible</option>
-            <option value="booked">Reserve</option>
-            <option value="in-transit">En transit</option>
+            <option value="active">Actif</option>
             <option value="maintenance">Maintenance</option>
+            <option value="immobilized">Immobilise</option>
+            <option value="sold">Vendu</option>
           </select>
           <Button variant="outline" onClick={fetchVehicles} disabled={isLoading}>
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -108,9 +105,9 @@ export default function VehiclesPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Total', value: vehicles.length, color: 'text-gray-700' },
-          { label: 'Disponibles', value: vehicles.filter(v => v.status === 'available').length, color: 'text-emerald-600' },
-          { label: 'Reserves', value: vehicles.filter(v => v.status === 'booked').length, color: 'text-blue-600' },
-          { label: 'En transit', value: vehicles.filter(v => v.status === 'in-transit').length, color: 'text-amber-600' },
+          { label: 'Actifs', value: vehicles.filter(v => v.status === 'active').length, color: 'text-emerald-600' },
+          { label: 'Maintenance', value: vehicles.filter(v => v.status === 'maintenance').length, color: 'text-amber-600' },
+          { label: 'Immobilises', value: vehicles.filter(v => v.status === 'immobilized').length, color: 'text-rose-600' },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border p-4 text-center">
             <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
@@ -137,7 +134,21 @@ export default function VehiclesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredVehicles.map((vehicle) => (
-            <VehicleCard key={vehicle.id} vehicle={vehicle} />
+            <div key={vehicle.id} className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{vehicle.registration_number}</h3>
+                  <p className="text-sm text-gray-500">{vehicle.brand} {vehicle.model} {vehicle.year ? `(${vehicle.year})` : ''}</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                  {vehicle.status}
+                </span>
+              </div>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p>Categorie: {vehicle.category || '-'}</p>
+                <p>Kilometrage: {(vehicle.current_mileage_km || 0).toLocaleString()} km</p>
+              </div>
+            </div>
           ))}
         </div>
       )}
