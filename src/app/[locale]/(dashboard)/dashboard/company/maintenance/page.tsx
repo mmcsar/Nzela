@@ -438,109 +438,109 @@ export default function CompanyMaintenancePage() {
       {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
           <p className="text-sm text-gray-500">Véhicules</p>
           <p className="text-2xl font-bold text-gray-900">{vehicles.length}</p>
         </div>
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
           <p className="text-sm text-gray-500">Plans actifs</p>
           <p className="text-2xl font-bold text-primary-700">{plans.filter((p) => p.is_enabled).length}</p>
         </div>
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
           <p className="text-sm text-gray-500">Interventions</p>
           <p className="text-2xl font-bold text-gray-900">{interventions.length}</p>
         </div>
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
           <p className="text-sm text-gray-500">Coût total</p>
           <p className="text-2xl font-bold text-amber-700">{Math.round(totalInterventionCost).toLocaleString()}</p>
         </div>
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
           <p className="text-sm text-gray-500">Work orders ouverts</p>
           <p className="text-2xl font-bold text-indigo-700">{kpi?.open_work_orders ?? 0}</p>
         </div>
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
           <p className="text-sm text-gray-500">Critiques</p>
           <p className="text-2xl font-bold text-rose-700">{kpi?.critical_work_orders ?? 0}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white border rounded-xl p-5 space-y-3">
+        <div className="bg-white border rounded-xl p-5 space-y-3 transition-shadow duration-200 hover:shadow-sm">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
             <Plus className="w-4 h-4" /> Nouveau plan
           </h2>
-          <select className="w-full border rounded-lg px-3 py-2" value={newPlan.vehicleId} onChange={(e) => setNewPlan((s) => ({ ...s, vehicleId: e.target.value }))}>
+          <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" value={newPlan.vehicleId} onChange={(e) => setNewPlan((s) => ({ ...s, vehicleId: e.target.value }))}>
             <option value="">Véhicule</option>
             {vehicles.map((v) => (
               <option key={v.id} value={v.id}>{v.registration_number} - {v.brand} {v.model}</option>
             ))}
           </select>
-          <select className="w-full border rounded-lg px-3 py-2" value={newPlan.maintenanceTypeId} onChange={(e) => setNewPlan((s) => ({ ...s, maintenanceTypeId: e.target.value }))}>
+          <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" value={newPlan.maintenanceTypeId} onChange={(e) => setNewPlan((s) => ({ ...s, maintenanceTypeId: e.target.value }))}>
             <option value="">Type d&apos;entretien</option>
             {types.map((t) => (
               <option key={t.id} value={t.id}>{t.label_fr}</option>
             ))}
           </select>
           <div className="grid grid-cols-2 gap-2">
-            <input className="border rounded-lg px-3 py-2" placeholder="Intervalle km" value={newPlan.intervalKm} onChange={(e) => setNewPlan((s) => ({ ...s, intervalKm: e.target.value }))} />
-            <input className="border rounded-lg px-3 py-2" placeholder="Intervalle jours" value={newPlan.intervalDays} onChange={(e) => setNewPlan((s) => ({ ...s, intervalDays: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Intervalle km" value={newPlan.intervalKm} onChange={(e) => setNewPlan((s) => ({ ...s, intervalKm: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Intervalle jours" value={newPlan.intervalDays} onChange={(e) => setNewPlan((s) => ({ ...s, intervalDays: e.target.value }))} />
           </div>
           <Button onClick={createPlan} isLoading={saving}>Créer plan</Button>
         </div>
 
-        <div className="bg-white border rounded-xl p-5 space-y-3">
+        <div className="bg-white border rounded-xl p-5 space-y-3 transition-shadow duration-200 hover:shadow-sm">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
             <FileText className="w-4 h-4" /> Intervention manuelle
           </h2>
-          <select className="w-full border rounded-lg px-3 py-2" value={newIntervention.vehicleId} onChange={(e) => setNewIntervention((s) => ({ ...s, vehicleId: e.target.value }))}>
+          <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" value={newIntervention.vehicleId} onChange={(e) => setNewIntervention((s) => ({ ...s, vehicleId: e.target.value }))}>
             <option value="">Véhicule</option>
             {vehicles.map((v) => (
               <option key={v.id} value={v.id}>{v.registration_number}</option>
             ))}
           </select>
           <div className="grid grid-cols-2 gap-2">
-            <input className="border rounded-lg px-3 py-2" placeholder="Kilométrage" value={newIntervention.mileageKm} onChange={(e) => setNewIntervention((s) => ({ ...s, mileageKm: e.target.value }))} />
-            <input className="border rounded-lg px-3 py-2" placeholder="Prestataire" value={newIntervention.providerName} onChange={(e) => setNewIntervention((s) => ({ ...s, providerName: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Kilométrage" value={newIntervention.mileageKm} onChange={(e) => setNewIntervention((s) => ({ ...s, mileageKm: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Prestataire" value={newIntervention.providerName} onChange={(e) => setNewIntervention((s) => ({ ...s, providerName: e.target.value }))} />
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <input className="border rounded-lg px-3 py-2" placeholder="Coût pièces" value={newIntervention.costParts} onChange={(e) => setNewIntervention((s) => ({ ...s, costParts: e.target.value }))} />
-            <input className="border rounded-lg px-3 py-2" placeholder="Main d&apos;oeuvre" value={newIntervention.costLabor} onChange={(e) => setNewIntervention((s) => ({ ...s, costLabor: e.target.value }))} />
-            <input className="border rounded-lg px-3 py-2" placeholder="Autres" value={newIntervention.costOther} onChange={(e) => setNewIntervention((s) => ({ ...s, costOther: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Coût pièces" value={newIntervention.costParts} onChange={(e) => setNewIntervention((s) => ({ ...s, costParts: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Main d&apos;oeuvre" value={newIntervention.costLabor} onChange={(e) => setNewIntervention((s) => ({ ...s, costLabor: e.target.value }))} />
+            <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Autres" value={newIntervention.costOther} onChange={(e) => setNewIntervention((s) => ({ ...s, costOther: e.target.value }))} />
           </div>
-          <textarea className="w-full border rounded-lg px-3 py-2" rows={2} placeholder="Notes" value={newIntervention.notes} onChange={(e) => setNewIntervention((s) => ({ ...s, notes: e.target.value }))} />
+          <textarea className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" rows={2} placeholder="Notes" value={newIntervention.notes} onChange={(e) => setNewIntervention((s) => ({ ...s, notes: e.target.value }))} />
           <Button onClick={createIntervention} isLoading={saving}>Enregistrer intervention</Button>
         </div>
-        <div className="bg-white border rounded-xl p-5 space-y-3">
+        <div className="bg-white border rounded-xl p-5 space-y-3 transition-shadow duration-200 hover:shadow-sm">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
             <FileText className="w-4 h-4" /> Ordre de travail (WO)
           </h2>
-          <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.vehicleId} onChange={(e) => setNewWorkOrder((s) => ({ ...s, vehicleId: e.target.value }))}>
+          <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" value={newWorkOrder.vehicleId} onChange={(e) => setNewWorkOrder((s) => ({ ...s, vehicleId: e.target.value }))}>
             <option value="">Véhicule</option>
             {vehicles.map((v) => (
               <option key={v.id} value={v.id}>{v.registration_number}</option>
             ))}
           </select>
-          <input className="border rounded-lg px-3 py-2" placeholder="Titre (ex: Freins avant)" value={newWorkOrder.title} onChange={(e) => setNewWorkOrder((s) => ({ ...s, title: e.target.value }))} />
-          <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.maintenanceTypeId} onChange={(e) => setNewWorkOrder((s) => ({ ...s, maintenanceTypeId: e.target.value }))}>
+          <input className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Titre (ex: Freins avant)" value={newWorkOrder.title} onChange={(e) => setNewWorkOrder((s) => ({ ...s, title: e.target.value }))} />
+          <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" value={newWorkOrder.maintenanceTypeId} onChange={(e) => setNewWorkOrder((s) => ({ ...s, maintenanceTypeId: e.target.value }))}>
             <option value="">Type (optionnel)</option>
             {types.map((t) => (
               <option key={t.id} value={t.id}>{t.label_fr}</option>
             ))}
           </select>
           <div className="grid grid-cols-2 gap-2">
-            <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.priority} onChange={(e) => setNewWorkOrder((s) => ({ ...s, priority: e.target.value }))}>
+            <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" value={newWorkOrder.priority} onChange={(e) => setNewWorkOrder((s) => ({ ...s, priority: e.target.value }))}>
               <option value="low">Priorité basse</option>
               <option value="medium">Priorité moyenne</option>
               <option value="high">Priorité haute</option>
               <option value="critical">Priorité critique</option>
             </select>
-            <select className="w-full border rounded-lg px-3 py-2" value={newWorkOrder.status} onChange={(e) => setNewWorkOrder((s) => ({ ...s, status: e.target.value }))}>
+            <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" value={newWorkOrder.status} onChange={(e) => setNewWorkOrder((s) => ({ ...s, status: e.target.value }))}>
               <option value="draft">Brouillon</option>
               <option value="approved">Approuvé</option>
               <option value="in_progress">En cours</option>
             </select>
           </div>
-          <textarea className="w-full border rounded-lg px-3 py-2" rows={2} placeholder="Description (optionnel)" value={newWorkOrder.description} onChange={(e) => setNewWorkOrder((s) => ({ ...s, description: e.target.value }))} />
+          <textarea className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" rows={2} placeholder="Description (optionnel)" value={newWorkOrder.description} onChange={(e) => setNewWorkOrder((s) => ({ ...s, description: e.target.value }))} />
           <Button onClick={createWorkOrder} isLoading={saving}>Créer work order</Button>
         </div>
       </div>

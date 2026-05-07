@@ -3,14 +3,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/lib/i18n/routing';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import {
   Search, RefreshCw, Plus, Eye, Truck, MapPin, Filter, X, Download,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, DollarSign,
   Scale, Star, Sparkles, LayoutGrid, LayoutList, ChevronDown,
   Phone, MessageSquare, CalendarClock, XCircle, Map, Building2,
-  Wrench, Gauge, Mail,
+  Wrench, Gauge, Mail, ArrowRight,
 } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
 
@@ -88,7 +87,15 @@ function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
   if (typeof error === 'object' && error !== null) {
     const maybeError = error as { message?: string; details?: string; hint?: string; code?: string };
-    return maybeError.message || maybeError.details || maybeError.hint || maybeError.code || 'Erreur inconnue';
+    const direct = maybeError.message || maybeError.details || maybeError.hint || maybeError.code;
+    if (direct) return direct;
+    try {
+      const serialized = JSON.stringify(error);
+      if (serialized && serialized !== '{}') return serialized;
+    } catch {
+      // ignore serialization issues
+    }
+    return 'Erreur inconnue';
   }
   return String(error);
 }
@@ -100,7 +107,6 @@ export default function TruckBoardPage() {
   const t = useTranslations('truckBoard');
   const { isLoading: authLoading, isAuthorized, authError, role } = useRequireRole(['broker', 'company', 'admin']);
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
 
   const statusLabel = (s: string) => {
     if (s === 'all') return t('all');
@@ -156,26 +162,19 @@ export default function TruckBoardPage() {
     try {
       setIsLoading(true);
       setFetchError(null);
-      const { data, error } = await supabase
-        .from('trucks')
-        .select(`
-          id,
-          created_at,
-          type,
-          capacity,
-          current_location,
-          destination,
-          price,
-          price_per_km,
-          available_date,
-          status,
-          features,
-          company:companies(name, phone, email, city)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(FETCH_LIMIT);
-
-      if (error) throw error;
+      const params = new URLSearchParams({
+        limit: String(FETCH_LIMIT),
+      });
+      const response = await fetch(`/api/trucks/board?${params.toString()}`, {
+        credentials: 'include',
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          payload?.error || payload?.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+      const data = Array.isArray(payload?.data) ? payload.data : [];
 
       const rows: TruckRow[] = (data || []).map((truck: any) => {
         let loc = { city: '', province: '' };
@@ -210,15 +209,12 @@ export default function TruckBoardPage() {
       setLastRefresh(new Date());
     } catch (error) {
       const message = getErrorMessage(error);
-      setFetchError(message);
-      console.error('Error fetching trucks:', {
-        message,
-        raw: error,
-      });
+      setFetchError(message || 'Impossible de charger les camions. Veuillez reessayer.');
+      console.error('Error fetching trucks:', message, error);
     } finally {
       setIsLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     if (authLoading || !isAuthorized) return;
@@ -556,7 +552,10 @@ export default function TruckBoardPage() {
                         {truck.location_province && <span className="text-[9px] text-gray-400 ml-1">{truck.location_province.substring(0, 3).toUpperCase()}</span>}
                       </td>
                       <td className="px-3 py-2.5">
-                        <span className="text-xs text-gray-600">{truck.dest_city || t('anyDestination')}</span>
+                        <div className="inline-flex items-center gap-1.5">
+                          <ArrowRight className="w-3.5 h-3.5 text-primary-400 transition-transform duration-200 group-hover:translate-x-0.5" />
+                          <span className="text-xs text-gray-600">{truck.dest_city || t('anyDestination')}</span>
+                        </div>
                       </td>
                       <td className="px-3 py-2.5 text-right">
                         <span className="text-xs font-medium text-gray-800">{formatWeight(truck.capacity)}</span>
@@ -649,7 +648,7 @@ export default function TruckBoardPage() {
                   </div>
                   {truck.dest_city && (
                     <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                      <span className="text-[10px]">→</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-primary-400 animate-pulse transition-transform duration-200 group-hover:translate-x-0.5" />
                       <span>{truck.dest_city}</span>
                     </div>
                   )}

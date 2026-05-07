@@ -53,26 +53,28 @@ export default function VehiclesPage() {
     return <div className="flex items-center justify-center py-16"><div className="text-gray-500">Chargement...</div></div>;
   }
 
+  const loadingSkeletons = Array.from({ length: 6 }, (_, i) => i);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Car className="w-7 h-7 text-indigo-500" />
-            Mes Vehicules
+            Flotte camions
           </h1>
-          <p className="text-gray-500 mt-1">Gerez votre parc (immat, categorie, kilometrage, statut)</p>
+          <p className="text-gray-500 mt-1">Gerez vos camions (immat, configuration, PTAC/PTRA, kilometrage, statut)</p>
         </div>
         <Link href="/dashboard/company/vehicles/post">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
-            Ajouter un vehicule
+            Ajouter un camion
           </Button>
         </Link>
       </div>
 
       {/* Filtres */}
-      <div className="bg-white rounded-xl border p-4">
+      <div className="bg-white rounded-xl border p-4 transition-shadow duration-200 hover:shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -109,7 +111,7 @@ export default function VehiclesPage() {
           { label: 'Maintenance', value: vehicles.filter(v => v.status === 'maintenance').length, color: 'text-amber-600' },
           { label: 'Immobilises', value: vehicles.filter(v => v.status === 'immobilized').length, color: 'text-rose-600' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl border p-4 text-center">
+          <div key={stat.label} className="bg-white rounded-xl border p-4 text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
             <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
             <div className="text-sm text-gray-500">{stat.label}</div>
           </div>
@@ -118,7 +120,19 @@ export default function VehiclesPage() {
 
       {/* Liste */}
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500">Chargement...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {loadingSkeletons.map((idx) => (
+            <div key={idx} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+              <div className="h-4 w-28 rounded bg-gray-200 mb-3" />
+              <div className="h-3 w-44 rounded bg-gray-100 mb-4" />
+              <div className="space-y-2">
+                <div className="h-3 w-32 rounded bg-gray-100" />
+                <div className="h-3 w-36 rounded bg-gray-100" />
+                <div className="h-3 w-28 rounded bg-gray-100" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : filteredVehicles.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border">
           <Car className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -134,19 +148,22 @@ export default function VehiclesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredVehicles.map((vehicle) => (
-            <div key={vehicle.id} className="bg-white rounded-xl border border-gray-200 p-5">
+            <div key={vehicle.id} className="bg-white rounded-xl border border-gray-200 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-semibold text-gray-900">{vehicle.registration_number}</h3>
                   <p className="text-sm text-gray-500">{vehicle.brand} {vehicle.model} {vehicle.year ? `(${vehicle.year})` : ''}</p>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 transition-colors duration-200">
                   {vehicle.status}
                 </span>
               </div>
               <div className="text-sm text-gray-600 space-y-1">
                 <p>Categorie: {vehicle.category || '-'}</p>
                 <p>Kilometrage: {(vehicle.current_mileage_km || 0).toLocaleString()} km</p>
+                <p>Config: {vehicle.truck_config || '-'}</p>
+                <p>Carrosserie: {vehicle.body_type || '-'}</p>
+                <p>PTAC/PTRA: {vehicle.ptac_tons ?? '-'} t / {vehicle.ptra_tons ?? '-'} t</p>
               </div>
             </div>
           ))}

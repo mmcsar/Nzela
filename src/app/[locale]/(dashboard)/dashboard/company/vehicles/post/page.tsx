@@ -23,6 +23,10 @@ export default function PostVehiclePage() {
   const [year, setYear] = useState('');
   const [currentMileageKm, setCurrentMileageKm] = useState('');
   const [category, setCategory] = useState('truck');
+  const [truckConfig, setTruckConfig] = useState('');
+  const [bodyType, setBodyType] = useState('');
+  const [ptacTons, setPtacTons] = useState('');
+  const [ptraTons, setPtraTons] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -46,6 +50,10 @@ export default function PostVehiclePage() {
           year: year ? Number(year) : null,
           currentMileageKm: currentMileageKm ? Number(currentMileageKm) : 0,
           category,
+          truckConfig: truckConfig || null,
+          bodyType: bodyType || null,
+          ptacTons: ptacTons ? Number(ptacTons) : null,
+          ptraTons: ptraTons ? Number(ptraTons) : null,
           photoUrl: photoUrl || null,
           notes: notes || null,
         }),
@@ -89,7 +97,7 @@ export default function PostVehiclePage() {
         </Link>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <Car className="w-7 h-7 text-indigo-500" />
-            Ajouter un véhicule flotte
+            Ajouter un camion a la flotte
         </h1>
       </div>
 
@@ -99,7 +107,7 @@ export default function PostVehiclePage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-5 transition-shadow duration-200 hover:shadow-sm">
         <Input
           label="Immatriculation"
           value={registrationNumber}
@@ -132,6 +140,42 @@ export default function PostVehiclePage() {
             <option value="pickup">Pickup</option>
             <option value="other">Autre</option>
           </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Configuration camion (optionnel)"
+            value={truckConfig}
+            onChange={(e) => setTruckConfig(e.target.value)}
+            placeholder="Ex: 4x2, 6x4, 8x4"
+          />
+          <Input
+            label="Type carrosserie (optionnel)"
+            value={bodyType}
+            onChange={(e) => setBodyType(e.target.value)}
+            placeholder="Ex: Benne, Citerne, Plateau"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="PTAC (tonnes, optionnel)"
+            type="number"
+            step="0.01"
+            min="0"
+            value={ptacTons}
+            onChange={(e) => setPtacTons(e.target.value)}
+            placeholder="Ex: 26"
+          />
+          <Input
+            label="PTRA (tonnes, optionnel)"
+            type="number"
+            step="0.01"
+            min="0"
+            value={ptraTons}
+            onChange={(e) => setPtraTons(e.target.value)}
+            placeholder="Ex: 44"
+          />
         </div>
 
         <Input label="Photo URL (optionnel)" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." />

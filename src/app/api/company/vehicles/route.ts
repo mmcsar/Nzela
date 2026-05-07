@@ -67,6 +67,10 @@ export async function POST(request: Request) {
     const status = String(body.status || 'active').trim();
     const notes = body.notes ? String(body.notes).trim() : null;
     const truckId = body.truckId ? String(body.truckId).trim() : null;
+    const truckConfig = body.truckConfig ? String(body.truckConfig).trim() : null;
+    const bodyType = body.bodyType ? String(body.bodyType).trim() : null;
+    const ptacTons = body.ptacTons == null || body.ptacTons === '' ? null : Number(body.ptacTons);
+    const ptraTons = body.ptraTons == null || body.ptraTons === '' ? null : Number(body.ptraTons);
 
     if (!registrationNumber || !brand || !model) {
       return NextResponse.json(
@@ -79,6 +83,12 @@ export async function POST(request: Request) {
     }
     if (year != null && (Number.isNaN(year) || year < 1950 || year > 2100)) {
       return NextResponse.json({ error: 'year invalide' }, { status: 400 });
+    }
+    if (ptacTons != null && (Number.isNaN(ptacTons) || ptacTons < 0)) {
+      return NextResponse.json({ error: 'ptacTons invalide' }, { status: 400 });
+    }
+    if (ptraTons != null && (Number.isNaN(ptraTons) || ptraTons < 0)) {
+      return NextResponse.json({ error: 'ptraTons invalide' }, { status: 400 });
     }
 
     const { data, error } = await supabase
@@ -95,6 +105,10 @@ export async function POST(request: Request) {
         photo_url: photoUrl,
         status,
         notes,
+        truck_config: truckConfig,
+        body_type: bodyType,
+        ptac_tons: ptacTons,
+        ptra_tons: ptraTons,
       })
       .select('*')
       .single();

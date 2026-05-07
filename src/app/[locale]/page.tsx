@@ -5,7 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
-import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles } from 'lucide-react';
+import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles, MessageSquare } from 'lucide-react';
 
 /** Camion route (même visuel hero / carte revenus — neutre, sans marque) */
 const UNSPLASH_TRUCK = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7' as const;
@@ -19,15 +19,15 @@ const HOME_PHOTO = {
   editorial: 'https://images.unsplash.com/photo-1570805252434-9e62f73aa955?w=1600&q=80',
   /** Bandeau logistique au-dessus des 3 cartes « valeur » */
   valueSectionBanner: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&q=80',
-  valueOps: 'https://images.unsplash.com/photo-1587578769987-776c5bcd4c6e?w=900&q=80',
+  valueOps: '/api/home-images/value-ops',
   /** Carte « Améliorez votre efficacité » : pilotage / indicateurs sur laptop */
   valueDesk: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=85',
   /** Carte « Augmentez vos revenus » : poids lourd sur route */
   valueRoad: `${UNSPLASH_TRUCK}?w=900&q=80`,
   /** Étape « Publiez en quelques clics » : écran type load board / tableau de fret */
-  howPublish: 'https://images.unsplash.com/photo-1771923082503-0a3381c46cef?w=800&q=85',
-  howMatch: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80',
-  howTrack: 'https://images.unsplash.com/photo-1687422811062-a966b55cb217?w=800&q=80',
+  howPublish: '/api/home-images/how-publish',
+  howMatch: '/api/home-images/value-ops',
+  howTrack: '/api/home-images/how-track',
   whyPanel: `${UNSPLASH_TRUCK}?w=1000&q=80`,
 } as const;
 
@@ -38,6 +38,8 @@ const HOW_IT_WORKS = [
     desc: 'Créez un chargement ou publiez un camion avec toutes les informations nécessaires.',
     icon: FileText,
     image: HOME_PHOTO.howPublish,
+    imageClassName: 'object-[center_10%]',
+    imageOverlayClassName: 'bg-gradient-to-t from-slate-950/80 via-slate-900/25 to-transparent',
     altKey: 'homePhotoHow1Alt' as const,
   },
   {
@@ -46,6 +48,8 @@ const HOW_IT_WORKS = [
     desc: 'Nzela propose automatiquement les meilleures correspondances transporteur-courtier.',
     icon: Cpu,
     image: HOME_PHOTO.howMatch,
+    imageClassName: 'object-center',
+    imageOverlayClassName: 'bg-gradient-to-t from-slate-950/25 via-transparent to-transparent',
     altKey: 'homePhotoHow2Alt' as const,
   },
   {
@@ -54,6 +58,8 @@ const HOW_IT_WORKS = [
     desc: 'Gérez BOL, suivi GPS et communication depuis un seul espace opérationnel.',
     icon: MapPin,
     image: HOME_PHOTO.howTrack,
+    imageClassName: 'object-[center_28%]',
+    imageOverlayClassName: 'bg-gradient-to-t from-slate-950/25 via-transparent to-transparent',
     altKey: 'homePhotoHow3Alt' as const,
   },
 ];
@@ -200,12 +206,23 @@ export default async function HomePage() {
                   Trouver un chargement
                 </Button>
               </Link>
+              <a
+                href="mailto:info@nzelaa.com?subject=Message%20depuis%20Nzela&body=Bonjour%20l%27equipe%20Nzela%2C%0A%0A"
+                className="sm:inline-flex"
+              >
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary-200/60 bg-primary-500/10 text-white hover:bg-primary-500/20">
+                  Chat direct <MessageSquare className="w-4 h-4 ml-2" />
+                </Button>
+              </a>
             </div>
             <p className="mt-8 text-sm text-white/75">
               <span>{t('homeLoginPrompt')}</span>{' '}
               <Link href="/login" className="font-semibold text-amber-200 underline decoration-amber-400/60 underline-offset-4 transition hover:text-amber-100">
                 {t('homeLoginLink')}
               </Link>
+            </p>
+            <p className="mt-3 text-xs text-amber-100/90">
+              Anti-phishing: utilisez uniquement l&apos;email officiel <span className="font-semibold">info@nzelaa.com</span>.
             </p>
           </div>
         </div>
@@ -335,8 +352,12 @@ export default async function HomePage() {
                       src={item.image}
                       alt={t(item.altKey)}
                       fill
-                      className="object-cover transition duration-500 group-hover:scale-[1.02]"
+                      className={`object-cover ${item.imageClassName || 'object-center'} transition duration-500 group-hover:scale-[1.02]`}
                       sizes="(max-width: 768px) 100vw, 40vw"
+                    />
+                    <div
+                      className={`absolute inset-0 ${item.imageOverlayClassName || 'bg-gradient-to-t from-slate-950/25 via-transparent to-transparent'}`}
+                      aria-hidden
                     />
                   </div>
                   <div className="relative flex flex-1 flex-col justify-center p-7 sm:p-8 md:p-10">
@@ -386,6 +407,39 @@ export default async function HomePage() {
                 <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why teams choose Nzela */}
+      <section className="py-14 sm:py-16 bg-gradient-to-b from-primary-50/60 to-white border-y border-primary-100/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto rounded-3xl border border-primary-100 bg-white p-7 sm:p-9 shadow-lg ring-1 ring-primary-50">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary-700">Chatting opérationnel</p>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    En ligne
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Discutez en temps réel avec vos partenaires</h3>
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                  Messagerie intégrée pour coordonner rapidement un chargement, confirmer les détails et suivre l&apos;exécution sans quitter Nzela.
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Sécurité: ne partagez jamais vos mots de passe. Vérifiez toujours l&apos;adresse officielle <span className="font-semibold">info@nzelaa.com</span>.
+                </p>
+              </div>
+              <div className="shrink-0">
+                <a href="mailto:info@nzelaa.com?subject=Support%20Nzela&body=Bonjour%2C%0A%0AJ%27ai%20besoin%20d%27assistance%20concernant%20%3A%0A">
+                  <Button size="lg" className="shadow-md">
+                    Ouvrir le chat <MessageSquare className="w-4 h-4 ml-2" />
+                  </Button>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
