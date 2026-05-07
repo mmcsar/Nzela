@@ -6,11 +6,11 @@ export const dynamic = 'force-dynamic';
 
 const IMAGE_MAP: Record<string, string> = {
   'value-ops':
-    'C:/Users/mmcsa/.cursor/projects/c-Users-mmcsa-nzela/assets/c__Users_mmcsa_AppData_Roaming_Cursor_User_workspaceStorage_5d0171ac746f104dd4f1f0e4661de1a8_images_ChatGPT_Image_May_7__2026__08_15_09_PM-bb17dfc9-507d-45e4-9416-b51dd619d132.png',
+    'C:/Users/mmcsa/.cursor/projects/c-Users-mmcsa-nzela/assets/c__Users_mmcsa_AppData_Roaming_Cursor_User_workspaceStorage_5d0171ac746f104dd4f1f0e4661de1a8_images_ChatGPT_Image_May_7__2026__08_15_09_PM-66028227-4b14-4eae-84bd-712314fba648.png',
   'how-publish':
-    'C:/Users/mmcsa/.cursor/projects/c-Users-mmcsa-nzela/assets/c__Users_mmcsa_AppData_Roaming_Cursor_User_workspaceStorage_5d0171ac746f104dd4f1f0e4661de1a8_images_nzela2-05d0346d-9c40-4f1f-aa14-fd4a6c782cf4.png',
+    'C:/Users/mmcsa/.cursor/projects/c-Users-mmcsa-nzela/assets/c__Users_mmcsa_AppData_Roaming_Cursor_User_workspaceStorage_5d0171ac746f104dd4f1f0e4661de1a8_images_nzela2-8026f1ee-28e1-4432-876d-c46a6534be37.png',
   'how-track':
-    'C:/Users/mmcsa/.cursor/projects/c-Users-mmcsa-nzela/assets/c__Users_mmcsa_AppData_Roaming_Cursor_User_workspaceStorage_5d0171ac746f104dd4f1f0e4661de1a8_images_nzelaaa1-1f9d894f-bf1e-455c-95c8-51216488dc7f.png',
+    'C:/Users/mmcsa/.cursor/projects/c-Users-mmcsa-nzela/assets/c__Users_mmcsa_AppData_Roaming_Cursor_User_workspaceStorage_5d0171ac746f104dd4f1f0e4661de1a8_images_nzelaaa1-cd6d0225-fe37-4bac-9777-b8e06386c3f9.png',
 };
 
 const FALLBACK_MAP: Record<string, string> = {
