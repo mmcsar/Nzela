@@ -10,6 +10,8 @@ import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, A
 /** Camion route (même visuel hero / carte revenus — neutre, sans marque) */
 const UNSPLASH_TRUCK = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7' as const;
 const HERO_TRUCK_IMAGE = `${UNSPLASH_TRUCK}?w=800&q=80`;
+const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584';
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'info@nzelaa.com';
 
 /**
  * Photos Unsplash (images.unsplash.com — déjà autorisé dans next.config).
@@ -95,6 +97,22 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+
+      {/* Contact bar */}
+      <div className="bg-slate-950 text-slate-100 border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs sm:text-sm">
+          <p className="text-slate-300">Contact direct Nzela</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <a href={`tel:${SUPPORT_PHONE.replace(/\s+/g, '')}`} className="font-medium text-amber-200 hover:text-amber-100 transition-colors">
+              {SUPPORT_PHONE}
+            </a>
+            <span className="text-slate-500" aria-hidden>•</span>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-amber-200 hover:text-amber-100 transition-colors">
+              {SUPPORT_EMAIL}
+            </a>
+          </div>
+        </div>
+      </div>
 
       {/* Bandeau défilant — bienvenue & sortie (texte doré sur fond profond) */}
       <div
