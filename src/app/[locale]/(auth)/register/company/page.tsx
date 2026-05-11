@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { ALL_REGION_IDS, ALL_REGION_NAMES, type AllRegionId } from '@/lib/constants/rdc-provinces';
+import { REGIONS_BY_COUNTRY, REGION_NAMES_BY_COUNTRY, CITY_SUGGESTIONS_BY_COUNTRY, getDefaultRegionForCountry } from '@/lib/constants/country-regions';
+import { SUPPORTED_COUNTRIES, type SupportedCountryCode, COUNTRY_BY_CODE } from '@/lib/constants/supported-countries';
 import { Building2, ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,10 +29,14 @@ export default function RegisterCompanyPage() {
   const [companyName, setCompanyName] = useState('');
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [address, setAddress] = useState('');
+  const [country, setCountry] = useState<SupportedCountryCode>('cd');
   const [city, setCity] = useState('Lubumbashi');
-  const [province, setProvince] = useState<AllRegionId>('haut-katanga');
+  const [province, setProvince] = useState<string>(getDefaultRegionForCountry('cd'));
   const [phone, setPhone] = useState('');
   const [companyEmail, setCompanyEmail] = useState('');
+
+  const regionOptions = useMemo(() => REGIONS_BY_COUNTRY[country], [country]);
+  const citySuggestions = useMemo(() => CITY_SUGGESTIONS_BY_COUNTRY[country], [country]);
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,21 +156,56 @@ export default function RegisterCompanyPage() {
             <Input label="Numéro d'enregistrement (RCCM)" value={registrationNumber} onChange={(e) => setRegistrationNumber(e.target.value)} required />
             <Input label="Adresse" value={address} onChange={(e) => setAddress(e.target.value)} required />
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Ville" value={city} onChange={(e) => setCity(e.target.value)} required />
+              <Input label="Ville" value={city} onChange={(e) => setCity(e.target.value)} required list="company-city-list" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pays</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  value={country}
+                  onChange={(e) => {
+                    const selected = e.target.value as SupportedCountryCode;
+                    setCountry(selected);
+                    setProvince(getDefaultRegionForCountry(selected));
+                    const [firstCity] = CITY_SUGGESTIONS_BY_COUNTRY[selected];
+                    if (firstCity) setCity(firstCity);
+                  }}
+                >
+                  {SUPPORTED_COUNTRIES.map((item) => (
+                    <option key={item.code} value={item.code}>{item.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Province</label>
                 <select
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   value={province}
-                  onChange={(e) => setProvince(e.target.value as AllRegionId)}
+                  onChange={(e) => setProvince(e.target.value)}
                 >
-                  {ALL_REGION_IDS.map((id) => (
-                    <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
+                  {regionOptions.map((id) => (
+                    <option key={id} value={id}>{REGION_NAMES_BY_COUNTRY[country][id]}</option>
                   ))}
                 </select>
               </div>
+              <Input
+                label="Téléphone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                placeholder={`${COUNTRY_BY_CODE[country].phonePrefix}...`}
+              />
             </div>
-            <Input label="Téléphone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="+243..." />
+            <datalist id="company-city-list">
+              {citySuggestions.map((item) => (
+                <option key={item} value={item} />
+              ))}
+            </datalist>
+            <p className="text-xs text-gray-500 -mt-2">
+              Monnaie locale: <span className="font-semibold">{COUNTRY_BY_CODE[country].currency}</span>
+            </p>
             <Input label="Email entreprise (optionnel)" type="email" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} placeholder="Laisser vide pour utiliser l'email du compte" />
             <div className="flex gap-3">
               <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1">Retour</Button>

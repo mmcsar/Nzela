@@ -13,6 +13,7 @@ const contactInfo = [
   { icon: Phone, label: 'Téléphone', value: supportPhone },
   { icon: Mail, label: 'Email', value: 'info@nzelaa.com' },
   { icon: Clock, label: 'Heures', value: 'Lun - Ven : 8h00 - 17h00' },
+  { icon: MapPin, label: 'Zones couvertes', value: 'RDC, Zambie, Afrique du Sud, Tanzanie, Angola' },
 ];
 
 export default function ContactPage() {

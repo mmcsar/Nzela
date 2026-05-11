@@ -198,7 +198,16 @@
     "trailerContainer": "Container",
     "trailerLowboy": "Lowboy",
     "traject": "Route",
-    "contact": "Contact"
+    "contact": "Contact",
+    "originCountry": "Origin country",
+    "destinationCountry": "Destination country",
+    "allCountries": "All countries",
+    "originCity": "Origin city",
+    "destinationCity": "Destination city",
+    "filterGroupPeriod": "Period",
+    "filterGroupRoute": "Route",
+    "filterGroupLoad": "Load",
+    "filterGroupNumeric": "Weight and price"
   },
   "truckBoard": {
     "title": "Truck Board",
@@ -757,7 +766,7 @@
     "heroTagline": "Nzela, the smart road for Congolese freight",
     "heroLaunch": "Nzela marks a new milestone: connecting stakeholders more effectively, strengthening operational reliability, and supporting a logistics and workforce ecosystem aligned with national development.",
     "heroLead": "Bring together loads, capacity, and skills. Practical, dependable tools for day-to-day operations—in support of a new Congo, across the Democratic Republic of the Congo.",
-    "heroChip1": "DRC + Zambia",
+    "heroChip1": "DRC + Zambia + South Africa + Tanzania + Angola",
     "heroChip2": "FR / EN",
     "heroChip3": "Freight and talent in real time",
     "homePhotoEditorialQuote": "From corridor to warehouse: one platform to align freight, fleet, and paperwork.",

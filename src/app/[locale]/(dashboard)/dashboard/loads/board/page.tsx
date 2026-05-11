@@ -16,6 +16,7 @@ import {
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { useRealtimeLoads } from '@/hooks/useRealtimeLoads';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
+import { SUPPORTED_COUNTRIES, inferCountryCodeFromProvince } from '@/lib/constants/supported-countries';
 import dynamic from 'next/dynamic';
 
 const LoadBoardMap = dynamic(() => import('@/components/loads/LoadBoardMap'), { ssr: false, loading: () => <div className="w-full h-[500px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400">...</div> });
@@ -23,6 +24,14 @@ const LoadBoardMap = dynamic(() => import('@/components/loads/LoadBoardMap'), { 
 // ══════════════════════════════════════════
 // INTERFACES & CONSTANTS
 // ══════════════════════════════════════════
+/** Champs JSON `loads.origin` / `loads.destination` (évolue avec pays). */
+type LoadLocationJson = {
+  city?: string;
+  province?: string;
+  country?: string;
+  address?: string;
+};
+
 interface LoadRow {
   id: string;
   created_at: string;
@@ -30,6 +39,8 @@ interface LoadRow {
   origin_province: string;
   destination_city: string;
   destination_province: string;
+  origin_country?: string;
+  destination_country?: string;
   trailer_type: string;
   cargo_type: string;
   weight: number;
@@ -59,6 +70,15 @@ const PROVINCE_ABBR: Record<string, string> = {
   'zambie-central': 'ZC', 'zambie-copperbelt': 'CB', 'zambie-eastern': 'EA', 'zambie-luapula': 'LP',
   'zambie-lusaka': 'LS', 'zambie-muchinga': 'MU', 'zambie-northern': 'NO', 'zambie-north-western': 'NW',
   'zambie-southern': 'SO', 'zambie-western': 'WE',
+  // Afrique du Sud
+  'za-eastern-cape': 'EC', 'za-free-state': 'FS', 'za-gauteng': 'GT', 'za-kwazulu-natal': 'KZN',
+  'za-limpopo': 'LP', 'za-mpumalanga': 'MP', 'za-north-west': 'NW', 'za-northern-cape': 'NC', 'za-western-cape': 'WC',
+  // Tanzanie
+  'tz-arusha': 'AR', 'tz-dar-es-salaam': 'DSM', 'tz-dodoma': 'DO', 'tz-geita': 'GE',
+  'tz-kagera': 'KA', 'tz-kigoma': 'KI', 'tz-kilimanjaro': 'KJ', 'tz-mbeya': 'MB', 'tz-morogoro': 'MO', 'tz-mwanza': 'MW',
+  // Angola
+  'ao-benguela': 'BG', 'ao-bie': 'BE', 'ao-cabinda': 'CA', 'ao-cunene': 'CN', 'ao-huambo': 'HU',
+  'ao-huila': 'HL', 'ao-luanda': 'LU', 'ao-lunda-norte': 'LN', 'ao-lunda-sul': 'LS', 'ao-moxico': 'MX',
 };
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; dot: string; ring: string }> = {
@@ -196,6 +216,7 @@ export default function LoadBoardPage() {
   const [filters, setFilters] = useState({
     startDate: '', endDate: '',
     originCity: '', destCity: '',
+    originCountry: '', destinationCountry: '',
     /** Par défaut : offres ouvertes (évite d'encombrer avec réservés / en transit). « Tous » reste disponible. */
     status: 'available', trailerType: '', search: '',
     minWeight: '', maxWeight: '',
@@ -242,11 +263,11 @@ export default function LoadBoardPage() {
       if (error) throw error;
 
       const rows: LoadRow[] = (data || []).map((load: any) => {
-        let origin = { city: '', province: '' };
-        let dest = { city: '', province: '' };
+        let origin: LoadLocationJson = { city: '', province: '' };
+        let dest: LoadLocationJson = { city: '', province: '' };
         try {
-          origin = typeof load.origin === 'string' ? JSON.parse(load.origin) : (load.origin || {});
-          dest = typeof load.destination === 'string' ? JSON.parse(load.destination) : (load.destination || {});
+          origin = (typeof load.origin === 'string' ? JSON.parse(load.origin) : (load.origin || {})) as LoadLocationJson;
+          dest = (typeof load.destination === 'string' ? JSON.parse(load.destination) : (load.destination || {})) as LoadLocationJson;
         } catch { /* ignore */ }
 
         return {
@@ -254,8 +275,10 @@ export default function LoadBoardPage() {
           created_at: load.created_at,
           origin_city: origin.city || '',
           origin_province: origin.province || '',
+          origin_country: origin.country || inferCountryCodeFromProvince(origin.province),
           destination_city: dest.city || '',
           destination_province: dest.province || '',
+          destination_country: dest.country || inferCountryCodeFromProvince(dest.province),
           trailer_type: load.trailer_type || '',
           cargo_type: load.cargo_type || '',
           weight: load.weight || 0,
@@ -320,12 +343,18 @@ export default function LoadBoardPage() {
     const f = filters;
     if (f.originCity && !load.origin_city.toLowerCase().includes(f.originCity.toLowerCase())) return false;
     if (f.destCity && !load.destination_city.toLowerCase().includes(f.destCity.toLowerCase())) return false;
+    if (f.originCountry && load.origin_country !== f.originCountry) return false;
+    if (f.destinationCountry && load.destination_country !== f.destinationCountry) return false;
     if (f.status !== 'all' && load.status !== f.status) return false;
     if (f.trailerType && load.trailer_type !== f.trailerType) return false;
     if (f.search) {
       const term = f.search.toLowerCase();
+      const country = (load.origin_country || '').toLowerCase();
       const match = load.origin_city.toLowerCase().includes(term) ||
         load.destination_city.toLowerCase().includes(term) ||
+        load.origin_province.toLowerCase().includes(term) ||
+        load.destination_province.toLowerCase().includes(term) ||
+        (country && country.includes(term)) ||
         load.broker_name.toLowerCase().includes(term) ||
         load.id.toLowerCase().includes(term) ||
         load.cargo_type.toLowerCase().includes(term) ||
@@ -372,6 +401,7 @@ export default function LoadBoardPage() {
   const clearFilters = () => {
     setFilters({
       startDate: '', endDate: '', originCity: '', destCity: '',
+      originCountry: '', destinationCountry: '',
       status: 'available', trailerType: '', search: '',
       minWeight: '', maxWeight: '', minPrice: '', maxPrice: '',
     });
@@ -481,7 +511,7 @@ export default function LoadBoardPage() {
             <span>MAJ: {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 justify-end sm:justify-start">
           {/* Vue toggle */}
           <div className="hidden sm:flex items-center bg-gray-100 rounded-lg p-0.5">
             <button
@@ -527,8 +557,8 @@ export default function LoadBoardPage() {
         </div>
       )}
 
-      {/* ══════════════════════ KPIs ══════════════════════ */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+      {/* ══════════════════════ KPIs (scroll horizontal sur mobile) ══════════════════════ */}
+      <div className="flex gap-2 overflow-x-auto pb-2 pt-0.5 snap-x snap-mandatory [-webkit-overflow-scrolling:touch] sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-x-visible sm:pb-0 sm:snap-none sm:gap-2">
         {[
 { label: t('total'), value: stats.total, icon: Package, color: 'text-gray-700', bg: 'from-gray-50 to-gray-100/50', border: 'border-gray-200' },
         { label: t('availableCount'), value: stats.available, icon: MapPin, color: 'text-emerald-700', bg: 'from-emerald-50 to-emerald-100/30', border: 'border-emerald-200' },
@@ -540,7 +570,10 @@ export default function LoadBoardPage() {
         ].map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-xl border ${kpi.border} p-2.5 transition-all hover:shadow-sm hover:-translate-y-0.5`}>
+            <div
+              key={kpi.label}
+              className={`min-w-[118px] flex-shrink-0 snap-start sm:min-w-0 sm:flex-shrink bg-gradient-to-br ${kpi.bg} rounded-xl border ${kpi.border} p-2.5 transition-all hover:shadow-sm hover:-translate-y-0.5`}
+            >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Icon className={`w-3 h-3 ${kpi.color}`} />
                 <span className="text-[9px] text-gray-500 font-semibold uppercase tracking-wide">{kpi.label}</span>
@@ -552,15 +585,15 @@ export default function LoadBoardPage() {
       </div>
 
       {/* ══════════════════════ SEARCH + FILTERS ══════════════════════ */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 relative">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+        <div className="relative min-w-0 flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
             value={filters.search}
             onChange={e => setFilters({ ...filters, search: e.target.value })}
             placeholder={t('searchPlaceholderLong')}
-            className="w-full pl-10 pr-10 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-400 bg-white transition-all"
+            className="w-full min-h-[44px] pl-10 pr-10 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-400 bg-white transition-all"
           />
           {filters.search && (
             <button onClick={() => setFilters({ ...filters, search: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -570,7 +603,7 @@ export default function LoadBoardPage() {
         </div>
 
         {/* Quick status filters */}
-        <div className="hidden lg:flex items-center gap-1">
+        <div className="hidden md:flex flex-wrap items-center gap-1 max-w-full">
           {(['all', 'available', 'booked', 'in-transit'] as const).map(s => {
             const cfg = s === 'all' ? { label: t('all'), bg: 'bg-gray-50 text-gray-600 border-gray-200', dot: 'bg-gray-400' } : { ...STATUS_CONFIG[s], label: statusLabel(s) };
             const active = filters.status === s;
@@ -589,9 +622,10 @@ export default function LoadBoardPage() {
           })}
         </div>
 
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end sm:justify-start">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium border rounded-lg transition-all ${
+          className={`flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border rounded-lg transition-all min-h-[42px] ${
             showFilters ? 'bg-primary-50 text-primary-700 border-primary-200 shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50'
           }`}
         >
@@ -602,71 +636,154 @@ export default function LoadBoardPage() {
           )}
           <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
+        </div>
       </div>
 
       {/* ══════════════════════ FILTER PANEL ══════════════════════ */}
       {showFilters && (
-        <div className="bg-white border rounded-xl p-4 space-y-3 shadow-sm animate-in slide-in-from-top-2">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {[
-              { label: t('startDate'), type: 'date', key: 'startDate' },
-              { label: t('endDate'), type: 'date', key: 'endDate' },
-              { label: t('origin'), type: 'text', key: 'originCity', ph: 'Lubumbashi...' },
-              { label: t('destination'), type: 'text', key: 'destCity', ph: 'Kolwezi...' },
-            ].map(f => (
-              <div key={f.key}>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{f.label}</label>
-                <input
-                  type={f.type}
-                  value={filters[f.key as keyof typeof filters]}
-                  onChange={e => setFilters({ ...filters, [f.key]: e.target.value })}
-                  placeholder={f.ph || ''}
-                  className="w-full px-2.5 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none transition-all"
-                />
-              </div>
-            ))}
-            <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('status')}</label>
-              <select value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-2.5 py-1.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none">
-                <option value="all">{t('all')}</option>
-                {Object.entries(STATUS_CONFIG).map(([k]) => <option key={k} value={k}>{statusLabel(k)}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('trailerType')}</label>
-              <select value={filters.trailerType} onChange={e => setFilters({ ...filters, trailerType: e.target.value })}
-                className="w-full px-2.5 py-1.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none">
-                <option value="">{t('allTypes')}</option>
-                {[
-                  { value: 'flatbed', key: 'trailerFlatbed' as const },
-                  { value: 'van', key: 'trailerVan' as const },
-                  { value: 'reefer', key: 'trailerReefer' as const },
-                  { value: 'tanker', key: 'trailerTanker' as const },
-                  { value: 'container', key: 'trailerContainer' as const },
-                  { value: 'lowboy', key: 'trailerLowboy' as const },
-                ].map(o => <option key={o.value} value={o.value}>{t(o.key)}</option>)}
-              </select>
+        <div className="bg-white border border-gray-200/90 rounded-xl p-4 shadow-sm animate-in slide-in-from-top-2 max-h-[min(72vh,680px)] overflow-y-auto overscroll-contain space-y-5 ring-1 ring-gray-100/80">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary-700 mb-2.5">{t('filterGroupPeriod')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { label: t('startDate'), type: 'date', key: 'startDate' },
+                { label: t('endDate'), type: 'date', key: 'endDate' },
+              ].map((f) => (
+                <div key={f.key} className="min-w-0">
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{f.label}</label>
+                  <input
+                    type={f.type}
+                    value={filters[f.key as keyof typeof filters]}
+                    onChange={(e) => setFilters({ ...filters, [f.key]: e.target.value })}
+                    className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none transition-all"
+                  />
+                </div>
+              ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary-700 mb-2.5">{t('filterGroupRoute')}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-3 space-y-3 min-w-0">
+                <p className="text-xs font-semibold text-slate-800">{t('origin')}</p>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('originCity')}</label>
+                    <input
+                      type="text"
+                      value={filters.originCity}
+                      onChange={(e) => setFilters({ ...filters, originCity: e.target.value })}
+                      placeholder="Lubumbashi..."
+                      className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('originCountry')}</label>
+                    <select
+                      value={filters.originCountry}
+                      onChange={(e) => setFilters({ ...filters, originCountry: e.target.value })}
+                      className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none"
+                    >
+                      <option value="">{t('allCountries')}</option>
+                      {SUPPORTED_COUNTRIES.map((country) => (
+                        <option key={country.code} value={country.code}>{country.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-3 space-y-3 min-w-0">
+                <p className="text-xs font-semibold text-slate-800">{t('destination')}</p>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('destinationCity')}</label>
+                    <input
+                      type="text"
+                      value={filters.destCity}
+                      onChange={(e) => setFilters({ ...filters, destCity: e.target.value })}
+                      placeholder="Kolwezi..."
+                      className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('destinationCountry')}</label>
+                    <select
+                      value={filters.destinationCountry}
+                      onChange={(e) => setFilters({ ...filters, destinationCountry: e.target.value })}
+                      className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none"
+                    >
+                      <option value="">{t('allCountries')}</option>
+                      {SUPPORTED_COUNTRIES.map((country) => (
+                        <option key={country.code} value={country.code}>{country.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary-700 mb-2.5">{t('filterGroupLoad')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="min-w-0">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('status')}</label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                  className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none"
+                >
+                  <option value="all">{t('all')}</option>
+                  {Object.entries(STATUS_CONFIG).map(([k]) => (
+                    <option key={k} value={k}>{statusLabel(k)}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-0">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('trailerType')}</label>
+                <select
+                  value={filters.trailerType}
+                  onChange={(e) => setFilters({ ...filters, trailerType: e.target.value })}
+                  className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500/40 outline-none"
+                >
+                  <option value="">{t('allTypes')}</option>
+                  {[
+                    { value: 'flatbed', key: 'trailerFlatbed' as const },
+                    { value: 'van', key: 'trailerVan' as const },
+                    { value: 'reefer', key: 'trailerReefer' as const },
+                    { value: 'tanker', key: 'trailerTanker' as const },
+                    { value: 'container', key: 'trailerContainer' as const },
+                    { value: 'lowboy', key: 'trailerLowboy' as const },
+                  ].map((o) => (
+                    <option key={o.value} value={o.value}>{t(o.key)}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary-700 mb-2.5">{t('filterGroupNumeric')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { label: 'Poids min (kg)', key: 'minWeight', ph: '0' },
               { label: 'Poids max (kg)', key: 'maxWeight', ph: '50000' },
               { label: 'Prix min (CDF)', key: 'minPrice', ph: '0' },
               { label: 'Prix max (CDF)', key: 'maxPrice', ph: '10000000' },
             ].map(f => (
-              <div key={f.key}>
+              <div key={f.key} className="min-w-0">
                 <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{f.label}</label>
                 <input
                   type="number"
                   value={filters[f.key as keyof typeof filters]}
                   onChange={e => setFilters({ ...filters, [f.key]: e.target.value })}
                   placeholder={f.ph}
-                  className="w-full px-2.5 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none transition-all"
+                  className="w-full min-h-[42px] px-2.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500/40 outline-none transition-all"
                 />
               </div>
             ))}
+            </div>
           </div>
           {activeFilterCount > 0 && (
             <div className="flex justify-end">
