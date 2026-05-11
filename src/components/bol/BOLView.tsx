@@ -2,6 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { BOL } from '@/types';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 import { Button } from '@/components/ui/Button';
 import { FileText, Download, Printer, MapPin, Calendar, Package, DollarSign } from 'lucide-react';
 import { downloadBOLPDF } from './BOLPrint';
@@ -14,8 +15,8 @@ interface BOLViewProps {
 export function BOLView({ bol, showActions = true }: BOLViewProps) {
   const t = useTranslations('bol');
   const locale = useLocale();
-  const origin = typeof bol.origin === 'string' ? JSON.parse(bol.origin) : bol.origin;
-  const destination = typeof bol.destination === 'string' ? JSON.parse(bol.destination) : bol.destination;
+  const origin = parseLoadLocation(bol.origin);
+  const destination = parseLoadLocation(bol.destination);
   const shipper = typeof bol.shipper === 'string' ? JSON.parse(bol.shipper) : bol.shipper;
   const carrier = typeof bol.carrier === 'string' ? JSON.parse(bol.carrier) : bol.carrier;
   const items = typeof bol.items === 'string' ? JSON.parse(bol.items) : bol.items;

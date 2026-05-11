@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/checkRole';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 
 // GET - Liste des alertes de l'utilisateur + verification des correspondances
 export async function GET(request: Request) {
@@ -34,12 +35,12 @@ export async function GET(request: Request) {
           ...alert,
           matches: matches.length,
           recentMatches: matches.slice(0, 5).map((l: any) => {
-            const origin = typeof l.origin === 'string' ? JSON.parse(l.origin) : l.origin;
-            const dest = typeof l.destination === 'string' ? JSON.parse(l.destination) : l.destination;
+            const origin = parseLoadLocation(l.origin);
+            const dest = parseLoadLocation(l.destination);
             return {
               id: l.id,
-              origin_city: origin?.city || '',
-              destination_city: dest?.city || '',
+              origin_city: origin.city || '',
+              destination_city: dest.city || '',
               price: l.price,
               weight: l.weight,
               trailer_type: l.trailer_type,
@@ -159,11 +160,11 @@ export async function DELETE(request: Request) {
 
 function matchLoadToAlert(load: any, criteria: any): boolean {
   try {
-    const origin = typeof load.origin === 'string' ? JSON.parse(load.origin) : load.origin;
-    const dest = typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination;
+    const origin = parseLoadLocation(load.origin);
+    const dest = parseLoadLocation(load.destination);
 
-    if (criteria.originCity && origin?.city?.toLowerCase() !== criteria.originCity.toLowerCase()) return false;
-    if (criteria.destinationCity && dest?.city?.toLowerCase() !== criteria.destinationCity.toLowerCase()) return false;
+    if (criteria.originCity && origin.city?.toLowerCase() !== criteria.originCity.toLowerCase()) return false;
+    if (criteria.destinationCity && dest.city?.toLowerCase() !== criteria.destinationCity.toLowerCase()) return false;
     if (criteria.trailerTypes?.length > 0 && !criteria.trailerTypes.includes(load.trailer_type)) return false;
     if (criteria.minWeight && load.weight < criteria.minWeight) return false;
     if (criteria.maxWeight && load.weight > criteria.maxWeight) return false;

@@ -17,6 +17,7 @@ import { useRequireRole } from '@/hooks/useRequireRole';
 import { useRealtimeLoads } from '@/hooks/useRealtimeLoads';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
 import { SUPPORTED_COUNTRIES, inferCountryCodeFromProvince } from '@/lib/constants/supported-countries';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 import dynamic from 'next/dynamic';
 
 const LoadBoardMap = dynamic(() => import('@/components/loads/LoadBoardMap'), { ssr: false, loading: () => <div className="w-full h-[500px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400">...</div> });
@@ -24,14 +25,6 @@ const LoadBoardMap = dynamic(() => import('@/components/loads/LoadBoardMap'), { 
 // ══════════════════════════════════════════
 // INTERFACES & CONSTANTS
 // ══════════════════════════════════════════
-/** Champs JSON `loads.origin` / `loads.destination` (évolue avec pays). */
-type LoadLocationJson = {
-  city?: string;
-  province?: string;
-  country?: string;
-  address?: string;
-};
-
 interface LoadRow {
   id: string;
   created_at: string;
@@ -263,12 +256,8 @@ export default function LoadBoardPage() {
       if (error) throw error;
 
       const rows: LoadRow[] = (data || []).map((load: any) => {
-        let origin: LoadLocationJson = { city: '', province: '' };
-        let dest: LoadLocationJson = { city: '', province: '' };
-        try {
-          origin = (typeof load.origin === 'string' ? JSON.parse(load.origin) : (load.origin || {})) as LoadLocationJson;
-          dest = (typeof load.destination === 'string' ? JSON.parse(load.destination) : (load.destination || {})) as LoadLocationJson;
-        } catch { /* ignore */ }
+        const origin = parseLoadLocation(load.origin);
+        const dest = parseLoadLocation(load.destination);
 
         return {
           id: load.id,

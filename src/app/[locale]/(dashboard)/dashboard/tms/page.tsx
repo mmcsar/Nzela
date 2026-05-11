@@ -25,6 +25,7 @@ import {
   Fuel,
 } from 'lucide-react';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 
 const WORKFLOW_LABELS: Record<string, string> = {
   available: 'Disponible',
@@ -49,20 +50,6 @@ const STATUS_COLORS: Record<string, string> = {
   in_transit: 'bg-amber-100 text-amber-700',
   completed: 'bg-gray-100 text-gray-700',
 };
-
-function parseLocation(loc: unknown): { city: string; province: string } {
-  if (!loc) return { city: '—', province: '' };
-  if (typeof loc === 'string') {
-    try {
-      const o = JSON.parse(loc);
-      return { city: o?.city ?? '—', province: o?.province ?? '' };
-    } catch {
-      return { city: loc, province: '' };
-    }
-  }
-  const o = loc as { city?: string; province?: string };
-  return { city: o?.city ?? '—', province: o?.province ?? '' };
-}
 
 interface LoadRow {
   id: string;
@@ -300,8 +287,8 @@ export default function TMSPage() {
         ) : (
           <div className="divide-y divide-gray-50 max-h-[480px] overflow-y-auto">
             {loads.map((load) => {
-              const origin = parseLocation(load.origin);
-              const dest = parseLocation(load.destination);
+              const origin = parseLoadLocation(load.origin);
+              const dest = parseLoadLocation(load.destination);
               const step = load.workflow_step || (load.status === 'booked' ? 'bid_accepted' : load.status === 'in-transit' || load.status === 'in_transit' ? 'in_transit' : load.status);
               const stepLabel = WORKFLOW_LABELS[step] || step;
               const statusColor = STATUS_COLORS[load.status] || 'bg-gray-100 text-gray-600';
@@ -317,7 +304,7 @@ export default function TMSPage() {
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
                       <span className="text-sm font-medium text-gray-900 truncate">
-                        {origin.city} → {dest.city}
+                        {(origin.city || '—')} → {(dest.city || '—')}
                       </span>
                     </div>
                     <div className="hidden sm:block text-xs text-gray-500 shrink-0">

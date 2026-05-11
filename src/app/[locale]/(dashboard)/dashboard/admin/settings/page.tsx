@@ -14,7 +14,7 @@ import {
   Table2, Key, Link2, Hash, BarChart3, Activity,
   ArrowUpRight, ArrowDownRight, Layers, GitBranch,
 } from 'lucide-react';
-import { ALL_REGION_IDS, ALL_REGION_NAMES } from '@/lib/constants/rdc-provinces';
+import { ALL_CORRIDOR_REGION_IDS, ALL_CORRIDOR_REGION_NAMES } from '@/lib/constants/country-regions';
 
 // ── Toggle Switch Component ──
 function Toggle({ enabled, onChange, disabled = false }: { enabled: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -799,11 +799,11 @@ export default function AdminSettingsPage() {
   const [subscriptionGateLoading, setSubscriptionGateLoading] = useState(false);
   const [subscriptionGateSaving, setSubscriptionGateSaving] = useState(false);
 
-  // Provinces/régions actives (RDC + Zambie)
-  const [activeProvinces, setActiveProvinces] = useState<string[]>([...ALL_REGION_IDS]);
+  // Provinces/régions actives (corridor : RDC, Zambie, Afrique du Sud, Tanzanie, Angola)
+  const [activeProvinces, setActiveProvinces] = useState<string[]>([...ALL_CORRIDOR_REGION_IDS]);
 
-  const allProvinces = [...ALL_REGION_IDS];
-  const provinceNames = ALL_REGION_NAMES;
+  const allProvinces = [...ALL_CORRIDOR_REGION_IDS];
+  const provinceNames = ALL_CORRIDOR_REGION_NAMES;
 
   const supabase = createClient();
 

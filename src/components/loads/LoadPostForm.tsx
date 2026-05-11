@@ -10,7 +10,12 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { Load } from '@/types';
-import { ALL_REGION_IDS, ALL_REGION_NAMES } from '@/lib/constants/rdc-provinces';
+import {
+  ALL_CORRIDOR_REGION_IDS,
+  REGIONS_BY_COUNTRY,
+  getRegionName,
+} from '@/lib/constants/country-regions';
+import { SUPPORTED_COUNTRIES } from '@/lib/constants/supported-countries';
 import { useTranslations } from 'next-intl';
 
 /** RCCM officiel de la plateforme (MMC SARL) */
@@ -84,18 +89,32 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
   const [savingBroker, setSavingBroker] = useState(false);
   const [brokerEditError, setBrokerEditError] = useState('');
 
+  const corridorProvinceGroups = useMemo(
+    () =>
+      SUPPORTED_COUNTRIES.map((country) => (
+        <optgroup key={country.code} label={country.label}>
+          {REGIONS_BY_COUNTRY[country.code].map((regionId) => (
+            <option key={regionId} value={regionId}>
+              {getRegionName(country.code, regionId)}
+            </option>
+          ))}
+        </optgroup>
+      )),
+    [],
+  );
+
   const loadSchema = useMemo(() => z.object({
     cargoType: z.string().min(1, t('errCargoRequired')),
     origin: z.object({
       address: z.string().min(1, t('errOriginAddress')),
       city: z.string().min(1, t('errOriginCity')),
-      province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]),
+      province: z.enum(ALL_CORRIDOR_REGION_IDS as unknown as [string, ...string[]]),
       coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
     }),
     destination: z.object({
       address: z.string().min(1, t('errDestAddress')),
       city: z.string().min(1, t('errDestCity')),
-      province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]),
+      province: z.enum(ALL_CORRIDOR_REGION_IDS as unknown as [string, ...string[]]),
       coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
     }),
     trailerType: z.string().min(1, t('errTrailerRequired')),
@@ -422,9 +441,7 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...register('origin.province')}
                 >
-                  {ALL_REGION_IDS.map((id) => (
-                    <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
-                  ))}
+                  {corridorProvinceGroups}
                 </select>
               </div>
             </div>
@@ -453,9 +470,7 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...register('destination.province')}
                 >
-                  {ALL_REGION_IDS.map((id) => (
-                    <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
-                  ))}
+                  {corridorProvinceGroups}
                 </select>
               </div>
             </div>

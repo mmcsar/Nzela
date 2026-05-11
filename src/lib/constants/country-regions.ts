@@ -109,3 +109,22 @@ export function getDefaultRegionForCountry(country: SupportedCountryCode): strin
 export function getRegionName(country: SupportedCountryCode, regionId: string): string {
   return REGION_NAMES_BY_COUNTRY[country][regionId] || regionId;
 }
+
+/** Tous les IDs province/région du corridor (RDC, Zambie, Afrique du Sud, Tanzanie, Angola). */
+export const ALL_CORRIDOR_REGION_IDS = [
+  ...REGIONS_BY_COUNTRY.cd,
+  ...REGIONS_BY_COUNTRY.zm,
+  ...REGIONS_BY_COUNTRY.za,
+  ...REGIONS_BY_COUNTRY.tz,
+  ...REGIONS_BY_COUNTRY.ao,
+] as const;
+
+export type AllCorridorRegionId = (typeof ALL_CORRIDOR_REGION_IDS)[number];
+
+export const ALL_CORRIDOR_REGION_NAMES: Record<string, string> = {
+  ...REGION_NAMES_BY_COUNTRY.cd,
+  ...REGION_NAMES_BY_COUNTRY.zm,
+  ...REGION_NAMES_BY_COUNTRY.za,
+  ...REGION_NAMES_BY_COUNTRY.tz,
+  ...REGION_NAMES_BY_COUNTRY.ao,
+};

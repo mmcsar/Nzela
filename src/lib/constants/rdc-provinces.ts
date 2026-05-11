@@ -67,7 +67,10 @@ export const PROVINCES_RDC_NAMES: Record<ProvinceId, string> = {
 /** Nombre de provinces (26). */
 export const PROVINCES_RDC_COUNT = PROVINCES_RDC_IDS.length;
 
-/** Toutes les régions (RDC + Zambie) pour origine/destination loads et camions */
+/**
+ * Régions RDC + Zambie (liste historique).
+ * Pour le corridor complet (ZA, TZ, AO inclus), utiliser `ALL_CORRIDOR_REGION_IDS` dans `country-regions.ts`.
+ */
 export const ALL_REGION_IDS = [...PROVINCES_RDC_IDS, ...REGIONS_ZAMBIA_IDS] as const;
 export type AllRegionId = (typeof ALL_REGION_IDS)[number];
 export const ALL_REGION_NAMES: Record<AllRegionId, string> = {

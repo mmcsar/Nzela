@@ -7,18 +7,10 @@ import { useRequireRole } from '@/hooks/useRequireRole';
 import { Link } from '@/lib/i18n/routing';
 import { FileText, Plus, Loader2, DollarSign, Package, ChevronRight, Download, PenLine, Trash2 } from 'lucide-react';
 import { downloadTransportInvoicePDF, type TransportInvoiceForPDF, type InvoiceLineItem } from '@/components/invoices/TransportInvoicePrint';
+import { formatLoadLocationLine } from '@/lib/utils/load-location';
 
 function parseLocation(loc: unknown): string {
-  if (!loc) return '—';
-  if (typeof loc === 'string') {
-    try {
-      const o = JSON.parse(loc);
-      return o?.city ?? o?.address ?? '—';
-    } catch {
-      return loc;
-    }
-  }
-  return (loc as { city?: string })?.city ?? '—';
+  return formatLoadLocationLine(loc);
 }
 
 interface Invoice {

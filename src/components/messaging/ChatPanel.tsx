@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toErrorMessage } from '@/lib/api/error';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 
 // ══════════════════════════════════════════
 // INTERFACES
@@ -838,13 +839,10 @@ function NewConversationForm({ onClose, onCreated }: { onClose: () => void; onCr
 
       if (loadsData) {
         setLoads(loadsData.map((l: any) => {
-          let origin = '?', dest = '?';
-          try {
-            const o = typeof l.origin === 'string' ? JSON.parse(l.origin) : l.origin;
-            const d = typeof l.destination === 'string' ? JSON.parse(l.destination) : l.destination;
-            origin = o?.city || '?';
-            dest = d?.city || '?';
-          } catch { /* */ }
+          const o = parseLoadLocation(l.origin);
+          const d = parseLoadLocation(l.destination);
+          const origin = o.city || '?';
+          const dest = d.city || '?';
           return { id: l.id, label: `${l.cargo_type || 'Chargement'}: ${origin} → ${dest}` };
         }));
       }

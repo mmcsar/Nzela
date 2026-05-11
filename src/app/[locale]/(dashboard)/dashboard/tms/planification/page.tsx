@@ -20,18 +20,10 @@ import {
 import { fr } from 'date-fns/locale';
 import { Calendar, MapPin, Loader2, ChevronRight, ChevronLeft, LayoutList, CalendarDays } from 'lucide-react';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
+import { formatLoadLocationLine } from '@/lib/utils/load-location';
 
 function parseLocation(loc: unknown): string {
-  if (!loc) return '—';
-  if (typeof loc === 'string') {
-    try {
-      const o = JSON.parse(loc);
-      return o?.city ?? o?.address ?? '—';
-    } catch {
-      return loc;
-    }
-  }
-  return (loc as { city?: string })?.city ?? '—';
+  return formatLoadLocationLine(loc);
 }
 
 type ViewMode = 'list' | 'calendar';

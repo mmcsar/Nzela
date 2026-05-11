@@ -2,6 +2,7 @@
 
 import { Truck, Package, MapPin, Calendar, DollarSign, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 
 interface MatchCardProps {
   match: {
@@ -41,9 +42,9 @@ function getScoreLabel(score: number): string {
 export function MatchCard({ match, onViewLoad, onViewTruck, onContact }: MatchCardProps) {
   const { score, reasons, estimatedRevenue, distanceKm, load, truck } = match;
 
-  const loadOrigin = load?.origin ? (typeof load.origin === 'string' ? JSON.parse(load.origin) : load.origin) : {};
-  const loadDest = load?.destination ? (typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination) : {};
-  const truckLoc = truck?.current_location ? (typeof truck.current_location === 'string' ? JSON.parse(truck.current_location) : truck.current_location) : {};
+  const loadOrigin = parseLoadLocation(load?.origin);
+  const loadDest = parseLoadLocation(load?.destination);
+  const truckLoc = parseLoadLocation(truck?.current_location);
 
   return (
     <div className={`rounded-xl border-2 p-5 transition-all hover:shadow-lg ${getScoreBg(score)}`}>

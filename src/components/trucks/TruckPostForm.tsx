@@ -9,7 +9,12 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Truck } from '@/types';
 import { toErrorMessage } from '@/lib/api/error';
-import { ALL_REGION_IDS, ALL_REGION_NAMES } from '@/lib/constants/rdc-provinces';
+import {
+  ALL_CORRIDOR_REGION_IDS,
+  REGIONS_BY_COUNTRY,
+  getRegionName,
+} from '@/lib/constants/country-regions';
+import { SUPPORTED_COUNTRIES } from '@/lib/constants/supported-countries';
 import { Building2, Pencil, Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -71,20 +76,34 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
   const [savingCompany, setSavingCompany] = useState(false);
   const [companyEditError, setCompanyEditError] = useState('');
 
+  const corridorProvinceGroups = useMemo(
+    () =>
+      SUPPORTED_COUNTRIES.map((country) => (
+        <optgroup key={country.code} label={country.label}>
+          {REGIONS_BY_COUNTRY[country.code].map((regionId) => (
+            <option key={regionId} value={regionId}>
+              {getRegionName(country.code, regionId)}
+            </option>
+          ))}
+        </optgroup>
+      )),
+    [],
+  );
+
   const truckSchema = useMemo(() => z.object({
     type: z.string().min(1, t('errTypeRequired')),
     capacity: z.number().min(1, t('errCapacityMin')),
     currentLocation: z.object({
       address: z.string().min(1, t('errAddressRequired')),
       city: z.string().min(1, t('errCityRequired')),
-      province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]),
+      province: z.enum(ALL_CORRIDOR_REGION_IDS as unknown as [string, ...string[]]),
       coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
     }),
     availableDate: z.string().min(1, t('errAvailableDateRequired')),
     destination: z.object({
       address: z.string().optional(),
       city: z.string().optional(),
-      province: z.enum(ALL_REGION_IDS as unknown as [string, ...string[]]).optional(),
+      province: z.enum(ALL_CORRIDOR_REGION_IDS as unknown as [string, ...string[]]).optional(),
       coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
     }).optional(),
     price: z.number().min(0, t('errPricePositive')),
@@ -341,9 +360,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('currentLocation.province')}
               >
-                {ALL_REGION_IDS.map((id) => (
-                  <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
-                ))}
+                {corridorProvinceGroups}
               </select>
             </div>
           </div>
@@ -365,9 +382,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
                 {...register('destination.province')}
               >
                 <option value="">{t('anyDestination')}</option>
-                {ALL_REGION_IDS.map((id) => (
-                  <option key={id} value={id}>{ALL_REGION_NAMES[id]}</option>
-                ))}
+                {corridorProvinceGroups}
               </select>
             </div>
           </div>

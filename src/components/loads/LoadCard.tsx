@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Load } from '@/types';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 import { UrgencyBadge } from './UrgencyBadge';
 import { UrgencyType } from '@/lib/constants/rdc-routes';
 import { Heart, Package, Scale, Truck } from 'lucide-react';
@@ -35,8 +36,8 @@ interface LoadCardProps {
 }
 
 export const LoadCard = React.memo(function LoadCard({ load, urgency = 'normal', bids = 0, posted = '', isFavorite = false, onFavorite, onClick }: LoadCardProps) {
-  const origin = load.origin || { city: 'N/A', address: '', province: 'haut-katanga' };
-  const destination = load.destination || { city: 'N/A', address: '', province: 'haut-katanga' };
+  const origin = parseLoadLocation(load.origin);
+  const destination = parseLoadLocation(load.destination);
 
   // Calculate distance and duration if not provided
   const distance = load.distance 
@@ -105,11 +106,11 @@ export const LoadCard = React.memo(function LoadCard({ load, urgency = 'normal',
             <div className="flex-1 min-w-0">
               <div className="mb-2">
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Départ</div>
-                <div className="text-base font-bold text-slate-100 truncate">{origin.city}</div>
+                <div className="text-base font-bold text-slate-100 truncate">{origin.city || 'N/A'}</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Destination</div>
-                <div className="text-base font-bold text-slate-100 truncate">{destination.city}</div>
+                <div className="text-base font-bold text-slate-100 truncate">{destination.city || 'N/A'}</div>
               </div>
             </div>
             <div className="text-right">

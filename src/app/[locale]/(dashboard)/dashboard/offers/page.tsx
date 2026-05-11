@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Handshake, RefreshCw, ArrowRight, Check, X, CornerDownRight, Clock, DollarSign, Package } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 
 interface Offer {
   id: string;
@@ -88,13 +89,6 @@ export default function OffersPage() {
     fetchOffers();
   };
 
-  const parseCity = (jsonField: any) => {
-    try {
-      const obj = typeof jsonField === 'string' ? JSON.parse(jsonField) : jsonField;
-      return obj?.city || 'N/A';
-    } catch { return 'N/A'; }
-  };
-
   if (authLoading) return <div className="flex justify-center py-20"><RefreshCw className="w-6 h-6 animate-spin text-primary-400" /></div>;
 
   return (
@@ -161,7 +155,9 @@ export default function OffersPage() {
                   <div className="flex items-center gap-2 mb-3 p-2 bg-gray-50 rounded-lg">
                     <Package className="w-4 h-4 text-gray-400" />
                     <span className="text-xs font-medium text-gray-700">
-                      {parseCity(offer.load.origin)} <ArrowRight className="w-3 h-3 inline mx-1" /> {parseCity(offer.load.destination)}
+                      {parseLoadLocation(offer.load.origin).city || 'N/A'}{' '}
+                      <ArrowRight className="w-3 h-3 inline mx-1" />{' '}
+                      {parseLoadLocation(offer.load.destination).city || 'N/A'}
                     </span>
                     <span className="text-[10px] text-gray-400 ml-auto">Prix initial: {offer.load.price?.toLocaleString()} CDF</span>
                   </div>

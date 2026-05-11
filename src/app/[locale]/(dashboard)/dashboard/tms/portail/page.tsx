@@ -7,18 +7,10 @@ import { useRequireRole } from '@/hooks/useRequireRole';
 import { Link } from '@/lib/i18n/routing';
 import { MapPin, Package, ChevronRight, Loader2, Users, FileText } from 'lucide-react';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
+import { formatLoadLocationLine } from '@/lib/utils/load-location';
 
 function parseLocation(loc: unknown): string {
-  if (!loc) return '—';
-  if (typeof loc === 'string') {
-    try {
-      const o = JSON.parse(loc);
-      return o?.city ?? o?.address ?? '—';
-    } catch {
-      return loc;
-    }
-  }
-  return (loc as { city?: string })?.city ?? '—';
+  return formatLoadLocationLine(loc);
 }
 
 export default function TMSPortailPage() {

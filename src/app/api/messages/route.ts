@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/checkRole';
 import { handleApiError } from '@/lib/api/error';
 import { messageLimiter } from '@/lib/api/rate-limit';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 
 /** Lit id + email des users (bypass RLS pour afficher les noms dans la messagerie) */
 async function getUsersEmails(userIds: string[]): Promise<Map<string, { email?: string }>> {
@@ -342,9 +343,9 @@ export async function POST(request: Request) {
       if (!convTitle && loadId) {
         const { data: load } = await supabase.from('loads').select('origin, destination, cargo_type').eq('id', loadId).single();
         if (load) {
-          const o = typeof load.origin === 'string' ? JSON.parse(load.origin) : load.origin;
-          const d = typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination;
-          convTitle = `${load.cargo_type || 'Chargement'}: ${o?.city || '?'} → ${d?.city || '?'}`;
+          const o = parseLoadLocation(load.origin);
+          const d = parseLoadLocation(load.destination);
+          convTitle = `${load.cargo_type || 'Chargement'}: ${o.city || '?'} → ${d.city || '?'}`;
         }
       }
       if (!convTitle) {

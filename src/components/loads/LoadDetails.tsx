@@ -1,6 +1,7 @@
 'use client';
 
 import { Load } from '@/types';
+import { parseLoadLocation } from '@/lib/utils/load-location';
 import { Button } from '@/components/ui/Button';
 import { Package, MapPin, Calendar, DollarSign, Truck } from 'lucide-react';
 
@@ -9,8 +10,8 @@ interface LoadDetailsProps {
 }
 
 export function LoadDetails({ load }: LoadDetailsProps) {
-  const origin = typeof load.origin === 'string' ? JSON.parse(load.origin) : load.origin;
-  const destination = typeof load.destination === 'string' ? JSON.parse(load.destination) : load.destination;
+  const origin = parseLoadLocation(load.origin);
+  const destination = parseLoadLocation(load.destination);
 
   return (
     <div className="space-y-6">
@@ -38,9 +39,9 @@ export function LoadDetails({ load }: LoadDetailsProps) {
               <MapPin className="w-5 h-5 text-primary-600 mt-1" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Origine</p>
-                <p className="text-lg font-semibold">{origin.city}</p>
-                <p className="text-sm text-gray-600">{origin.address}</p>
-                <p className="text-sm text-gray-600">{origin.province}</p>
+                <p className="text-lg font-semibold">{origin.city || '—'}</p>
+                {origin.address ? <p className="text-sm text-gray-600">{origin.address}</p> : null}
+                {origin.province ? <p className="text-sm text-gray-600">{origin.province}</p> : null}
               </div>
             </div>
 
@@ -48,9 +49,9 @@ export function LoadDetails({ load }: LoadDetailsProps) {
               <MapPin className="w-5 h-5 text-orange-600 mt-1" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Destination</p>
-                <p className="text-lg font-semibold">{destination.city}</p>
-                <p className="text-sm text-gray-600">{destination.address}</p>
-                <p className="text-sm text-gray-600">{destination.province}</p>
+                <p className="text-lg font-semibold">{destination.city || '—'}</p>
+                {destination.address ? <p className="text-sm text-gray-600">{destination.address}</p> : null}
+                {destination.province ? <p className="text-sm text-gray-600">{destination.province}</p> : null}
               </div>
             </div>
 
