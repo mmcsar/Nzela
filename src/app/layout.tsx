@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Nzela — Fret et talents | RDC',
   description:
-    'Mise en relation pour le fret et les talents en RDC. Lancement officiel le 2 mai 2026. Outils au service de la performance logistique et des parcours professionnels, dans une perspective de développement économique.',
+    'Mise en relation pour le fret et les talents en RDC. Outils au service de la performance logistique et des parcours professionnels, dans une perspective de développement économique.',
   manifest: '/manifest.json',
   applicationName: 'Nzela',
   appleWebApp: {
@@ -30,13 +30,13 @@ export const metadata: Metadata = {
     siteName: 'Nzela',
     title: 'Nzela — Fret et talents | RDC',
     description:
-      'Fret et talents en RDC. Lancement le 2 mai 2026. Une plateforme pour renforcer la logistique et les opportunités professionnelles, au service du développement national.',
+      'Fret et talents en RDC. Une plateforme pour renforcer la logistique et les opportunités professionnelles, au service du développement national.',
   },
   twitter: {
     card: 'summary',
     title: 'Nzela — Fret et talents | RDC',
     description:
-      'Fret et talents en RDC. Lancement le 2 mai 2026. Logistique et opportunités professionnelles au service du développement national.',
+      'Fret et talents en RDC. Logistique et opportunités professionnelles au service du développement national.',
   },
   icons: {
     icon: [
