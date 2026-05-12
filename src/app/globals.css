@@ -249,6 +249,71 @@ textarea.input-visible {
   animation: hero-chip-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Hero : jeu de lumière (aurora + reflet carte — palette primary / amber inchangée) */
+.home-hero-aurora {
+  background:
+    radial-gradient(ellipse 85% 70% at 18% 28%, rgba(251, 191, 36, 0.28), transparent 58%),
+    radial-gradient(ellipse 75% 60% at 82% 72%, rgba(96, 165, 250, 0.2), transparent 52%),
+    radial-gradient(ellipse 55% 45% at 48% 88%, rgba(255, 255, 255, 0.1), transparent 48%),
+    radial-gradient(ellipse 50% 40% at 65% 18%, rgba(147, 197, 253, 0.14), transparent 45%);
+  mix-blend-mode: soft-light;
+  animation: home-hero-aurora-drift 22s ease-in-out infinite;
+}
+
+@keyframes home-hero-aurora-drift {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1) translate(0, 0);
+  }
+  33% {
+    opacity: 0.95;
+    transform: scale(1.06) translate(3%, -2.5%);
+  }
+  66% {
+    opacity: 0.82;
+    transform: scale(1.04) translate(-2.5%, 3%);
+  }
+}
+
+/* Couche au-dessus du voile sombre : lumière visible côté texte (masquée vers la droite / camion) */
+.home-hero-aurora-veil {
+  background:
+    radial-gradient(ellipse 75% 85% at 12% 35%, rgba(251, 191, 36, 0.22), transparent 58%),
+    radial-gradient(ellipse 65% 75% at 28% 72%, rgba(147, 197, 253, 0.16), transparent 55%),
+    radial-gradient(ellipse 45% 50% at 8% 85%, rgba(255, 255, 255, 0.08), transparent 50%);
+  mix-blend-mode: screen;
+  mask-image: linear-gradient(to right, #000 0%, #000 42%, transparent 72%);
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 42%, transparent 72%);
+  animation: home-hero-aurora-drift 22s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+.home-hero-card-sheen {
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255, 255, 255, 0.12) 48%,
+    rgba(253, 230, 138, 0.08) 52%,
+    transparent 62%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: home-hero-card-shine 9s ease-in-out infinite;
+  mix-blend-mode: overlay;
+}
+
+@keyframes home-hero-card-shine {
+  0%,
+  100% {
+    background-position: 130% 0;
+  }
+  50% {
+    background-position: -30% 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-reveal {
     opacity: 1 !important;
@@ -268,6 +333,21 @@ textarea.input-visible {
     opacity: 1 !important;
     animation: none !important;
     transform: none !important;
+  }
+  .home-hero-aurora {
+    animation: none !important;
+    transform: none !important;
+    opacity: 0.55 !important;
+  }
+  .home-hero-aurora-veil {
+    animation: none !important;
+    transform: none !important;
+    opacity: 0.65 !important;
+  }
+  .home-hero-card-sheen {
+    animation: none !important;
+    background-position: 50% 0 !important;
+    opacity: 0.35 !important;
   }
   .animate-float-soft,
   .animate-glow-soft {

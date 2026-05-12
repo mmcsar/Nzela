@@ -154,9 +154,14 @@ export default async function HomePage() {
           }}
           aria-hidden
         />
-        <div className="absolute inset-0 opacity-10 z-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-amber-200/40 rounded-full blur-3xl animate-float-soft" />
-          <div className="absolute bottom-10 right-20 w-96 h-96 bg-primary-300/30 rounded-full blur-3xl animate-float-soft" style={{ animationDelay: '1.2s' }} />
+        <div
+          className="home-hero-aurora pointer-events-none absolute inset-0 z-0"
+          aria-hidden
+        />
+        <div className="absolute inset-0 z-0 opacity-[0.26] pointer-events-none">
+          <div className="absolute top-16 left-8 w-80 h-80 bg-amber-200/50 rounded-full blur-3xl animate-float-soft" />
+          <div className="absolute bottom-8 right-16 w-[28rem] h-[28rem] bg-primary-300/45 rounded-full blur-3xl animate-float-soft" style={{ animationDelay: '1.2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,42rem)] h-64 bg-white/20 rounded-full blur-3xl animate-float-soft opacity-70" style={{ animationDelay: '2.1s' }} />
         </div>
         {/* Real truck image background - visible */}
         <div className="absolute inset-0 z-[1] flex items-center justify-end pointer-events-none" aria-hidden>
@@ -172,70 +177,77 @@ export default async function HomePage() {
         </div>
         {/* Overlay left pour garder le texte lisible */}
         <div className="absolute inset-0 z-[2] bg-gradient-to-r from-slate-950/85 via-primary-900/55 to-transparent pointer-events-none" aria-hidden />
+        <div
+          className="home-hero-aurora-veil pointer-events-none absolute inset-0 z-[3]"
+          aria-hidden
+        />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 md:py-36">
           <div className="absolute top-6 right-4 sm:right-6 md:right-8 z-20 animate-fade-in animation-delay-200 opacity-0-init">
             <div className="rounded-2xl border border-white/20 bg-white/10 px-3 py-2 shadow-lg backdrop-blur-md">
               <Clock />
             </div>
           </div>
-          <div className="max-w-3xl opacity-0-init animate-fade-in-left animation-delay-100 rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-8 sm:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
-            <div className="inline-flex items-center gap-2.5 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-3.5 sm:px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
-              {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG flag */}
-              <img
-                src="/images/flag-rdc.svg"
-                alt={t('rdcFlagAlt')}
-                width={24}
-                height={32}
-                className="h-5 w-auto shrink-0 rounded-sm shadow-sm ring-1 ring-amber-200/30 sm:h-6"
-              />
-              <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
-              {t('heroBadge')}
+          <div className="relative max-w-3xl overflow-hidden opacity-0-init animate-fade-in-left animation-delay-100 rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-8 sm:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
+            <div className="home-hero-card-sheen pointer-events-none absolute inset-0 rounded-3xl" aria-hidden />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2.5 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-3.5 sm:px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG flag */}
+                <img
+                  src="/images/flag-rdc.svg"
+                  alt={t('rdcFlagAlt')}
+                  width={24}
+                  height={32}
+                  className="h-5 w-auto shrink-0 rounded-sm shadow-sm ring-1 ring-amber-200/30 sm:h-6"
+                />
+                <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
+                {t('heroBadge')}
+              </div>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 leading-[1.08] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
+                {t('heroTitle')}
+              </h1>
+              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-4 leading-snug">
+                {t('heroTagline')}
+              </p>
+              <p className="text-base sm:text-lg md:text-xl mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-4">
+                {t('heroLaunch')}
+              </p>
+              <p className="text-base sm:text-lg mb-8 text-primary-100/95 leading-relaxed">
+                {t('heroLead')}
+              </p>
+              <div className="flex flex-wrap gap-2 mb-8">
+                {[t('heroChip1'), t('heroChip2'), t('heroChip3')].map((item, chipIndex) => (
+                  <span
+                    key={item}
+                    className="home-hero-chip inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-white/10 text-xs sm:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
+                    style={{ animationDelay: `${80 * chipIndex}ms` }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Link href="/register/broker" className="sm:inline-flex">
+                  <Button size="lg" variant="secondary" className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40">
+                    Publier un chargement <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/register/company" className="sm:inline-flex">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15">
+                    Trouver un chargement
+                  </Button>
+                </Link>
+              </div>
+              <p className="mt-8 text-sm text-white/75">
+                <span>{t('homeLoginPrompt')}</span>{' '}
+                <Link href="/login" className="font-semibold text-amber-200 underline decoration-amber-400/60 underline-offset-4 transition hover:text-amber-100">
+                  {t('homeLoginLink')}
+                </Link>
+              </p>
+              <p className="mt-3 text-xs text-amber-100/90">
+                Anti-phishing: utilisez uniquement l&apos;email officiel <span className="font-semibold">info@nzelaa.com</span>.
+              </p>
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 leading-[1.08] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
-              {t('heroTitle')}
-            </h1>
-            <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-4 leading-snug">
-              {t('heroTagline')}
-            </p>
-            <p className="text-base sm:text-lg md:text-xl mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-4">
-              {t('heroLaunch')}
-            </p>
-            <p className="text-base sm:text-lg mb-8 text-primary-100/95 leading-relaxed">
-              {t('heroLead')}
-            </p>
-            <div className="flex flex-wrap gap-2 mb-8">
-              {[t('heroChip1'), t('heroChip2'), t('heroChip3')].map((item, chipIndex) => (
-                <span
-                  key={item}
-                  className="home-hero-chip inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-white/10 text-xs sm:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
-                  style={{ animationDelay: `${80 * chipIndex}ms` }}
-                >
-                  <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
-                  {item}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link href="/register/broker" className="sm:inline-flex">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40">
-                  Publier un chargement <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-              <Link href="/register/company" className="sm:inline-flex">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15">
-                  Trouver un chargement
-                </Button>
-              </Link>
-            </div>
-            <p className="mt-8 text-sm text-white/75">
-              <span>{t('homeLoginPrompt')}</span>{' '}
-              <Link href="/login" className="font-semibold text-amber-200 underline decoration-amber-400/60 underline-offset-4 transition hover:text-amber-100">
-                {t('homeLoginLink')}
-              </Link>
-            </p>
-            <p className="mt-3 text-xs text-amber-100/90">
-              Anti-phishing: utilisez uniquement l&apos;email officiel <span className="font-semibold">info@nzelaa.com</span>.
-            </p>
           </div>
         </div>
       </main>
