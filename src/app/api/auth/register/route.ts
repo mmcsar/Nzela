@@ -17,6 +17,18 @@ type RegisterBody = {
   professionalEmail?: string;
 };
 
+function entityInsertErrorMessage(err: { message?: string; code?: string } | null): string {
+  const msg = err?.message ?? '';
+  const code = err?.code ?? '';
+  if (code === '23505' || /duplicate key|unique constraint/i.test(msg)) {
+    if (/registration_number/i.test(msg)) {
+      return 'Ce numero RCCM est deja enregistre. Si c\'est votre structure, connectez-vous ou contactez le support.';
+    }
+    return 'Cette information est deja utilisee (doublon). Verifiez le RCCM ou contactez le support.';
+  }
+  return msg || 'Erreur lors de la creation du profil.';
+}
+
 /**
  * Inscription entreprise / courtier côté serveur (service role) pour éviter les échecs RLS
  * quand la session n'existe pas après signUp (confirmation e-mail activée sur Supabase).
@@ -136,8 +148,8 @@ export async function POST(request: Request) {
         await admin.auth.admin.deleteUser(authData.user.id);
         createdAuthUserId = null;
         return NextResponse.json(
-          { error: brokerError?.message ?? 'Erreur création courtier' },
-          { status: 500 }
+          { error: entityInsertErrorMessage(brokerError) },
+          { status: brokerError?.code === '23505' ? 409 : 500 }
         );
       }
 
@@ -165,8 +177,8 @@ export async function POST(request: Request) {
         await admin.auth.admin.deleteUser(authData.user.id);
         createdAuthUserId = null;
         return NextResponse.json(
-          { error: companyError?.message ?? 'Erreur création entreprise' },
-          { status: 500 }
+          { error: entityInsertErrorMessage(companyError) },
+          { status: companyError?.code === '23505' ? 409 : 500 }
         );
       }
 

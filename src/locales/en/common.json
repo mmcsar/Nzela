@@ -56,6 +56,8 @@
     "resendConfirmation": "Resend confirmation email",
     "confirmationEmailSent": "Confirmation email sent! Please check your inbox.",
     "invalidCredentials": "Invalid email or password",
+    "loginRccmNote": "RCCM is collected when you register. Sign in with email and password only.",
+    "profileIncomplete": "Incomplete profile. Contact support or complete your registration.",
     "rccm": "RCCM number",
     "rccmHint": "Required only if an RCCM is already stored on your profile (same as at signup). Admins: leave empty. Legacy accounts with no RCCM on file: sign in without this field.",
     "rccmRequired": "Enter your organization's RCCM number (the one on your profile).",

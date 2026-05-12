@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/lib/i18n/routing';
-import { rccmEquals } from '@/lib/auth/rccm';
 
 export default function LoginPage() {
   const t = useTranslations('auth');
@@ -15,7 +14,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rccm, setRccm] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +35,6 @@ export default function LoginPage() {
       });
 
       if (error) {
-        // Détecter l'erreur d'email non confirmé
         if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
           setError(t('emailNotConfirmedMessage'));
           setShowResendButton(true);
@@ -52,7 +49,7 @@ export default function LoginPage() {
       if (data.user) {
         const { data: profile, error: profileError } = await supabase
           .from('users')
-          .select('role, broker_id, company_id')
+          .select('role')
           .eq('id', data.user.id)
           .maybeSingle();
 
@@ -62,59 +59,17 @@ export default function LoginPage() {
           return;
         }
 
-        const role = profile?.role as string | undefined;
-
-        if (role === 'admin') {
-          router.push('/dashboard');
-          router.refresh();
-          return;
-        }
-
-        let expected: string | null | undefined;
-        if (role === 'broker' && profile?.broker_id) {
-          const { data: row } = await supabase
-            .from('brokers')
-            .select('registration_number')
-            .eq('id', profile.broker_id)
-            .maybeSingle();
-          expected = row?.registration_number;
-        } else if (role === 'company' && profile?.company_id) {
-          const { data: row } = await supabase
-            .from('companies')
-            .select('registration_number')
-            .eq('id', profile.company_id)
-            .maybeSingle();
-          expected = row?.registration_number;
-        }
-
-        const dbRccm = expected != null ? String(expected).trim() : '';
-
-        // Pas de RCCM enregistré en base : on ne bloque pas les comptes existants (connexion email/mot de passe comme avant).
-        if (!dbRccm) {
-          router.push('/dashboard');
-          router.refresh();
-          return;
-        }
-
-        // RCCM présent en base : vérification obligatoire (sécurité renforcée pour les profils à jour).
-        const entered = rccm.trim();
-        if (!entered) {
+        if (!profile?.role) {
           await supabase.auth.signOut();
-          setError(t('rccmRequired'));
-          return;
-        }
-        if (!rccmEquals(dbRccm, entered)) {
-          await supabase.auth.signOut();
-          setError(t('rccmMismatch'));
+          setError(t('profileIncomplete'));
           return;
         }
 
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (error: any) {
-      // Utiliser les traductions pour les messages d'erreur
-      setError(error.message || tCommon('error'));
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : tCommon('error'));
     } finally {
       setIsLoading(false);
     }
@@ -135,8 +90,8 @@ export default function LoginPage() {
 
       setSuccess(t('confirmationEmailSent'));
       setShowResendButton(false);
-    } catch (error: any) {
-      setError(error.message || tCommon('error'));
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : tCommon('error'));
     } finally {
       setIsResending(false);
     }
@@ -149,6 +104,9 @@ export default function LoginPage() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {t('login')}
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-500">
+            {t('loginRccmNote')}
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
@@ -191,17 +149,6 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <div>
-              <Input
-                label={t('rccm')}
-                type="text"
-                autoComplete="off"
-                value={rccm}
-                onChange={(e) => setRccm(e.target.value)}
-                placeholder="ex. LSHI 17-B-6981"
-              />
-              <p className="mt-1.5 text-xs text-gray-500">{t('rccmHint')}</p>
-            </div>
           </div>
           <div className="flex items-center justify-between">
             <div className="text-sm">
@@ -236,7 +183,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-
-
-

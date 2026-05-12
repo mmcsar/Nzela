@@ -56,6 +56,8 @@
     "resendConfirmation": "Renvoyer l'email de confirmation",
     "confirmationEmailSent": "Email de confirmation envoye ! Verifiez votre boite de reception.",
     "invalidCredentials": "Email ou mot de passe incorrect",
+    "loginRccmNote": "Le RCCM est demande a l'inscription uniquement. Ici : email et mot de passe.",
+    "profileIncomplete": "Profil incomplet. Contactez le support ou terminez votre inscription.",
     "rccm": "Numero RCCM",
     "rccmHint": "Obligatoire seulement si votre RCCM est deja enregistre sur le profil (meme numero qu'a l'inscription). Administrateurs : champ vide. Anciens comptes sans RCCM en base : connexion sans ce champ.",
     "rccmRequired": "Saisissez le numero RCCM de votre structure (celui enregistre sur votre profil).",
