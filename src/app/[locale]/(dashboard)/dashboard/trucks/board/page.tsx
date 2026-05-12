@@ -12,6 +12,7 @@ import {
   Wrench, Gauge, Mail, ArrowRight,
 } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
+import { corridorLocationSearchBlob, countryCodeForSearchProvince } from '@/lib/utils/corridor-search';
 
 // ══════════════════════════════════════════
 // INTERFACES & CONSTANTS
@@ -235,13 +236,24 @@ export default function TruckBoardPage() {
     if (f.type && t.type !== f.type) return false;
     if (f.status !== 'all' && t.status !== f.status) return false;
     if (f.search) {
-      const term = f.search.toLowerCase();
-      const match = t.location_city.toLowerCase().includes(term) ||
-        t.dest_city.toLowerCase().includes(term) ||
-        t.company_name.toLowerCase().includes(term) ||
-        t.type.toLowerCase().includes(term) ||
-        trailerLabel(t.type).toLowerCase().includes(term);
-      if (!match) return false;
+      const term = f.search.toLowerCase().trim();
+      if (term) {
+        const originCc = countryCodeForSearchProvince(t.location_province);
+        const destCc = countryCodeForSearchProvince(t.dest_province);
+        const geoSearch = [
+          corridorLocationSearchBlob(originCc, t.location_province),
+          corridorLocationSearchBlob(destCc, t.dest_province),
+        ].join(' ');
+        const match = t.location_city.toLowerCase().includes(term) ||
+          t.dest_city.toLowerCase().includes(term) ||
+          (t.location_province && t.location_province.toLowerCase().includes(term)) ||
+          (t.dest_province && t.dest_province.toLowerCase().includes(term)) ||
+          geoSearch.includes(term) ||
+          t.company_name.toLowerCase().includes(term) ||
+          t.type.toLowerCase().includes(term) ||
+          trailerLabel(t.type).toLowerCase().includes(term);
+        if (!match) return false;
+      }
     }
     if (f.minCapacity && t.capacity < Number(f.minCapacity)) return false;
     if (f.maxCapacity && t.capacity > Number(f.maxCapacity)) return false;

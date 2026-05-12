@@ -2,19 +2,15 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Truck } from '@/types';
 import { toErrorMessage } from '@/lib/api/error';
-import {
-  ALL_CORRIDOR_REGION_IDS,
-  REGIONS_BY_COUNTRY,
-  getRegionName,
-} from '@/lib/constants/country-regions';
-import { SUPPORTED_COUNTRIES } from '@/lib/constants/supported-countries';
+import { ALL_CORRIDOR_REGION_IDS } from '@/lib/constants/country-regions';
+import { CorridorCountryRegionPicker } from '@/components/corridor/CorridorCountryRegionPicker';
 import { Building2, Pencil, Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -76,41 +72,31 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
   const [savingCompany, setSavingCompany] = useState(false);
   const [companyEditError, setCompanyEditError] = useState('');
 
-  const corridorProvinceGroups = useMemo(
-    () =>
-      SUPPORTED_COUNTRIES.map((country) => (
-        <optgroup key={country.code} label={country.label}>
-          {REGIONS_BY_COUNTRY[country.code].map((regionId) => (
-            <option key={regionId} value={regionId}>
-              {getRegionName(country.code, regionId)}
-            </option>
-          ))}
-        </optgroup>
-      )),
-    [],
-  );
-
-  const truckSchema = useMemo(() => z.object({
+  const truckSchema = useMemo(() => {
+    const corridorRegionEnum = z.enum(ALL_CORRIDOR_REGION_IDS as unknown as [string, ...string[]]);
+    const optionalDestProvince = z.union([z.literal(''), corridorRegionEnum]);
+    return z.object({
     type: z.string().min(1, t('errTypeRequired')),
     capacity: z.number().min(1, t('errCapacityMin')),
     currentLocation: z.object({
       address: z.string().min(1, t('errAddressRequired')),
       city: z.string().min(1, t('errCityRequired')),
-      province: z.enum(ALL_CORRIDOR_REGION_IDS as unknown as [string, ...string[]]),
+      province: corridorRegionEnum,
       coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
     }),
     availableDate: z.string().min(1, t('errAvailableDateRequired')),
     destination: z.object({
       address: z.string().optional(),
       city: z.string().optional(),
-      province: z.enum(ALL_CORRIDOR_REGION_IDS as unknown as [string, ...string[]]).optional(),
+      province: optionalDestProvince.optional(),
       coordinates: z.object({ lat: z.number().optional(), lng: z.number().optional() }).optional(),
     }).optional(),
     price: z.number().min(0, t('errPricePositive')),
     pricePerKm: z.number().min(0, t('errPricePerKmPositive')),
     currency: z.enum(['CDF', 'USD']),
     features: z.array(z.string()).optional(),
-  }), [t]);
+  });
+  }, [t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +114,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     setValue,
@@ -137,6 +124,10 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
     defaultValues: {
       currentLocation: {
         province: 'haut-katanga',
+      },
+      destination: {
+        province: '',
+        city: '',
       },
       currency: 'CDF',
       features: [],
@@ -352,16 +343,22 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
               error={errors.currentLocation?.city?.message}
               required
             />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('province')}
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                {...register('currentLocation.province')}
-              >
-                {corridorProvinceGroups}
-              </select>
+            <div className="md:col-span-2">
+              <Controller
+                name="currentLocation.province"
+                control={control}
+                render={({ field }) => (
+                  <CorridorCountryRegionPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    countryLabel={t('country')}
+                    regionLabel={t('province')}
+                  />
+                )}
+              />
+              {errors.currentLocation?.province && (
+                <p className="mt-1 text-sm text-red-600">{errors.currentLocation.province.message}</p>
+              )}
             </div>
           </div>
         </div>
@@ -369,22 +366,26 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
         <div className="border-t pt-6">
           <h3 className="text-lg font-semibold mb-4">{t('destinationOptional')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <Controller
+                name="destination.province"
+                control={control}
+                render={({ field }) => (
+                  <CorridorCountryRegionPicker
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
+                    countryLabel={t('country')}
+                    regionLabel={t('province')}
+                    allowEmpty
+                    emptyLabel={t('anyDestination')}
+                  />
+                )}
+              />
+            </div>
             <Input
               label={t('destinationCity')}
               {...register('destination.city')}
             />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('province')}
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                {...register('destination.province')}
-              >
-                <option value="">{t('anyDestination')}</option>
-                {corridorProvinceGroups}
-              </select>
-            </div>
           </div>
         </div>
 

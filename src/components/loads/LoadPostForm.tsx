@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Info, Building2, Pencil, X, Check } from 'lucide-react';
@@ -10,12 +10,8 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { Load } from '@/types';
-import {
-  ALL_CORRIDOR_REGION_IDS,
-  REGIONS_BY_COUNTRY,
-  getRegionName,
-} from '@/lib/constants/country-regions';
-import { SUPPORTED_COUNTRIES } from '@/lib/constants/supported-countries';
+import { ALL_CORRIDOR_REGION_IDS } from '@/lib/constants/country-regions';
+import { CorridorCountryRegionPicker } from '@/components/corridor/CorridorCountryRegionPicker';
 import { useTranslations } from 'next-intl';
 
 /** RCCM officiel de la plateforme (MMC SARL) */
@@ -89,20 +85,6 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
   const [savingBroker, setSavingBroker] = useState(false);
   const [brokerEditError, setBrokerEditError] = useState('');
 
-  const corridorProvinceGroups = useMemo(
-    () =>
-      SUPPORTED_COUNTRIES.map((country) => (
-        <optgroup key={country.code} label={country.label}>
-          {REGIONS_BY_COUNTRY[country.code].map((regionId) => (
-            <option key={regionId} value={regionId}>
-              {getRegionName(country.code, regionId)}
-            </option>
-          ))}
-        </optgroup>
-      )),
-    [],
-  );
-
   const loadSchema = useMemo(() => z.object({
     cargoType: z.string().min(1, t('errCargoRequired')),
     origin: z.object({
@@ -130,6 +112,7 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     watch,
@@ -210,7 +193,6 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
 
   const origin = watch('origin');
   const destination = watch('destination');
-
   // Calculate distance when origin or destination changes
   const calculateDistance = () => {
     // This is a simplified calculation
@@ -433,17 +415,21 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                 error={errors.origin?.city?.message}
                 required
               />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('province')}
-                </label>
-                <select
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  {...register('origin.province')}
-                >
-                  {corridorProvinceGroups}
-                </select>
-              </div>
+              <Controller
+                name="origin.province"
+                control={control}
+                render={({ field }) => (
+                  <CorridorCountryRegionPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    countryLabel={t('country')}
+                    regionLabel={t('province')}
+                  />
+                )}
+              />
+              {errors.origin?.province && (
+                <p className="text-sm text-red-600">{errors.origin.province.message}</p>
+              )}
             </div>
           </div>
 
@@ -462,17 +448,21 @@ export function LoadPostForm({ onSuccess }: LoadPostFormProps) {
                 error={errors.destination?.city?.message}
                 required
               />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('province')}
-                </label>
-                <select
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  {...register('destination.province')}
-                >
-                  {corridorProvinceGroups}
-                </select>
-              </div>
+              <Controller
+                name="destination.province"
+                control={control}
+                render={({ field }) => (
+                  <CorridorCountryRegionPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    countryLabel={t('country')}
+                    regionLabel={t('province')}
+                  />
+                )}
+              />
+              {errors.destination?.province && (
+                <p className="text-sm text-red-600">{errors.destination.province.message}</p>
+              )}
             </div>
           </div>
         </div>

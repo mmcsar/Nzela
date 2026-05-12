@@ -18,6 +18,7 @@ import { useRealtimeLoads } from '@/hooks/useRealtimeLoads';
 import { cargoTypeFr } from '@/lib/utils/translate-fr';
 import { SUPPORTED_COUNTRIES, inferCountryCodeFromProvince } from '@/lib/constants/supported-countries';
 import { parseLoadLocation } from '@/lib/utils/load-location';
+import { corridorLocationSearchBlob } from '@/lib/utils/corridor-search';
 import dynamic from 'next/dynamic';
 
 const LoadBoardMap = dynamic(() => import('@/components/loads/LoadBoardMap'), { ssr: false, loading: () => <div className="w-full h-[500px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400">...</div> });
@@ -337,18 +338,23 @@ export default function LoadBoardPage() {
     if (f.status !== 'all' && load.status !== f.status) return false;
     if (f.trailerType && load.trailer_type !== f.trailerType) return false;
     if (f.search) {
-      const term = f.search.toLowerCase();
-      const country = (load.origin_country || '').toLowerCase();
-      const match = load.origin_city.toLowerCase().includes(term) ||
-        load.destination_city.toLowerCase().includes(term) ||
-        load.origin_province.toLowerCase().includes(term) ||
-        load.destination_province.toLowerCase().includes(term) ||
-        (country && country.includes(term)) ||
-        load.broker_name.toLowerCase().includes(term) ||
-        load.id.toLowerCase().includes(term) ||
-        load.cargo_type.toLowerCase().includes(term) ||
-        load.trailer_type.toLowerCase().includes(term);
-      if (!match) return false;
+      const term = f.search.toLowerCase().trim();
+      if (term) {
+        const geoSearch = [
+          corridorLocationSearchBlob(load.origin_country, load.origin_province),
+          corridorLocationSearchBlob(load.destination_country, load.destination_province),
+        ].join(' ');
+        const match = load.origin_city.toLowerCase().includes(term) ||
+          load.destination_city.toLowerCase().includes(term) ||
+          load.origin_province.toLowerCase().includes(term) ||
+          load.destination_province.toLowerCase().includes(term) ||
+          geoSearch.includes(term) ||
+          load.broker_name.toLowerCase().includes(term) ||
+          load.id.toLowerCase().includes(term) ||
+          load.cargo_type.toLowerCase().includes(term) ||
+          load.trailer_type.toLowerCase().includes(term);
+        if (!match) return false;
+      }
     }
     if (f.minWeight && load.weight < Number(f.minWeight)) return false;
     if (f.maxWeight && load.weight > Number(f.maxWeight)) return false;
