@@ -204,6 +204,91 @@ textarea.input-visible {
   padding-right: 3rem;
 }
 
+/* Accueil : révélation au scroll (DigiCarte-like, palette inchangée) */
+.home-reveal {
+  opacity: 0;
+  transform: translate3d(0, 1.125rem, 0);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.home-reveal.home-reveal-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+@keyframes trust-line-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.trust-line-sheen {
+  animation: trust-line-pulse 4.5s ease-in-out infinite;
+}
+
+@keyframes hero-chip-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.home-hero-chip {
+  opacity: 0;
+  animation: hero-chip-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+  .home-reveal.home-reveal-visible {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .trust-line-sheen {
+    animation: none !important;
+    opacity: 0.85 !important;
+  }
+  .home-hero-chip {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .animate-float-soft,
+  .animate-glow-soft {
+    animation: none !important;
+  }
+  .ticker-inner {
+    animation: none !important;
+  }
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-fade-in-left,
+  .animate-fade-in-right,
+  .animate-scale-in {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .opacity-0-init {
+    opacity: 1 !important;
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

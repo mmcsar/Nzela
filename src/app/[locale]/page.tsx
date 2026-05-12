@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Link } from '@/lib/i18n/routing';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { HomeReveal } from '@/components/home/HomeReveal';
 import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles } from 'lucide-react';
@@ -203,10 +204,11 @@ export default async function HomePage() {
               {t('heroLead')}
             </p>
             <div className="flex flex-wrap gap-2 mb-8">
-              {[t('heroChip1'), t('heroChip2'), t('heroChip3')].map((item) => (
+              {[t('heroChip1'), t('heroChip2'), t('heroChip3')].map((item, chipIndex) => (
                 <span
                   key={item}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-white/10 text-xs sm:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
+                  className="home-hero-chip inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-white/10 text-xs sm:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
+                  style={{ animationDelay: `${80 * chipIndex}ms` }}
                 >
                   <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
                   {item}
@@ -239,8 +241,8 @@ export default async function HomePage() {
       </main>
 
       {/* Trust Bar */}
-      <section className="relative py-10 sm:py-12 bg-gradient-to-b from-slate-50 to-white border-b border-slate-200/80 opacity-0-init animate-slide-up animation-delay-200">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-300/60 to-transparent" aria-hidden />
+      <HomeReveal className="relative py-10 sm:py-12 bg-gradient-to-b from-slate-50 to-white border-b border-slate-200/80">
+        <div className="trust-line-sheen pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-300/60 to-transparent" aria-hidden />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 max-w-2xl mx-auto">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-600 mb-2">{t('homeTrustHeading')}</p>
@@ -265,10 +267,10 @@ export default async function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* Bandeau éditorial photo + citation (overlay slate/primary existants) */}
-      <section className="relative min-h-[200px] sm:min-h-[260px] overflow-hidden border-b border-slate-200/80" aria-labelledby="home-editorial-quote">
+      <HomeReveal className="relative min-h-[200px] sm:min-h-[260px] overflow-hidden border-b border-slate-200/80" aria-labelledby="home-editorial-quote">
         <Image
           src={HOME_PHOTO.editorial}
           alt={t('homePhotoCorridorAlt')}
@@ -289,17 +291,17 @@ export default async function HomePage() {
             {t('homePhotoEditorialQuote')}
           </p>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* Value Props - 3 columns */}
-      <section className="py-16 sm:py-20 bg-white">
+      <HomeReveal className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 max-w-2xl mx-auto">
             <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeValueHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeValueSub')}</p>
           </div>
-          <div className="relative mb-10 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 opacity-0-init animate-scale-in animation-delay-150 aspect-[16/9] min-h-[180px] sm:min-h-[220px] md:aspect-[21/9] md:min-h-[240px]">
+          <div className="relative mb-10 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 aspect-[16/9] min-h-[180px] sm:min-h-[220px] md:aspect-[21/9] md:min-h-[240px]">
             <Image
               src={HOME_PHOTO.valueSectionBanner}
               alt={t('valueSectionBannerAlt')}
@@ -309,12 +311,10 @@ export default async function HomePage() {
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
-            {VALUE_CARDS.map((card, index) => (
+            {VALUE_CARDS.map((card) => (
               <div
                 key={card.title}
-                className={`group overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100 opacity-0-init animate-scale-in ${
-                  index === 0 ? 'animation-delay-200' : index === 1 ? 'animation-delay-300' : 'animation-delay-400'
-                }`}
+                className="group overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
               >
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-200">
                   <Image
@@ -336,10 +336,10 @@ export default async function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* How it works */}
-      <section className="py-16 sm:py-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 border-t border-slate-100">
+      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-2xl mx-auto">
             <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
@@ -352,10 +352,9 @@ export default async function HomePage() {
               return (
                 <div
                   key={item.step}
-                  className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md ring-1 ring-slate-100/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-xl md:flex-row md:items-stretch opacity-0-init animate-slide-up ${
+                  className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md ring-1 ring-slate-100/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-xl md:flex-row md:items-stretch ${
                     reverse ? 'md:flex-row-reverse' : ''
                   }`}
-                  style={{ animationDelay: `${220 + index * 90}ms` }}
                 >
                   <div className="relative min-h-[200px] w-full md:w-[44%] md:min-h-[240px] shrink-0 bg-slate-200">
                     <Image
@@ -386,10 +385,10 @@ export default async function HomePage() {
             })}
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* Feature Highlights */}
-      <section className="py-16 sm:py-20 bg-slate-100/60">
+      <HomeReveal className="py-16 sm:py-20 bg-slate-100/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-2xl mx-auto">
             <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
@@ -404,11 +403,10 @@ export default async function HomePage() {
               { icon: FileText, title: 'Gestion BOL', desc: 'Creez et signez vos bordereaux de chargement numeriquement.' },
               { icon: Shield, title: 'Securise & RBAC', desc: 'Plateforme securisee avec controle d\'acces base sur les roles.' },
               { icon: Smartphone, title: 'PWA Mobile', desc: 'Installez l\'app sur votre telephone. Fonctionne hors connexion.' },
-            ].map((f, i) => (
+            ].map((f) => (
               <div
                 key={f.title}
-                className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-white/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100 opacity-0-init animate-slide-up"
-                style={{ animationDelay: `${300 + i * 80}ms` }}
+                className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-white/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
               >
                 <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/80 p-3 ring-1 ring-primary-100">
                   <f.icon className="w-8 h-8 text-primary-600" />
@@ -419,10 +417,10 @@ export default async function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* Why teams choose Nzela */}
-      <section className="py-16 sm:py-20 bg-white">
+      <HomeReveal className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             <div>
@@ -478,12 +476,12 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* Outils : teaser vers la page dédiée */}
-      <section className="py-12 sm:py-16 bg-white border-t border-gray-100">
+      <HomeReveal className="py-12 sm:py-16 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto text-center mb-8 opacity-0-init animate-fade-in animation-delay-200">
+          <div className="max-w-2xl mx-auto text-center mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{te('homeToolsTitle')}</h2>
             <p className="text-gray-500 text-sm sm:text-base mb-6">{te('homeToolsIntro')}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -503,10 +501,10 @@ export default async function HomePage() {
             <p className="text-gray-400 text-xs mt-4 max-w-lg mx-auto">{te('homeToolsFootnote')}</p>
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* Des outils pour la route et le bureau */}
-      <section className="py-12 sm:py-16 bg-gray-50">
+      <HomeReveal className="py-12 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">{te('toolsSectionTitle')}</h2>
           <p className="text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
@@ -519,8 +517,8 @@ export default async function HomePage() {
               { icon: FileCheck, titleKey: 'toolTileDocsTitle' as const, descKey: 'toolTileDocsDesc' as const },
               { icon: Navigation, titleKey: 'toolTileNavTitle' as const, descKey: 'toolTileNavDesc' as const },
               { icon: Smartphone, titleKey: 'toolTileMobileTitle' as const, descKey: 'toolTileMobileDesc' as const },
-            ].map((f, i) => (
-              <div key={f.titleKey} className="bg-white rounded-xl p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 opacity-0-init animate-scale-in" style={{ animationDelay: `${400 + i * 60}ms` }}>
+            ].map((f) => (
+              <div key={f.titleKey} className="bg-white rounded-xl p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100">
                 <f.icon className="w-10 h-10 text-primary-600 mb-3" />
                 <h3 className="font-semibold text-gray-900 mb-1">{te(f.titleKey)}</h3>
                 <p className="text-sm text-gray-500">{te(f.descKey)}</p>
@@ -535,10 +533,10 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* Testimonials */}
-      <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-slate-50">
+      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-white to-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
@@ -549,11 +547,10 @@ export default async function HomePage() {
               { quote: 'Grace a Nzela, je ne fais plus de trajets a vide. Je trouve toujours un chargement de retour avant d\'arriver a destination.', name: 'Jean-Pierre K.', role: 'Transporteur' },
               { quote: 'L\'application est facile a utiliser. Mes chauffeurs trouvent des chargements directement depuis leur telephone.', name: 'Marie T.', role: 'Proprietaire de flotte' },
               { quote: 'Le Load Board est toujours a jour. D\'un clic, je reserve un chargement. Fini les appels telephoniques interminables.', name: 'Patrick M.', role: 'Chauffeur independant' },
-            ].map((row, i) => (
+            ].map((row) => (
               <div
                 key={row.name}
-                className="relative rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-slate-100 opacity-0-init animate-slide-up transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                style={{ animationDelay: `${500 + i * 100}ms` }}
+                className="relative rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
                 <span className="absolute left-5 top-5 text-4xl font-serif text-primary-200/90 leading-none" aria-hidden>
                   &ldquo;
@@ -567,10 +564,10 @@ export default async function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       {/* CTA Section */}
-      <section className="relative overflow-hidden py-20 sm:py-24 bg-gradient-to-br from-primary-800 via-primary-600 to-indigo-900 text-white opacity-0-init animate-fade-in animation-delay-300">
+      <HomeReveal className="relative overflow-hidden py-20 sm:py-24 bg-gradient-to-br from-primary-800 via-primary-600 to-indigo-900 text-white">
         <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden>
           <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
           <div className="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-primary-300/25 blur-3xl" />
@@ -612,7 +609,7 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </HomeReveal>
 
       <Footer />
     </div>
