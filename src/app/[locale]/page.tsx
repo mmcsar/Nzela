@@ -37,8 +37,8 @@ const HOME_PHOTO = {
 const HOW_IT_WORKS = [
   {
     step: '01',
-    title: 'Publiez en quelques clics',
-    desc: 'Créez un chargement ou publiez un camion avec toutes les informations nécessaires.',
+    titleKey: 'how1Title',
+    descKey: 'how1Desc',
     icon: FileText,
     image: HOME_PHOTO.howPublish,
     imageClassName: 'object-[center_10%]',
@@ -47,8 +47,8 @@ const HOW_IT_WORKS = [
   },
   {
     step: '02',
-    title: 'Match intelligent en temps réel',
-    desc: 'Nzela propose automatiquement les meilleures correspondances transporteur-courtier.',
+    titleKey: 'how2Title',
+    descKey: 'how2Desc',
     icon: Cpu,
     image: HOME_PHOTO.howMatch,
     imageClassName: 'object-center',
@@ -57,38 +57,51 @@ const HOW_IT_WORKS = [
   },
   {
     step: '03',
-    title: 'Exécutez et suivez',
-    desc: 'Gérez BOL, suivi GPS et communication depuis un seul espace opérationnel.',
+    titleKey: 'how3Title',
+    descKey: 'how3Desc',
     icon: MapPin,
     image: HOME_PHOTO.howTrack,
     imageClassName: 'object-[center_28%]',
     imageOverlayClassName: 'bg-gradient-to-t from-slate-950/25 via-transparent to-transparent',
     altKey: 'homePhotoHow3Alt' as const,
   },
-];
+] as const;
 
 const VALUE_CARDS = [
-  {
-    title: 'Gerez facilement votre activite',
-    desc: 'Envoyez des devis ou reservez des chargements en un clic, a tout moment.',
-    icon: BarChart3,
-    image: HOME_PHOTO.valueOps,
-    altKey: 'homePhotoValue1Alt' as const,
-  },
-  {
-    title: 'Ameliorez votre efficacite',
-    desc: 'Plus de 20 outils et fonctionnalites pour gagner du temps sur la route et au bureau.',
-    icon: FileText,
-    image: HOME_PHOTO.valueDesk,
-    altKey: 'homePhotoValue2Alt' as const,
-  },
-  {
-    title: 'Augmentez vos revenus',
-    desc: "Trouvez des chargements et des recharges pour remplir votre planning à l'avance.",
-    icon: Package,
-    image: HOME_PHOTO.valueRoad,
-    altKey: 'homePhotoValue3Alt' as const,
-  },
+  { titleKey: 'value1Title', descKey: 'value1Desc', icon: BarChart3, image: HOME_PHOTO.valueOps, altKey: 'homePhotoValue1Alt' as const },
+  { titleKey: 'value2Title', descKey: 'value2Desc', icon: FileText, image: HOME_PHOTO.valueDesk, altKey: 'homePhotoValue2Alt' as const },
+  { titleKey: 'value3Title', descKey: 'value3Desc', icon: Package, image: HOME_PHOTO.valueRoad, altKey: 'homePhotoValue3Alt' as const },
+] as const;
+
+const HOME_FEATURES = [
+  { icon: Truck, titleKey: 'feature1Title', descKey: 'feature1Desc' },
+  { icon: Cpu, titleKey: 'feature2Title', descKey: 'feature2Desc' },
+  { icon: MapPin, titleKey: 'feature3Title', descKey: 'feature3Desc' },
+  { icon: FileText, titleKey: 'feature4Title', descKey: 'feature4Desc' },
+  { icon: Shield, titleKey: 'feature5Title', descKey: 'feature5Desc' },
+  { icon: Smartphone, titleKey: 'feature6Title', descKey: 'feature6Desc' },
+] as const;
+
+const WHY_POINTS = ['whyPoint1', 'whyPoint2', 'whyPoint3'] as const;
+
+const WHY_KPIS = [
+  { v: '+38%', lKey: 'whyKpi1' },
+  { v: '-27%', lKey: 'whyKpi2' },
+  { v: '24/7', lKey: 'whyKpi3' },
+  { v: '100%', lKey: 'whyKpi4' },
+] as const;
+
+const TRUST_STATS = [
+  { n: '50+', lKey: 'trustStat1' },
+  { n: '120+', lKey: 'trustStat2' },
+  { n: '26', lKey: 'trustStat3' },
+  { n: '99.9%', lKey: 'trustStat4' },
+] as const;
+
+const TESTIMONIALS = [
+  { quoteKey: 'testimonial1Quote', nameKey: 'testimonial1Name', roleKey: 'testimonial1Role' },
+  { quoteKey: 'testimonial2Quote', nameKey: 'testimonial2Name', roleKey: 'testimonial2Role' },
+  { quoteKey: 'testimonial3Quote', nameKey: 'testimonial3Name', roleKey: 'testimonial3Role' },
 ] as const;
 
 export default async function HomePage() {
@@ -102,7 +115,7 @@ export default async function HomePage() {
       {/* Contact bar */}
       <div className="bg-slate-950 text-slate-100 border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs sm:text-sm">
-          <p className="text-slate-300">Contact direct Nzela</p>
+          <p className="text-slate-300">{t('homeContactBar')}</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <a href={`tel:${SUPPORT_PHONE.replace(/\s+/g, '')}`} className="font-medium text-amber-200 hover:text-amber-100 transition-colors">
               {SUPPORT_PHONE}
@@ -229,12 +242,12 @@ export default async function HomePage() {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link href="/register/broker" className="sm:inline-flex">
                   <Button size="lg" variant="secondary" className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40">
-                    Publier un chargement <ArrowRight className="w-4 h-4 ml-2" />
+                    {t('heroCtaPublish')} <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
                 <Link href="/register/company" className="sm:inline-flex">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15">
-                    Trouver un chargement
+                    {t('heroCtaFind')}
                   </Button>
                 </Link>
               </div>
@@ -245,7 +258,7 @@ export default async function HomePage() {
                 </Link>
               </p>
               <p className="mt-3 text-xs text-amber-100/90">
-                Anti-phishing: utilisez uniquement l&apos;email officiel <span className="font-semibold">info@nzelaa.com</span>.
+                {t('homeAntiPhishing')} <span className="font-semibold">info@nzelaa.com</span>.
               </p>
             </div>
           </div>
@@ -261,20 +274,15 @@ export default async function HomePage() {
             <p className="text-sm sm:text-base text-slate-600">{t('homeTrustSub')}</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 text-center">
-            {[
-              { n: '50+', l: 'Utilisateurs actifs' },
-              { n: '120+', l: 'Chargements traites' },
-              { n: '26', l: 'Provinces couvertes' },
-              { n: '99.9%', l: 'Disponibilite' },
-            ].map((s) => (
+            {TRUST_STATS.map((s) => (
               <div
-                key={s.l}
+                key={s.lKey}
                 className="group rounded-2xl bg-white/90 border border-slate-200/90 py-5 px-3 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-primary-100"
               >
                 <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-primary-600 via-primary-700 to-slate-800 bg-clip-text text-transparent tabular-nums">
                   {s.n}
                 </div>
-                <div className="text-xs text-slate-500 mt-1.5 font-medium">{s.l}</div>
+                <div className="text-xs text-slate-500 mt-1.5 font-medium">{t(s.lKey)}</div>
               </div>
             ))}
           </div>
@@ -325,7 +333,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
             {VALUE_CARDS.map((card) => (
               <div
-                key={card.title}
+                key={card.titleKey}
                 className="group overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
               >
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-200">
@@ -341,8 +349,8 @@ export default async function HomePage() {
                   <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 shadow-inner ring-1 ring-primary-100/80">
                     <card.icon className="h-8 w-8 text-primary-600" />
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold text-slate-900">{card.title}</h3>
-                  <p className="text-sm leading-relaxed text-slate-600">{card.desc}</p>
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900">{t(card.titleKey)}</h3>
+                  <p className="text-sm leading-relaxed text-slate-600">{t(card.descKey)}</p>
                 </div>
               </div>
             ))}
@@ -385,12 +393,12 @@ export default async function HomePage() {
                     <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-primary-500/5 blur-2xl transition group-hover:bg-primary-500/10" aria-hidden />
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                       <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary-700 bg-gradient-to-r from-primary-50 to-amber-50 px-3 py-1.5 rounded-full border border-primary-100/80">
-                        Etape {item.step}
+                        {t('howStepLabel', { step: item.step })}
                       </span>
                       <item.icon className="h-7 w-7 text-primary-500 transition-transform group-hover:scale-110" />
                     </div>
-                    <h3 className="mb-2 text-lg font-semibold text-slate-900 sm:text-xl">{item.title}</h3>
-                    <p className="text-sm leading-relaxed text-slate-600 sm:text-[15px]">{item.desc}</p>
+                    <h3 className="mb-2 text-lg font-semibold text-slate-900 sm:text-xl">{t(item.titleKey)}</h3>
+                    <p className="text-sm leading-relaxed text-slate-600 sm:text-[15px]">{t(item.descKey)}</p>
                   </div>
                 </div>
               );
@@ -408,23 +416,16 @@ export default async function HomePage() {
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeFeaturesSub')}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {[
-              { icon: Truck, title: 'Load Board', desc: 'Acces a des chargements en temps reel. Plus de chargements fantomes.' },
-              { icon: Cpu, title: 'Matching intelligent', desc: 'Notre algorithme trouve les meilleures correspondances automatiquement.' },
-              { icon: MapPin, title: 'Suivi GPS', desc: 'Suivez chaque expedition en temps reel, du chargement a la livraison.' },
-              { icon: FileText, title: 'Gestion BOL', desc: 'Creez et signez vos bordereaux de chargement numeriquement.' },
-              { icon: Shield, title: 'Securise & RBAC', desc: 'Plateforme securisee avec controle d\'acces base sur les roles.' },
-              { icon: Smartphone, title: 'PWA Mobile', desc: 'Installez l\'app sur votre telephone. Fonctionne hors connexion.' },
-            ].map((f) => (
+            {HOME_FEATURES.map((f) => (
               <div
-                key={f.title}
+                key={f.titleKey}
                 className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-white/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
               >
                 <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/80 p-3 ring-1 ring-primary-100">
                   <f.icon className="w-8 h-8 text-primary-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-slate-900">{f.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
+                <h3 className="text-lg font-semibold mb-2 text-slate-900">{t(f.titleKey)}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{t(f.descKey)}</p>
               </div>
             ))}
           </div>
@@ -442,14 +443,10 @@ export default async function HomePage() {
                 {t('homeWhySub')}
               </p>
               <div className="space-y-4">
-                {[
-                  'Un seul outil pour le Load Board, le Truck Board, le BOL et le tracking GPS',
-                  'Mise en relation plus rapide entre courtiers et transporteurs',
-                  'Processus plus fiable avec des informations normalisées et centralisées',
-                ].map((point) => (
-                  <div key={point} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3">
+                {WHY_POINTS.map((pointKey) => (
+                  <div key={pointKey} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3">
                     <CheckCircle className="w-5 h-5 text-primary-600 mt-0.5 shrink-0" />
-                    <p className="text-sm text-slate-700 leading-relaxed">{point}</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">{t(pointKey)}</p>
                   </div>
                 ))}
               </div>
@@ -470,17 +467,12 @@ export default async function HomePage() {
               />
               <div className="pointer-events-none absolute -right-10 top-0 h-40 w-40 rounded-full bg-amber-200/25 blur-3xl" aria-hidden />
               <div className="relative p-7 sm:p-9">
-              <p className="relative text-xs uppercase tracking-[0.2em] text-primary-700 font-bold mb-5">Performance operationnelle</p>
+              <p className="relative text-xs uppercase tracking-[0.2em] text-primary-700 font-bold mb-5">{t('whyPerfHeading')}</p>
               <div className="relative grid grid-cols-2 gap-4">
-                {[
-                  { v: '+38%', l: 'Temps gagné sur la coordination' },
-                  { v: '-27%', l: 'Trajets à vide sur les flottes suivies' },
-                  { v: '24/7', l: 'Visibilité sur les opérations' },
-                  { v: '100%', l: 'Flux centralisé dans l’interface' },
-                ].map((k) => (
+                {WHY_KPIS.map((k) => (
                   <div key={k.v} className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
                     <p className="text-2xl font-extrabold bg-gradient-to-br from-primary-600 to-slate-800 bg-clip-text text-transparent">{k.v}</p>
-                    <p className="text-xs text-slate-600 mt-1.5 leading-snug">{k.l}</p>
+                    <p className="text-xs text-slate-600 mt-1.5 leading-snug">{t(k.lKey)}</p>
                   </div>
                 ))}
               </div>
@@ -555,22 +547,18 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeTestimonialsHeading')}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {[
-              { quote: 'Grace a Nzela, je ne fais plus de trajets a vide. Je trouve toujours un chargement de retour avant d\'arriver a destination.', name: 'Jean-Pierre K.', role: 'Transporteur' },
-              { quote: 'L\'application est facile a utiliser. Mes chauffeurs trouvent des chargements directement depuis leur telephone.', name: 'Marie T.', role: 'Proprietaire de flotte' },
-              { quote: 'Le Load Board est toujours a jour. D\'un clic, je reserve un chargement. Fini les appels telephoniques interminables.', name: 'Patrick M.', role: 'Chauffeur independant' },
-            ].map((row) => (
+            {TESTIMONIALS.map((row) => (
               <div
-                key={row.name}
+                key={row.nameKey}
                 className="relative rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
                 <span className="absolute left-5 top-5 text-4xl font-serif text-primary-200/90 leading-none" aria-hidden>
                   &ldquo;
                 </span>
-                <p className="relative text-slate-600 text-sm leading-relaxed mb-6 pl-1 pt-6">{row.quote}</p>
+                <p className="relative text-slate-600 text-sm leading-relaxed mb-6 pl-1 pt-6">{t(row.quoteKey)}</p>
                 <div className="border-t border-slate-100 pt-4">
-                  <p className="font-semibold text-slate-900 text-sm">{row.name}</p>
-                  <p className="text-xs text-primary-600 font-medium mt-0.5">{row.role}</p>
+                  <p className="font-semibold text-slate-900 text-sm">{t(row.nameKey)}</p>
+                  <p className="text-xs text-primary-600 font-medium mt-0.5">{t(row.roleKey)}</p>
                 </div>
               </div>
             ))}
@@ -593,28 +581,28 @@ export default async function HomePage() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 text-left">
             <div className="rounded-2xl bg-white/10 border border-white/25 p-6 sm:p-7 shadow-lg backdrop-blur-md ring-1 ring-white/10 transition hover:bg-white/[0.14]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">Je suis courtier</p>
-              <h3 className="text-xl font-semibold mb-2">Publiez plus vite, remplissez plus vite</h3>
-              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">Diffusez vos chargements, trouvez des transporteurs qualifiés et suivez l&apos;exécution.</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">{t('ctaBrokerBadge')}</p>
+              <h3 className="text-xl font-semibold mb-2">{t('ctaBrokerTitle')}</h3>
+              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">{t('ctaBrokerDesc')}</p>
               <Link href="/register/broker">
                 <Button size="lg" variant="secondary" className="shadow-lg">
-                  Commencer en tant que courtier <ArrowRight className="w-4 h-4 ml-2" />
+                  {t('ctaBrokerButton')} <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
             </div>
             <div className="rounded-2xl bg-white/10 border border-white/25 p-6 sm:p-7 shadow-lg backdrop-blur-md ring-1 ring-white/10 transition hover:bg-white/[0.14]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">Je suis transporteur</p>
-              <h3 className="text-xl font-semibold mb-2">Réduisez les trajets à vide</h3>
-              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">Accédez aux chargements en temps réel et pilotez votre flotte depuis un seul tableau de bord.</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">{t('ctaCarrierBadge')}</p>
+              <h3 className="text-xl font-semibold mb-2">{t('ctaCarrierTitle')}</h3>
+              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">{t('ctaCarrierDesc')}</p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                 <Link href="/register/company">
                   <Button size="lg" variant="secondary" className="shadow-lg">
-                    Créer mon compte transporteur <ArrowRight className="w-4 h-4 ml-2" />
+                    {t('ctaCarrierButton')} <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
                 <Link href="/pricing">
                   <Button size="lg" variant="outline" className="border-white/40 bg-white/5 text-white hover:bg-white/15">
-                    Abonnement unique 50 USD/mois
+                    {t('ctaCarrierPricing')}
                   </Button>
                 </Link>
               </div>
