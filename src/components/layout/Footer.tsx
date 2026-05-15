@@ -1,9 +1,11 @@
+'use client';
+
 import { Link } from '@/lib/i18n/routing';
 import { Truck, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Youtube } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
-export async function Footer() {
-  const t = await getTranslations('footer');
+export function Footer() {
+  const t = useTranslations('footer');
   const currentYear = new Date().getFullYear();
 
   return (

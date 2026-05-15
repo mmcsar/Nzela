@@ -26,8 +26,7 @@ function regionList(cc: SupportedCountryCode): readonly string[] {
 
 function countryFromValue(value: string, allowEmpty: boolean): typeof ANY | SupportedCountryCode {
   if (allowEmpty && value === '') return ANY;
-  const inferred = inferCountryCodeFromProvince(value);
-  return inferred === ANY ? 'cd' : inferred;
+  return inferCountryCodeFromProvince(value);
 }
 
 /**
