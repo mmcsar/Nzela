@@ -18,17 +18,27 @@ export function HomeReveal({ className = '', children, ...rest }: HomeRevealProp
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+
+    const reveal = () => setVisible(true);
+
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
-          setVisible(true);
+          reveal();
           io.disconnect();
         }
       },
-      { threshold: 0.06, rootMargin: '0px 0px -5% 0px' }
+      { threshold: 0.06, rootMargin: '0px 0px -5% 0px' },
     );
     io.observe(node);
-    return () => io.disconnect();
+
+    // Si l’hydratation échoue ou l’IO ne déclenche pas, éviter des sections invisibles (opacity: 0).
+    const fallback = window.setTimeout(reveal, 1200);
+
+    return () => {
+      io.disconnect();
+      window.clearTimeout(fallback);
+    };
   }, []);
 
   return (

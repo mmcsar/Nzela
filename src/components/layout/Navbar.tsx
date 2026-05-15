@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Link } from '@/lib/i18n/routing';
 import { Truck, Menu, X, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
 
@@ -127,12 +127,12 @@ export function Navbar() {
 
           <div className="hidden lg:flex items-center gap-3">
             <LanguageSwitcher compact />
-            <Link href="/login">
-              <Button variant="outline" size="sm">{t('login')}</Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">{t('register')}</Button>
-            </Link>
+            <ButtonLink href="/login" variant="outline" size="sm">
+              {t('login')}
+            </ButtonLink>
+            <ButtonLink href="/register" size="sm">
+              {t('register')}
+            </ButtonLink>
           </div>
 
           <button
@@ -188,12 +188,23 @@ export function Navbar() {
               <LanguageSwitcher />
             </div>
             <div className="pt-3 border-t border-gray-200 flex gap-3">
-              <Link href="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full">{t('login')}</Button>
-              </Link>
-              <Link href="/register" className="flex-1" onClick={() => setMobileOpen(false)}>
-                <Button size="sm" className="w-full">{t('register')}</Button>
-              </Link>
+              <ButtonLink
+                href="/login"
+                variant="outline"
+                size="sm"
+                className="flex-1 w-full"
+                onClick={() => setMobileOpen(false)}
+              >
+                {t('login')}
+              </ButtonLink>
+              <ButtonLink
+                href="/register"
+                size="sm"
+                className="flex-1 w-full"
+                onClick={() => setMobileOpen(false)}
+              >
+                {t('register')}
+              </ButtonLink>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Button } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Link } from '@/lib/i18n/routing';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -240,16 +240,22 @@ export default async function HomePage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <Link href="/register/broker" className="sm:inline-flex">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40">
-                    {t('heroCtaPublish')} <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/register/company" className="sm:inline-flex">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15">
-                    {t('heroCtaFind')}
-                  </Button>
-                </Link>
+                <ButtonLink
+                  href="/register/broker"
+                  size="lg"
+                  variant="secondary"
+                  className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40"
+                >
+                  {t('heroCtaPublish')} <ArrowRight className="w-4 h-4 ml-2" />
+                </ButtonLink>
+                <ButtonLink
+                  href="/register/company"
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white"
+                >
+                  {t('heroCtaFind')}
+                </ButtonLink>
               </div>
               <p className="mt-8 text-sm text-white/75">
                 <span>{t('homeLoginPrompt')}</span>{' '}
@@ -489,18 +495,14 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{te('homeToolsTitle')}</h2>
             <p className="text-gray-500 text-sm sm:text-base mb-6">{te('homeToolsIntro')}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <Link href="/dashboard/tools">
-                <Button size="lg" className="gap-2">
-                  <Calculator className="w-5 h-5" />
-                  {te('homeToolsCta')}
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-              <Link href="/products/toolkit">
-                <Button size="lg" variant="outline" className="gap-2">
-                  {te('homeToolsToolkit')}
-                </Button>
-              </Link>
+              <ButtonLink href="/dashboard/tools" size="lg" className="gap-2">
+                <Calculator className="w-5 h-5" />
+                {te('homeToolsCta')}
+                <ArrowRight className="w-4 h-4" />
+              </ButtonLink>
+              <ButtonLink href="/products/toolkit" size="lg" variant="outline" className="gap-2">
+                {te('homeToolsToolkit')}
+              </ButtonLink>
             </div>
             <p className="text-gray-400 text-xs mt-4 max-w-lg mx-auto">{te('homeToolsFootnote')}</p>
           </div>
@@ -530,11 +532,9 @@ export default async function HomePage() {
             ))}
           </div>
           <div className="text-center mt-8 sm:mt-10">
-            <Link href="/products/toolkit">
-              <Button size="lg" variant="outline">
-                {te('discoverAllTools')} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+            <ButtonLink href="/products/toolkit" size="lg" variant="outline">
+              {te('discoverAllTools')} <ArrowRight className="w-4 h-4 ml-2" />
+            </ButtonLink>
           </div>
         </div>
       </HomeReveal>
@@ -584,27 +584,26 @@ export default async function HomePage() {
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">{t('ctaBrokerBadge')}</p>
               <h3 className="text-xl font-semibold mb-2">{t('ctaBrokerTitle')}</h3>
               <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">{t('ctaBrokerDesc')}</p>
-              <Link href="/register/broker">
-                <Button size="lg" variant="secondary" className="shadow-lg">
-                  {t('ctaBrokerButton')} <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+              <ButtonLink href="/register/broker" size="lg" variant="secondary" className="shadow-lg">
+                {t('ctaBrokerButton')} <ArrowRight className="w-4 h-4 ml-2" />
+              </ButtonLink>
             </div>
             <div className="rounded-2xl bg-white/10 border border-white/25 p-6 sm:p-7 shadow-lg backdrop-blur-md ring-1 ring-white/10 transition hover:bg-white/[0.14]">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">{t('ctaCarrierBadge')}</p>
               <h3 className="text-xl font-semibold mb-2">{t('ctaCarrierTitle')}</h3>
               <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">{t('ctaCarrierDesc')}</p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-                <Link href="/register/company">
-                  <Button size="lg" variant="secondary" className="shadow-lg">
-                    {t('ctaCarrierButton')} <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button size="lg" variant="outline" className="border-white/40 bg-white/5 text-white hover:bg-white/15">
-                    {t('ctaCarrierPricing')}
-                  </Button>
-                </Link>
+                <ButtonLink href="/register/company" size="lg" variant="secondary" className="shadow-lg">
+                  {t('ctaCarrierButton')} <ArrowRight className="w-4 h-4 ml-2" />
+                </ButtonLink>
+                <ButtonLink
+                  href="/pricing"
+                  size="lg"
+                  variant="outline"
+                  className="border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white"
+                >
+                  {t('ctaCarrierPricing')}
+                </ButtonLink>
               </div>
             </div>
           </div>
