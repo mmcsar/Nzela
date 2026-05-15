@@ -51,6 +51,8 @@ const nextConfig = {
   // Next 16 : Turbopack par défaut ; si une config webpack existe (ci-dessous / plugins),
   // il faut aussi une section turbopack (voir message d'erreur sans ceci).
   turbopack: {
+    // Racine explicite : évite « Next.js package not found » si Turbopack infère src/app
+    root: path.join(__dirname),
     resolveAlias: {
       ...nextPagesAliases,
       'next-intl/config': nextIntlRequestRelative,
