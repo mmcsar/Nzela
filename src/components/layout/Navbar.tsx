@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from '@/lib/i18n/routing';
 import { Truck, Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
 const solutions = [
   { label: 'Courtiers', href: '/solutions/brokers', desc: 'Publiez et gerez vos chargements' },
@@ -129,6 +130,7 @@ export function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
+            <LanguageSwitcher compact />
             <Link href="/login">
               <Button variant="outline" size="sm">Connexion</Button>
             </Link>
@@ -185,6 +187,9 @@ export function Navbar() {
               <Link href="/contact" className="block py-1.5 text-sm font-medium text-gray-700" onClick={() => setMobileOpen(false)}>
                 Contact
               </Link>
+            </div>
+            <div className="px-1 pb-2">
+              <LanguageSwitcher />
             </div>
             <div className="pt-3 border-t border-gray-200 flex gap-3">
               <Link href="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
