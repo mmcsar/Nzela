@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { REGIONS_BY_COUNTRY, getRegionName } from '@/lib/constants/country-regions';
 import {
   SUPPORTED_COUNTRIES,
@@ -24,6 +24,12 @@ function regionList(cc: SupportedCountryCode): readonly string[] {
   return REGIONS_BY_COUNTRY[cc];
 }
 
+function countryFromValue(value: string, allowEmpty: boolean): typeof ANY | SupportedCountryCode {
+  if (allowEmpty && value === '') return ANY;
+  const inferred = inferCountryCodeFromProvince(value);
+  return inferred === ANY ? 'cd' : inferred;
+}
+
 /**
  * Pays puis province/région : les corridor (Zambie, ZA, Tanzanie, Angola) sont visibles
  * sans faire défiler toute la liste RDC dans un seul &lt;select&gt;.
@@ -36,23 +42,10 @@ export function CorridorCountryRegionPicker({
   allowEmpty = false,
   emptyLabel = '',
 }: CorridorCountryRegionPickerProps) {
-  const inferred = useMemo((): SupportedCountryCode | typeof ANY => {
-    if (allowEmpty && value === '') return ANY;
-    return inferCountryCodeFromProvince(value);
-  }, [allowEmpty, value]);
-
-  const [country, setCountry] = useState<typeof ANY | SupportedCountryCode>(() => {
-    if (allowEmpty && value === '') return ANY;
-    return inferred === ANY ? 'cd' : inferred;
-  });
-
-  useEffect(() => {
-    if (allowEmpty && value === '') {
-      setCountry(ANY);
-      return;
-    }
-    setCountry(inferred === ANY ? 'cd' : inferred);
-  }, [allowEmpty, value, inferred]);
+  const country = useMemo(
+    () => countryFromValue(value, allowEmpty),
+    [allowEmpty, value],
+  );
 
   const regions: readonly string[] =
     country === ANY ? EMPTY_REGIONS : regionList(country);
@@ -77,12 +70,10 @@ export function CorridorCountryRegionPicker({
           onChange={(e) => {
             const raw = e.target.value;
             if (raw === ANY) {
-              setCountry(ANY);
               onChange('');
               return;
             }
             const cc = raw as SupportedCountryCode;
-            setCountry(cc);
             const first = regionList(cc)[0];
             if (first) onChange(first);
           }}
