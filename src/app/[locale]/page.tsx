@@ -82,7 +82,9 @@ const HOME_FEATURES = [
   { icon: Smartphone, titleKey: 'feature6Title', descKey: 'feature6Desc' },
 ] as const;
 
-const WHY_POINTS = ['whyPoint1', 'whyPoint2', 'whyPoint3'] as const;
+const WHY_POINTS = ['whyPoint1', 'whyPoint2', 'whyPoint3', 'whyPoint4'] as const;
+
+const HERO_CHIPS = ['heroChip1', 'heroChip2', 'heroChip3', 'heroChip4'] as const;
 
 const WHY_KPIS = [
   { v: '+38%', lKey: 'whyKpi1' },
@@ -92,10 +94,10 @@ const WHY_KPIS = [
 ] as const;
 
 const TRUST_STATS = [
-  { n: '50+', lKey: 'trustStat1' },
-  { n: '120+', lKey: 'trustStat2' },
-  { n: '26', lKey: 'trustStat3' },
-  { n: '99.9%', lKey: 'trustStat4' },
+  { vKey: 'trustStat1Value', lKey: 'trustStat1' },
+  { vKey: 'trustStat2Value', lKey: 'trustStat2' },
+  { vKey: 'trustStat3Value', lKey: 'trustStat3' },
+  { vKey: 'trustStat4Value', lKey: 'trustStat4' },
 ] as const;
 
 const TESTIMONIALS = [
@@ -228,14 +230,14 @@ export default async function HomePage() {
                 {t('heroLead')}
               </p>
               <div className="flex flex-wrap gap-2 mb-8">
-                {[t('heroChip1'), t('heroChip2'), t('heroChip3')].map((item, chipIndex) => (
+                {HERO_CHIPS.map((chipKey, chipIndex) => (
                   <span
-                    key={item}
+                    key={chipKey}
                     className="home-hero-chip inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-white/10 text-xs sm:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
                     style={{ animationDelay: `${80 * chipIndex}ms` }}
                   >
                     <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
-                    {item}
+                    {t(chipKey)}
                   </span>
                 ))}
               </div>
@@ -285,8 +287,8 @@ export default async function HomePage() {
                 key={s.lKey}
                 className="group rounded-2xl bg-white/90 border border-slate-200/90 py-5 px-3 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-primary-100"
               >
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-primary-600 via-primary-700 to-slate-800 bg-clip-text text-transparent tabular-nums">
-                  {s.n}
+                <div className="text-lg sm:text-xl font-extrabold bg-gradient-to-br from-primary-600 via-primary-700 to-slate-800 bg-clip-text text-transparent leading-tight">
+                  {t(s.vKey)}
                 </div>
                 <div className="text-xs text-slate-500 mt-1.5 font-medium">{t(s.lKey)}</div>
               </div>
