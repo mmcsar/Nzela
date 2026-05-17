@@ -95,6 +95,10 @@ Pipelines crees dans `.github/workflows`:
 | `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) → Create Token |
 | `VERCEL_ORG_ID` | Projet Vercel → Settings → General (ou `.vercel/project.json` après `vercel link`) |
 | `VERCEL_PROJECT_ID` | Même page, champ **Project ID** |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API → Project URL (optionnel pour CI : des placeholders sont utilisés si absent) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → anon public key |
+
+Sans les secrets Vercel, le workflow **Deploy Production** se termine en succès (avertissement) et le déploiement peut passer par l’intégration Git Vercel. Sans les secrets Supabase, **CI** utilise des valeurs factices uniquement pour valider le build.
 
 ### Stratégie de branches
 
