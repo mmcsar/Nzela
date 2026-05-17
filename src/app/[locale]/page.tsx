@@ -4,6 +4,7 @@ import { Link } from '@/lib/i18n/routing';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { HomeReveal } from '@/components/home/HomeReveal';
+import { HomeEditorialBanner } from '@/components/home/HomeEditorialBanner';
 import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles } from 'lucide-react';
@@ -19,7 +20,6 @@ const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'info@nzelaa.com'
  * Visuels pro / logistique (certaines scènes avec équipes ou opérateurs).
  */
 const HOME_PHOTO = {
-  editorial: 'https://images.unsplash.com/photo-1570805252434-9e62f73aa955?w=1600&q=80',
   /** Bandeau logistique au-dessus des 3 cartes « valeur » */
   valueSectionBanner: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&q=80',
   valueOps: '/api/home-images/value-ops',
@@ -98,6 +98,24 @@ const TRUST_STATS = [
   { vKey: 'trustStat2Value', lKey: 'trustStat2' },
   { vKey: 'trustStat3Value', lKey: 'trustStat3' },
   { vKey: 'trustStat4Value', lKey: 'trustStat4' },
+] as const;
+
+const EDITORIAL_SLIDE_KEYS = [
+  {
+    src: '/api/home-images/editorial-corridor',
+    altKey: 'homePhotoEditorial1Alt' as const,
+    objectPosition: '55% center',
+  },
+  {
+    src: '/api/home-images/editorial-warehouse',
+    altKey: 'homePhotoEditorial2Alt' as const,
+    objectPosition: 'center center',
+  },
+  {
+    src: '/api/home-images/editorial-docs',
+    altKey: 'homePhotoEditorial3Alt' as const,
+    objectPosition: 'center 35%',
+  },
 ] as const;
 
 const TESTIMONIALS = [
@@ -297,28 +315,16 @@ export default async function HomePage() {
         </div>
       </HomeReveal>
 
-      {/* Bandeau éditorial photo + citation (overlay slate/primary existants) */}
-      <HomeReveal className="relative min-h-[200px] sm:min-h-[260px] overflow-hidden border-b border-slate-200/80" aria-labelledby="home-editorial-quote">
-        <Image
-          src={HOME_PHOTO.editorial}
-          alt={t('homePhotoCorridorAlt')}
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority={false}
+      {/* Bandeau éditorial : fret (corridor) → flotte (entrepôt) → documents */}
+      <HomeReveal>
+        <HomeEditorialBanner
+          quote={t('homePhotoEditorialQuote')}
+          slides={EDITORIAL_SLIDE_KEYS.map((slide) => ({
+            src: slide.src,
+            alt: t(slide.altKey),
+            objectPosition: slide.objectPosition,
+          }))}
         />
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-slate-950/88 via-slate-900/75 to-primary-900/60"
-          aria-hidden
-        />
-        <div className="relative z-10 mx-auto flex max-w-7xl min-h-[200px] sm:min-h-[260px] items-center px-4 py-12 sm:px-6 lg:px-8">
-          <p
-            id="home-editorial-quote"
-            className="max-w-2xl text-lg font-medium leading-snug text-white drop-shadow-sm sm:text-xl md:text-2xl md:leading-snug border-l-4 border-amber-400/90 pl-5 sm:pl-6"
-          >
-            {t('homePhotoEditorialQuote')}
-          </p>
-        </div>
       </HomeReveal>
 
       {/* Value Props - 3 columns */}

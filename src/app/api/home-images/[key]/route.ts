@@ -8,12 +8,21 @@ const FALLBACK_MAP: Record<string, string> = {
   'value-ops': 'https://images.unsplash.com/photo-1587578769987-776c5bcd4c6e?w=900&q=80',
   'how-publish': 'https://images.unsplash.com/photo-1771923082503-0a3381c46cef?w=800&q=85',
   'how-track': 'https://images.unsplash.com/photo-1687422811062-a966b55cb217?w=800&q=80',
+  'editorial-corridor':
+    'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1600&q=80',
+  'editorial-warehouse':
+    'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1600&q=80',
+  'editorial-docs':
+    'https://images.unsplash.com/photo-1454165804609-c81d4f4f8ad1?w=1600&q=80',
 };
 
 const PUBLIC_MAP: Record<string, string> = {
   'value-ops': 'value-ops.png',
   'how-publish': 'how-publish.png',
   'how-track': 'how-track.png',
+  'editorial-corridor': 'editorial-corridor.png',
+  'editorial-warehouse': 'editorial-warehouse.png',
+  'editorial-docs': 'editorial-docs.png',
 };
 
 export async function GET(
