@@ -13,6 +13,11 @@ declare const self: ServiceWorkerGlobalScope;
 const pwaRuntimeCaching = [
   ...defaultCache,
   {
+    // Ne jamais mettre en cache les chunks Next — évite "Loading chunk XXXX failed" après déploiement
+    urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/_next/static/'),
+    handler: 'NetworkOnly',
+  },
+  {
     // API GET: privilegie la fraicheur, mais garde un fallback cache court
     urlPattern: ({ request, url }: { request: Request; url: URL }) =>
       request.method === 'GET' &&
@@ -20,7 +25,7 @@ const pwaRuntimeCaching = [
       !url.pathname.startsWith('/api/payments/webhook'),
     handler: 'NetworkFirst',
     options: {
-      cacheName: 'nzela-api-v1',
+      cacheName: 'nzela-api-v2',
       networkTimeoutSeconds: 4,
       cacheableResponse: { statuses: [0, 200] },
       expiration: {
@@ -35,7 +40,7 @@ const pwaRuntimeCaching = [
       request.mode === 'navigate' && url.pathname.includes('/dashboard'),
     handler: 'NetworkFirst',
     options: {
-      cacheName: 'nzela-pages-v1',
+      cacheName: 'nzela-pages-v2',
       networkTimeoutSeconds: 3,
       cacheableResponse: { statuses: [0, 200] },
       expiration: {
@@ -49,26 +54,11 @@ const pwaRuntimeCaching = [
     urlPattern: ({ request }: { request: Request }) => request.destination === 'image',
     handler: 'CacheFirst',
     options: {
-      cacheName: 'nzela-images-v1',
+      cacheName: 'nzela-images-v2',
       cacheableResponse: { statuses: [0, 200] },
       expiration: {
         maxEntries: 300,
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 jours
-      },
-    },
-  },
-  {
-    // CSS/JS: mise a jour en background
-    urlPattern: ({ request, url }: { request: Request; url: URL }) =>
-      request.method === 'GET' &&
-      (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')),
-    handler: 'StaleWhileRevalidate',
-    options: {
-      cacheName: 'nzela-assets-v1',
-      cacheableResponse: { statuses: [0, 200] },
-      expiration: {
-        maxEntries: 120,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 jours
       },
     },
   },

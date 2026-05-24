@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { ChunkLoadRecovery } from '@/components/pwa/ChunkLoadRecovery';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -79,6 +80,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/icons/icon-512x512.svg" />
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
+        <ChunkLoadRecovery />
         {children}
         <SpeedInsights />
       </body>
