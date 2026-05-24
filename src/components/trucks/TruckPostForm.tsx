@@ -100,6 +100,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
 
   useEffect(() => {
     let cancelled = false;
+    fetch('/api/auth/sync-profile', { method: 'POST', credentials: 'include' }).catch(() => {});
     fetch('/api/companies', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { companies?: CompanyInfo[] }) => {
@@ -185,6 +186,7 @@ export function TruckPostForm({ onSuccess }: TruckPostFormProps) {
     try {
       const res = await fetch('/api/trucks', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: data.type,

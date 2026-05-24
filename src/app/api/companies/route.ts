@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, tryCreateServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 // GET - Liste des entreprises
@@ -32,10 +32,23 @@ export async function GET(request: Request) {
 
     // Si non-admin, ne voir que sa propre entreprise
     if (userData?.role !== 'admin') {
-      if (!userData?.company_id) {
+      let companyId = userData?.company_id ?? null;
+      if (!companyId) {
+        const { data: owned } = await supabase
+          .from('companies')
+          .select('id')
+          .eq('owner_id', user.id)
+          .maybeSingle();
+        if (owned?.id) {
+          companyId = owned.id;
+          const db = tryCreateServiceRoleClient() ?? supabase;
+          await db.from('users').update({ company_id: owned.id }).eq('id', user.id);
+        }
+      }
+      if (!companyId) {
         return NextResponse.json({ companies: [] });
       }
-      query = query.eq('id', userData.company_id);
+      query = query.eq('id', companyId);
     }
 
     if (status) {

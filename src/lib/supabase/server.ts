@@ -13,6 +13,14 @@ export function createServiceRoleClient() {
   return createSupabaseClient(url, key, { auth: { persistSession: false } });
 }
 
+/** Service role si configurée, sinon null (pas d’exception). */
+export function tryCreateServiceRoleClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key || key === 'your_service_role_key_here') return null;
+  return createSupabaseClient(url, key, { auth: { persistSession: false } });
+}
+
 /** Client avec JWT explicite (pour RPC en Route Handler où les cookies peuvent ne pas être transmis). */
 export function createClientWithAccessToken(accessToken: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
