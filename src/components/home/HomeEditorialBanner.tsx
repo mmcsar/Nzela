@@ -8,6 +8,7 @@ const ROTATE_MS = 7500;
 export type EditorialSlide = {
   src: string;
   alt: string;
+  caption?: string;
   objectPosition?: string;
 };
 
@@ -55,7 +56,7 @@ export function HomeEditorialBanner({ quote, slides }: HomeEditorialBannerProps)
 
   return (
     <section
-      className="relative min-h-[min(42vh,280px)] sm:min-h-[300px] lg:min-h-[340px] overflow-hidden border-b border-slate-200/80"
+      className="relative min-h-[min(38vh,260px)] sm:min-h-[300px] lg:min-h-[340px] overflow-hidden border-b border-slate-200/80"
       aria-labelledby="home-editorial-quote"
       aria-roledescription="carousel"
       aria-label={quote}
@@ -81,39 +82,46 @@ export function HomeEditorialBanner({ quote, slides }: HomeEditorialBannerProps)
       ))}
 
       <div
-        className="absolute inset-0 z-[1] bg-gradient-to-r from-slate-950/90 via-slate-900/78 to-primary-900/55 sm:from-slate-950/88 sm:via-slate-900/75"
+        className="absolute inset-0 z-[1] bg-gradient-to-r from-slate-950/92 via-slate-900/82 to-primary-900/50 sm:from-slate-950/88 sm:via-slate-900/75 sm:to-primary-900/55"
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto flex max-w-7xl min-h-[min(42vh,280px)] sm:min-h-[300px] lg:min-h-[340px] flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+      <div className="relative z-10 mx-auto flex max-w-7xl min-h-[min(38vh,260px)] sm:min-h-[300px] lg:min-h-[340px] flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <p
           id="home-editorial-quote"
-          className="max-w-xl text-lg font-medium leading-snug text-white drop-shadow-md sm:max-w-2xl sm:text-xl md:text-2xl md:leading-snug border-l-4 border-amber-400/90 pl-5 sm:pl-6"
+          className="max-w-xl text-base font-medium leading-snug text-white drop-shadow-md sm:max-w-2xl sm:text-xl md:text-2xl md:leading-snug border-l-4 border-amber-400/90 pl-4 sm:pl-6"
         >
           {quote}
         </p>
 
         {count > 1 && (
-          <div
-            className="mt-6 flex flex-wrap items-center gap-2"
-            role="tablist"
-            aria-label="Visuels plateforme"
-          >
-            {slides.map((slide, index) => (
-              <button
-                key={slide.src}
-                type="button"
-                role="tab"
-                aria-selected={index === active}
-                aria-label={slide.alt}
-                onClick={() => goTo(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === active
-                    ? 'w-8 bg-amber-400'
-                    : 'w-2 bg-white/40 hover:bg-white/70'
-                }`}
-              />
-            ))}
+          <div className="mt-5 sm:mt-6">
+            <div
+              className="flex flex-wrap items-center gap-2"
+              role="tablist"
+              aria-label="Visuels plateforme"
+            >
+              {slides.map((slide, index) => (
+                <button
+                  key={slide.src}
+                  type="button"
+                  role="tab"
+                  aria-selected={index === active}
+                  aria-label={slide.alt}
+                  onClick={() => goTo(index)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index === active
+                      ? 'w-8 bg-amber-400'
+                      : 'w-2 bg-white/40 hover:bg-white/70'
+                  }`}
+                />
+              ))}
+            </div>
+            {slides[active]?.caption && (
+              <p className="mt-2 text-xs font-medium uppercase tracking-[0.15em] text-amber-200/90 sm:text-sm">
+                {slides[active].caption}
+              </p>
+            )}
           </div>
         )}
       </div>

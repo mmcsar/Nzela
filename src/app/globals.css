@@ -249,6 +249,15 @@ textarea.input-visible {
   animation: hero-chip-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Cartes valeur : swipe horizontal mobile (scrollbar masquée) */
+.home-value-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.home-value-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hero : jeu de lumière (aurora + reflet carte — palette primary / amber inchangée) */
 .home-hero-aurora {
   background:

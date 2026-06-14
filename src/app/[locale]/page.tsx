@@ -5,6 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { HomeReveal } from '@/components/home/HomeReveal';
 import { HomeEditorialBanner } from '@/components/home/HomeEditorialBanner';
+import { HomeValueCards } from '@/components/home/HomeValueCards';
 import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles } from 'lucide-react';
@@ -104,16 +105,19 @@ const EDITORIAL_SLIDE_KEYS = [
   {
     src: '/api/home-images/editorial-corridor',
     altKey: 'homePhotoEditorial1Alt' as const,
+    captionKey: 'homePhotoEditorial1Caption' as const,
     objectPosition: '55% center',
   },
   {
     src: '/api/home-images/editorial-warehouse',
     altKey: 'homePhotoEditorial2Alt' as const,
+    captionKey: 'homePhotoEditorial2Caption' as const,
     objectPosition: 'center center',
   },
   {
     src: '/api/home-images/editorial-docs',
     altKey: 'homePhotoEditorial3Alt' as const,
+    captionKey: 'homePhotoEditorial3Caption' as const,
     objectPosition: 'center 35%',
   },
 ] as const;
@@ -196,31 +200,31 @@ export default async function HomePage() {
           <div className="absolute bottom-8 right-16 w-[28rem] h-[28rem] bg-primary-300/45 rounded-full blur-3xl animate-float-soft" style={{ animationDelay: '1.2s' }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,42rem)] h-64 bg-white/20 rounded-full blur-3xl animate-float-soft opacity-70" style={{ animationDelay: '2.1s' }} />
         </div>
-        {/* Real truck image background - visible */}
-        <div className="absolute inset-0 z-[1] flex items-center justify-end pointer-events-none" aria-hidden>
+        {/* Camion : visible à partir de md pour laisser le texte lisible sur mobile */}
+        <div className="absolute inset-0 z-[1] hidden items-center justify-end pointer-events-none md:flex" aria-hidden>
           <Image
             src={HERO_TRUCK_IMAGE}
             alt=""
             width={800}
             height={533}
-            className="h-[85vh] w-auto max-w-[75vw] object-contain object-right opacity-70 md:opacity-80"
+            className="h-[85vh] w-auto max-w-[75vw] object-contain object-right opacity-70 lg:opacity-80"
             priority
-            sizes="(max-width: 768px) 60vw, 520px"
+            sizes="520px"
           />
         </div>
-        {/* Overlay left pour garder le texte lisible */}
-        <div className="absolute inset-0 z-[2] bg-gradient-to-r from-slate-950/85 via-primary-900/55 to-transparent pointer-events-none" aria-hidden />
+        {/* Overlay : plus fort sur mobile (pas de camion à droite) */}
+        <div className="absolute inset-0 z-[2] bg-gradient-to-b from-slate-950/90 via-primary-900/75 to-primary-800/85 pointer-events-none md:bg-gradient-to-r md:from-slate-950/85 md:via-primary-900/55 md:to-transparent" aria-hidden />
         <div
           className="home-hero-aurora-veil pointer-events-none absolute inset-0 z-[3]"
           aria-hidden
         />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 md:py-36">
-          <div className="absolute top-6 right-4 sm:right-6 md:right-8 z-20 animate-fade-in animation-delay-200 opacity-0-init">
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-3 py-2 shadow-lg backdrop-blur-md">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 md:py-28 lg:py-36">
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 md:right-8 z-20 animate-fade-in animation-delay-200 opacity-0-init">
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-2.5 py-1.5 sm:px-3 sm:py-2 shadow-lg backdrop-blur-md">
               <Clock />
             </div>
           </div>
-          <div className="relative max-w-3xl overflow-hidden opacity-0-init animate-fade-in-left animation-delay-100 rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-8 sm:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
+          <div className="relative max-w-3xl overflow-hidden opacity-0-init animate-fade-in-left animation-delay-100 rounded-2xl sm:rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-5 sm:p-8 md:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
             <div className="home-hero-card-sheen pointer-events-none absolute inset-0 rounded-3xl" aria-hidden />
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2.5 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-3.5 sm:px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
@@ -235,23 +239,23 @@ export default async function HomePage() {
                 <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
                 {t('heroBadge')}
               </div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 leading-[1.08] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-3 sm:mb-4 leading-[1.1] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
                 {t('heroTitle')}
               </h1>
-              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-4 leading-snug">
+              <p className="text-lg sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-3 sm:mb-4 leading-snug">
                 {t('heroTagline')}
               </p>
-              <p className="text-base sm:text-lg md:text-xl mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-4">
+              <p className="text-sm sm:text-lg md:text-xl mb-3 sm:mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-3 sm:pl-4">
                 {t('heroLaunch')}
               </p>
-              <p className="text-base sm:text-lg mb-8 text-primary-100/95 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-primary-100/95 leading-relaxed">
                 {t('heroLead')}
               </p>
-              <div className="flex flex-wrap gap-2 mb-8">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6 sm:mb-8">
                 {HERO_CHIPS.map((chipKey, chipIndex) => (
                   <span
                     key={chipKey}
-                    className="home-hero-chip inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-white/10 text-xs sm:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
+                    className="home-hero-chip inline-flex items-center gap-1 px-2.5 py-1 sm:gap-1.5 sm:px-3.5 sm:py-1.5 rounded-full border border-white/25 bg-white/10 text-[11px] sm:text-xs md:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
                     style={{ animationDelay: `${80 * chipIndex}ms` }}
                   >
                     <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
@@ -303,7 +307,7 @@ export default async function HomePage() {
             {TRUST_STATS.map((s) => (
               <div
                 key={s.lKey}
-                className="group rounded-2xl bg-white/90 border border-slate-200/90 py-5 px-3 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-primary-100"
+                className="group rounded-2xl bg-white/90 border border-slate-200/90 py-4 px-2 sm:py-5 sm:px-3 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-primary-100"
               >
                 <div className="text-lg sm:text-xl font-extrabold bg-gradient-to-br from-primary-600 via-primary-700 to-slate-800 bg-clip-text text-transparent leading-tight">
                   {t(s.vKey)}
@@ -322,6 +326,7 @@ export default async function HomePage() {
           slides={EDITORIAL_SLIDE_KEYS.map((slide) => ({
             src: slide.src,
             alt: t(slide.altKey),
+            caption: t(slide.captionKey),
             objectPosition: slide.objectPosition,
           }))}
         />
@@ -335,7 +340,7 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeValueHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeValueSub')}</p>
           </div>
-          <div className="relative mb-10 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 aspect-[16/9] min-h-[180px] sm:min-h-[220px] md:aspect-[21/9] md:min-h-[240px]">
+          <div className="relative mb-8 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 aspect-[16/10] min-h-[160px] sm:min-h-[200px] md:aspect-[21/9] md:min-h-[240px]">
             <Image
               src={HOME_PHOTO.valueSectionBanner}
               alt={t('valueSectionBannerAlt')}
@@ -344,31 +349,19 @@ export default async function HomePage() {
               sizes="(max-width: 1280px) 100vw, 1152px"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
-            {VALUE_CARDS.map((card) => (
-              <div
-                key={card.titleKey}
-                className="group overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
-              >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-200">
-                  <Image
-                    src={card.image}
-                    alt={t(card.altKey)}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="p-7 sm:p-8 text-center">
-                  <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 shadow-inner ring-1 ring-primary-100/80">
-                    <card.icon className="h-8 w-8 text-primary-600" />
-                  </div>
-                  <h3 className="mb-2 text-lg font-semibold text-slate-900">{t(card.titleKey)}</h3>
-                  <p className="text-sm leading-relaxed text-slate-600">{t(card.descKey)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <HomeValueCards
+            cards={VALUE_CARDS.map((card) => ({
+              titleKey: card.titleKey,
+              title: t(card.titleKey),
+              desc: t(card.descKey),
+              image: card.image,
+              alt: t(card.altKey),
+              Icon: card.icon,
+            }))}
+          />
+          <p className="mt-3 text-center text-xs text-slate-400 md:hidden">
+            {t('homeValueSwipeHint')}
+          </p>
         </div>
       </HomeReveal>
 
