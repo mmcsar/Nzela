@@ -773,7 +773,7 @@
     "heroChip2": "FR / EN",
     "heroChip3": "Fret et talents en temps réel",
     "heroChip4": "Multi-entreprises",
-    "homePhotoEditorialQuote": "Du corridor à l’entrepôt : une plateforme multi-entreprises pour cadrer le fret, la flotte et les documents.",
+    "homePhotoEditorialQuote": "Du corridor à l'entrepôt : une plateforme multi-entreprises pour cadrer le fret, la flotte et les documents.",
     "homePhotoCorridorAlt": "Magasinier en entrepôt avec cartons",
     "homePhotoEditorial1Alt": "Camion de fret sur route — corridor et Load Board",
     "homePhotoEditorial1Caption": "Corridor & fret",
@@ -805,10 +805,27 @@
     "homeTestimonialsHeading": "Ce que disent nos utilisateurs",
     "homeCtaTitle": "Le fret n'a jamais été aussi simple",
     "homeCtaSub": "Rejoignez Nzela et transformez votre gestion logistique.",
+    "homeCtaEyebrow": "Rejoignez le corridor",
     "homeContactBar": "Contact direct Nzela",
     "homeAntiPhishing": "Anti-phishing : utilisez uniquement l'email officiel",
     "heroCtaPublish": "Publier un chargement",
     "heroCtaFind": "Trouver un chargement",
+    "corridorCardLabel": "Corridor en direct",
+    "corridorCardTitle": "Du corridor minier à l'entrepôt, en un seul flux.",
+    "corridorCardHighlight": "corridor minier",
+    "corridorNode1City": "Lubumbashi",
+    "corridorNode1Meta": "HQ · RDC",
+    "corridorNode2City": "Kolwezi",
+    "corridorNode2Meta": "Mines",
+    "corridorNode3City": "Kasumbalesa",
+    "corridorNode3Meta": "Frontière",
+    "corridorNode4City": "Lusaka",
+    "corridorNode4Meta": "Zambie",
+    "corridorCountry1": "RDC",
+    "corridorCountry2": "Zambie",
+    "corridorCountry3": "Afrique du Sud",
+    "corridorCountry4": "Tanzanie",
+    "corridorCountry5": "Angola",
     "trustStat1Value": "Multi-acteurs",
     "trustStat1": "Entreprises & courtiers",
     "trustStat2Value": "5 pays",
@@ -1040,5 +1057,92 @@
     "toolTileMobileTitle": "Application mobile",
     "toolTileMobileDesc": "Tous les outils sur smartphone avec l'app PWA Nzela.",
     "discoverAllTools": "Découvrir tous les outils"
+  },
+  "blog": {
+    "title": "Blog & Actualités",
+    "subtitle": "Restez informé des dernières tendances logistiques en RDC.",
+    "readMore": "Lire la suite",
+    "backToBlog": "Retour au blog",
+    "tags": {
+      "news": "Actualités",
+      "guide": "Guide",
+      "technology": "Technologie",
+      "security": "Sécurité",
+      "product": "Produit",
+      "research": "Recherche"
+    },
+    "posts": {
+      "nzela-haut-katanga": {
+        "title": "Comment Nzela révolutionne le transport au Haut-Katanga",
+        "excerpt": "Découvrez comment notre plateforme connecte les transporteurs et courtiers pour optimiser la chaîne logistique en RDC.",
+        "content": [
+          "Le Haut-Katanga concentre une part importante du fret minier et commercial de la RDC. Pourtant, la coordination entre courtiers, transporteurs et chargeurs repose encore souvent sur des appels, des groupes WhatsApp et des feuilles Excel.",
+          "Nzela centralise la publication des chargements, la mise en relation et le suivi des opérations sur une seule plateforme multi-entreprises. Les équipes gagnent en visibilité sur les capacités disponibles et les délais réels.",
+          "En connectant Lubumbashi, Kolwezi et les corridors vers la Zambie, Nzela aide les acteurs locaux à réduire les temps morts, sécuriser les documents et professionnaliser leurs échanges."
+        ]
+      },
+      "premier-chargement-load-board": {
+        "title": "Guide : publier votre premier chargement sur le Load Board",
+        "excerpt": "Un guide étape par étape pour les courtiers qui souhaitent publier leurs chargements et trouver des transporteurs fiables.",
+        "content": [
+          "Le Load Board Nzela permet aux courtiers de publier un chargement en quelques minutes : origine, destination, type de marchandise, fenêtre de chargement et tarif indicatif.",
+          "Commencez par compléter le profil de votre entreprise et vérifier vos documents. Un profil à jour inspire confiance aux transporteurs qui consultent vos offres.",
+          "Une fois le chargement publié, utilisez le matching intelligent pour identifier les transporteurs les plus pertinents, puis suivez les réponses et la réservation directement depuis votre tableau de bord."
+        ]
+      },
+      "suivi-gps-temps-reel": {
+        "title": "Les avantages du suivi GPS en temps réel",
+        "excerpt": "Le suivi GPS améliore la transparence, réduit les délais et renforce la confiance entre les parties prenantes.",
+        "content": [
+          "Le suivi GPS en temps réel donne aux courtiers et chargeurs une visibilité continue sur la position du camion, les arrêts et l'avancement vers la livraison.",
+          "Cette transparence réduit les appels répétés au chauffeur, accélère la prise de décision en cas d'imprévu et renforce la confiance entre partenaires.",
+          "Sur Nzela, le suivi s'intègre au cycle de vie du chargement : publication, réservation, transit et clôture, avec un historique consultable pour chaque opération."
+        ]
+      },
+      "securite-conformite-transport": {
+        "title": "Sécurité et conformité dans le transport de marchandises",
+        "excerpt": "Bonnes pratiques pour sécuriser vos envois et respecter les réglementations locales.",
+        "content": [
+          "La sécurité des marchandises commence par la vérification des documents : permis, assurances, licences et conformité du véhicule. Nzela facilite ce contrôle avant la mise en relation.",
+          "Les bonnes pratiques incluent aussi la traçabilité des BOL, la validation des points de contrôle et la communication claire entre courtier, transporteur et client final.",
+          "En structurant ces étapes dans la plateforme, les équipes réduisent les risques de litige et améliorent la conformité sur l'ensemble du corridor."
+        ]
+      },
+      "matching-intelligent": {
+        "title": "Nzela lance le matching intelligent transporteur-courtier",
+        "excerpt": "Notre algorithme de matching utilise plusieurs critères pour connecter les bons transporteurs aux bons chargements.",
+        "content": [
+          "Le matching intelligent analyse le type de chargement, la zone géographique, la disponibilité du camion, l'historique des performances et la compatibilité documentaire.",
+          "L'objectif n'est pas seulement de trouver un camion disponible, mais le partenaire le plus fiable pour exécuter l'opération dans les délais.",
+          "Cette approche accélère la réservation, diminue les annulations de dernière minute et améliore le taux de réussite des missions publiées sur le Load Board."
+        ]
+      },
+      "impact-numerique-logistique-rdc": {
+        "title": "L'impact économique du numérique sur la logistique en RDC",
+        "excerpt": "Analyse de l'impact de la digitalisation sur le secteur du transport en République démocratique du Congo.",
+        "content": [
+          "La digitalisation de la logistique en RDC permet de réduire les frictions commerciales, d'améliorer l'utilisation des flottes et de professionnaliser des filières encore largement informelles.",
+          "Les plateformes comme Nzela créent un réseau de confiance entre acteurs locaux, avec des données partagées sur les prix, les délais et la performance.",
+          "À mesure que plus d'entreprises adoptent ces outils, l'effet réseau renforce la compétitivité du corridor Katanga et ouvre de nouvelles opportunités pour les PME du transport."
+        ]
+      }
+    }
+  },
+  "news": {
+    "title": "Actualités",
+    "subtitle": "Les dernières nouvelles de Nzela et du secteur logistique.",
+    "readMore": "Lire plus",
+    "news1Title": "Nzela lève des fonds pour son expansion en RDC",
+    "news1Source": "Presse locale",
+    "news1Excerpt": "La startup Nzela a annoncé une levée de fonds pour accélérer son déploiement sur toute la RDC (26 provinces).",
+    "news2Title": "Partenariat stratégique avec les transporteurs du Katanga",
+    "news2Source": "Nzela",
+    "news2Excerpt": "Nzela signe un partenariat avec les principales associations de transporteurs de la région pour élargir son réseau.",
+    "news3Title": "Mise à jour : nouvelles fonctionnalités de suivi GPS",
+    "news3Source": "Nzela",
+    "news3Excerpt": "La plateforme intègre désormais le suivi GPS en temps réel pour tous les envois, améliorant la visibilité et la sécurité.",
+    "news4Title": "Nzela présente au forum logistique de Lubumbashi",
+    "news4Source": "Forum Logistique",
+    "news4Excerpt": "L'équipe Nzela a participé au forum annuel de la logistique à Lubumbashi, présentant ses solutions innovantes."
   }
 }

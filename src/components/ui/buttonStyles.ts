@@ -6,7 +6,7 @@ const baseStyles =
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary-600 text-white hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-md focus:ring-primary-500',
+    'bg-primary-700 text-white hover:bg-primary-800 hover:-translate-y-0.5 hover:shadow-md focus:ring-primary-600',
   secondary:
     'bg-gray-600 text-white hover:bg-gray-700 hover:-translate-y-0.5 hover:shadow-md focus:ring-gray-500',
   outline:

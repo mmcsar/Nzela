@@ -258,13 +258,13 @@ textarea.input-visible {
   display: none;
 }
 
-/* Hero : jeu de lumière (aurora + reflet carte — palette primary / amber inchangée) */
+/* Hero : aurora émeraude + reflets dorés */
 .home-hero-aurora {
   background:
-    radial-gradient(ellipse 85% 70% at 18% 28%, rgba(251, 191, 36, 0.28), transparent 58%),
-    radial-gradient(ellipse 75% 60% at 82% 72%, rgba(96, 165, 250, 0.2), transparent 52%),
+    radial-gradient(ellipse 85% 70% at 18% 28%, rgba(251, 191, 36, 0.24), transparent 58%),
+    radial-gradient(ellipse 75% 60% at 82% 72%, rgba(16, 185, 129, 0.2), transparent 52%),
     radial-gradient(ellipse 55% 45% at 48% 88%, rgba(255, 255, 255, 0.1), transparent 48%),
-    radial-gradient(ellipse 50% 40% at 65% 18%, rgba(147, 197, 253, 0.14), transparent 45%);
+    radial-gradient(ellipse 50% 40% at 65% 18%, rgba(110, 231, 183, 0.14), transparent 45%);
   mix-blend-mode: soft-light;
   animation: home-hero-aurora-drift 22s ease-in-out infinite;
 }
@@ -288,8 +288,8 @@ textarea.input-visible {
 /* Couche au-dessus du voile sombre : lumière visible côté texte (masquée vers la droite / camion) */
 .home-hero-aurora-veil {
   background:
-    radial-gradient(ellipse 75% 85% at 12% 35%, rgba(251, 191, 36, 0.22), transparent 58%),
-    radial-gradient(ellipse 65% 75% at 28% 72%, rgba(147, 197, 253, 0.16), transparent 55%),
+    radial-gradient(ellipse 75% 85% at 12% 35%, rgba(251, 191, 36, 0.2), transparent 58%),
+    radial-gradient(ellipse 65% 75% at 28% 72%, rgba(16, 185, 129, 0.14), transparent 55%),
     radial-gradient(ellipse 45% 50% at 8% 85%, rgba(255, 255, 255, 0.08), transparent 50%);
   mix-blend-mode: screen;
   mask-image: linear-gradient(to right, #000 0%, #000 42%, transparent 72%);
@@ -298,13 +298,218 @@ textarea.input-visible {
   animation-delay: -5s;
 }
 
+/* Carte corridor (animation route) */
+@keyframes corridor-draw {
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes corridor-roll {
+  from {
+    left: 0;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+/* Camion corridor : va-et-vient Lubumbashi ↔ Lusaka */
+@keyframes corridor-roll-pingpong {
+  0% {
+    left: 0%;
+    transform: translate(-50%, -50%) scaleX(1);
+  }
+  45% {
+    left: 100%;
+    transform: translate(-50%, -50%) scaleX(1);
+  }
+  50% {
+    left: 100%;
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
+  95% {
+    left: 0%;
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
+  100% {
+    left: 0%;
+    transform: translate(-50%, -50%) scaleX(1);
+  }
+}
+
+.corridor-route-block {
+  position: relative;
+}
+
+.corridor-route-line {
+  position: relative;
+}
+
+.corridor-route-bed {
+  box-shadow: 0 0 10px rgba(110, 231, 183, 0.12);
+}
+
+.corridor-route-surface {
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.22);
+}
+
+.corridor-route-pin {
+  position: relative;
+}
+
+.corridor-truck {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 2;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+  will-change: left, transform;
+}
+
+.corridor-truck-loop {
+  animation: corridor-roll-pingpong 9s ease-in-out infinite;
+}
+
+@media (max-width: 639px) {
+  .corridor-truck-loop {
+    animation-duration: 7s;
+  }
+}
+
+@media (min-width: 1024px) {
+  .corridor-truck-loop {
+    animation-duration: 11s;
+  }
+}
+
+/* Ancienne animation carte (aller simple) */
+.corridor-truck-once {
+  animation: corridor-roll 3.4s ease-in-out 0.3s forwards;
+}
+
+@keyframes corridor-fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes corridor-pulse {
+  50% {
+    box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+  }
+}
+
+.corridor-route-fill {
+  animation: corridor-draw 3.4s ease-in-out 0.3s forwards;
+}
+
+.corridor-route-fill-static {
+  width: 100%;
+}
+
+.corridor-node {
+  opacity: 0;
+  animation: corridor-fadeup 0.5s ease forwards;
+}
+
+.corridor-node:nth-child(1) {
+  animation-delay: 0.4s;
+}
+.corridor-node:nth-child(2) {
+  animation-delay: 1.2s;
+}
+.corridor-node:nth-child(3) {
+  animation-delay: 2s;
+}
+.corridor-node:nth-child(4) {
+  animation-delay: 2.8s;
+}
+
+.hero-flag-dot {
+  animation: corridor-pulse 2.4s infinite;
+}
+
+/* Bandeau éditorial : fondu + léger zoom (Ken Burns) */
+@keyframes editorial-ken-burns {
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.07) translate(-1.2%, -0.6%);
+  }
+}
+
+.editorial-ken-burns {
+  animation: editorial-ken-burns 14s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Photos accueil : même mouvement doux (valeur, étapes, etc.) */
+.home-photo-ken-burns {
+  animation: editorial-ken-burns 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+.home-photo-ken-burns-slow {
+  animation-duration: 22s;
+}
+
+.home-photo-ken-burns-delay-1 {
+  animation-delay: -3s;
+}
+
+.home-photo-ken-burns-delay-2 {
+  animation-delay: -7s;
+}
+
+.home-photo-ken-burns-delay-3 {
+  animation-delay: -11s;
+}
+
+.hero-truck-drift {
+  animation: hero-truck-drift 9s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes hero-truck-drift {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-10px) translateX(-6px);
+  }
+}
+
+@keyframes editorial-thumb-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.05);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.05);
+  }
+}
+
+.editorial-thumb-float {
+  animation: editorial-thumb-float 4.5s ease-in-out infinite;
+}
+
 .home-hero-card-sheen {
   background: linear-gradient(
     105deg,
     transparent 0%,
     transparent 38%,
     rgba(255, 255, 255, 0.12) 48%,
-    rgba(253, 230, 138, 0.08) 52%,
+    rgba(253, 230, 138, 0.1) 52%,
     transparent 62%,
     transparent 100%
   );
@@ -363,6 +568,42 @@ textarea.input-visible {
     animation: none !important;
   }
   .ticker-inner {
+    animation: none !important;
+  }
+  .corridor-route-fill {
+    width: 100% !important;
+    animation: none !important;
+  }
+  .corridor-truck-loop {
+    animation: none !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  .corridor-truck-once {
+    display: none !important;
+    animation: none !important;
+  }
+  .corridor-node {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .hero-flag-dot {
+    animation: none !important;
+  }
+  .editorial-ken-burns {
+    animation: none !important;
+    transform: none !important;
+  }
+  .home-photo-ken-burns {
+    animation: none !important;
+    transform: none !important;
+  }
+  .hero-truck-drift {
+    animation: none !important;
+    transform: none !important;
+  }
+  .editorial-thumb-float {
     animation: none !important;
   }
   .animate-fade-in,

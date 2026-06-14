@@ -13,7 +13,7 @@ const FALLBACK_MAP: Record<string, string> = {
   'editorial-warehouse':
     'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1600&q=80',
   'editorial-docs':
-    'https://images.unsplash.com/photo-1454165804609-c81d4f4f8ad1?w=1600&q=80',
+    'https://images.unsplash.com/photo-1771923082503-0a3381c46cef?w=1600&q=85',
 };
 
 const PUBLIC_MAP: Record<string, string> = {
@@ -24,6 +24,28 @@ const PUBLIC_MAP: Record<string, string> = {
   'editorial-warehouse': 'editorial-warehouse.png',
   'editorial-docs': 'editorial-docs.png',
 };
+
+async function proxyImage(url: string): Promise<NextResponse> {
+  try {
+    const upstream = await fetch(url, { next: { revalidate: 86_400 } });
+    if (!upstream.ok) {
+      return NextResponse.json({ error: 'Source image indisponible' }, { status: 502 });
+    }
+    const buffer = await upstream.arrayBuffer();
+    const contentType = upstream.headers.get('content-type') ?? 'image/jpeg';
+    return new NextResponse(buffer, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+      },
+    });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Erreur proxy image' },
+      { status: 502 },
+    );
+  }
+}
 
 export async function GET(
   _request: Request,
@@ -43,7 +65,7 @@ export async function GET(
     try {
       await access(publicPath);
     } catch {
-      return NextResponse.redirect(fallbackUrl);
+      return proxyImage(fallbackUrl);
     }
 
     try {
@@ -55,7 +77,7 @@ export async function GET(
         },
       });
     } catch {
-      return NextResponse.redirect(fallbackUrl);
+      return proxyImage(fallbackUrl);
     }
   } catch (error: unknown) {
     return NextResponse.json(

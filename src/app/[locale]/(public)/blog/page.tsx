@@ -1,95 +1,73 @@
+import { getTranslations } from 'next-intl/server';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Link } from '@/lib/i18n/routing';
-import { Calendar, ArrowRight, Tag } from 'lucide-react';
+import { BlogPostImage } from '@/components/blog/BlogPostImage';
+import { BLOG_POSTS, BLOG_TAG_COLORS } from '@/lib/content/blog-posts';
+import { formatDate, resolveDateLocale } from '@/lib/utils/format';
+import { Calendar, ArrowRight } from 'lucide-react';
 
-const posts = [
-  {
-    title: 'Comment Nzela revolutionne le transport au Haut-Katanga',
-    excerpt: 'Decouvrez comment notre plateforme connecte les transporteurs et courtiers pour optimiser la chaine logistique en RDC.',
-    date: '2026-12-15',
-    tag: 'Actualites',
-    slug: '#',
-  },
-  {
-    title: 'Guide : Publier votre premier chargement sur le Load Board',
-    excerpt: 'Un guide etape par etape pour les courtiers qui souhaitent publier leurs chargements et trouver des transporteurs fiables.',
-    date: '2026-11-28',
-    tag: 'Guide',
-    slug: '#',
-  },
-  {
-    title: 'Les avantages du suivi GPS en temps reel',
-    excerpt: 'Le suivi GPS ameliore la transparence, reduit les delais et renforce la confiance entre les parties prenantes.',
-    date: '2026-11-10',
-    tag: 'Technologie',
-    slug: '#',
-  },
-  {
-    title: 'Securite et conformite dans le transport de marchandises',
-    excerpt: 'Bonnes pratiques pour securiser vos envois et respecter les reglementations locales.',
-    date: '2026-10-22',
-    tag: 'Securite',
-    slug: '#',
-  },
-  {
-    title: 'Nzela lance le matching intelligent transporteur-courtier',
-    excerpt: 'Notre algorithme de matching utilise plusieurs criteres pour connecter les bons transporteurs aux bons chargements.',
-    date: '2026-10-05',
-    tag: 'Produit',
-    slug: '#',
-  },
-  {
-    title: 'L\'impact economique du numerique sur la logistique en RDC',
-    excerpt: 'Analyse de l\'impact de la digitalisation sur le secteur du transport en Republique Democratique du Congo.',
-    date: '2026-09-18',
-    tag: 'Recherche',
-    slug: '#',
-  },
-];
-
-const tagColors: Record<string, string> = {
-  Actualites: 'bg-blue-100 text-blue-700',
-  Guide: 'bg-green-100 text-green-700',
-  Technologie: 'bg-purple-100 text-purple-700',
-  Securite: 'bg-red-100 text-red-700',
-  Produit: 'bg-orange-100 text-orange-700',
-  Recherche: 'bg-yellow-100 text-yellow-700',
+type PageProps = {
+  params: Promise<{ locale: string }>;
 };
 
-export default function BlogPage() {
+export default async function BlogPage({ params }: PageProps) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'blog' });
+  const dateLocale = resolveDateLocale(locale);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-3">Blog & Actualites</h1>
-          <p className="text-primary-100 text-lg">Restez informe des dernieres tendances logistiques en RDC.</p>
+          <h1 className="text-4xl font-bold mb-3">{t('title')}</h1>
+          <p className="text-primary-100 text-lg">{t('subtitle')}</p>
         </div>
       </section>
 
       <section className="py-16 bg-gray-50 flex-1">
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
-              <article key={post.title} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                <div className="h-40 bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
-                  <Tag className="w-12 h-12 text-primary-300" />
-                </div>
+            {BLOG_POSTS.map((post, index) => (
+              <article
+                key={post.slug}
+                className="group bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col"
+              >
+                <BlogPostImage
+                  src={post.image}
+                  alt={t(`posts.${post.slug}.title`)}
+                  objectPosition={post.objectPosition}
+                  priority={index < 3}
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
                 <div className="p-5 flex-1 flex flex-col">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tagColors[post.tag] || 'bg-gray-100 text-gray-700'}`}>
-                      {post.tag}
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${BLOG_TAG_COLORS[post.tagKey]}`}
+                    >
+                      {t(`tags.${post.tagKey}`)}
                     </span>
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <Calendar className="w-3 h-3" /> {new Date(post.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })}
-                    </span>
+                    <time
+                      dateTime={post.date}
+                      className="text-xs text-gray-400 flex items-center gap-1"
+                    >
+                      <Calendar className="w-3 h-3" />
+                      {formatDate(post.date, 'medium', dateLocale)}
+                    </time>
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{post.title}</h3>
-                  <p className="text-sm text-gray-500 flex-1 line-clamp-3">{post.excerpt}</p>
-                  <Link href={post.slug} className="text-sm text-primary-600 font-medium mt-3 inline-flex items-center gap-1 hover:text-primary-700">
-                    Lire la suite <ArrowRight className="w-3.5 h-3.5" />
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {t(`posts.${post.slug}.title`)}
+                  </h3>
+                  <p className="text-sm text-gray-500 flex-1 line-clamp-3">
+                    {t(`posts.${post.slug}.excerpt`)}
+                  </p>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="text-sm text-primary-600 font-medium mt-3 inline-flex items-center gap-1 hover:text-primary-700"
+                  >
+                    {t('readMore')} <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </article>

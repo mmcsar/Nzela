@@ -806,10 +806,27 @@
     "homeTestimonialsHeading": "What our users say",
     "homeCtaTitle": "Freight has never been this simple",
     "homeCtaSub": "Join Nzela and transform how you run logistics.",
+    "homeCtaEyebrow": "Join the corridor",
     "homeContactBar": "Direct contact — Nzela",
     "homeAntiPhishing": "Anti-phishing: use only the official email",
     "heroCtaPublish": "Post a load",
     "heroCtaFind": "Find a load",
+    "corridorCardLabel": "Live corridor",
+    "corridorCardTitle": "From mining corridor to warehouse, in one flow.",
+    "corridorCardHighlight": "mining corridor",
+    "corridorNode1City": "Lubumbashi",
+    "corridorNode1Meta": "HQ · DRC",
+    "corridorNode2City": "Kolwezi",
+    "corridorNode2Meta": "Mines",
+    "corridorNode3City": "Kasumbalesa",
+    "corridorNode3Meta": "Border",
+    "corridorNode4City": "Lusaka",
+    "corridorNode4Meta": "Zambia",
+    "corridorCountry1": "DRC",
+    "corridorCountry2": "Zambia",
+    "corridorCountry3": "South Africa",
+    "corridorCountry4": "Tanzania",
+    "corridorCountry5": "Angola",
     "trustStat1Value": "Multi-stakeholder",
     "trustStat1": "Companies & brokers",
     "trustStat2Value": "5 countries",
@@ -1041,5 +1058,92 @@
     "toolTileMobileTitle": "Mobile app",
     "toolTileMobileDesc": "All tools on your smartphone with the Nzela PWA.",
     "discoverAllTools": "Discover all tools"
+  },
+  "blog": {
+    "title": "Blog & News",
+    "subtitle": "Stay informed on the latest logistics trends in the DRC.",
+    "readMore": "Read more",
+    "backToBlog": "Back to blog",
+    "tags": {
+      "news": "News",
+      "guide": "Guide",
+      "technology": "Technology",
+      "security": "Security",
+      "product": "Product",
+      "research": "Research"
+    },
+    "posts": {
+      "nzela-haut-katanga": {
+        "title": "How Nzela is transforming transport in Haut-Katanga",
+        "excerpt": "See how our platform connects carriers and brokers to optimise the logistics chain in the DRC.",
+        "content": [
+          "Haut-Katanga handles a major share of mining and commercial freight in the DRC. Yet coordination between brokers, carriers and shippers still often relies on phone calls, WhatsApp groups and Excel spreadsheets.",
+          "Nzela centralises load posting, matching and operational tracking on a single multi-company platform. Teams gain visibility on available capacity and real delivery timelines.",
+          "By connecting Lubumbashi, Kolwezi and corridors toward Zambia, Nzela helps local players cut idle time, secure paperwork and professionalise their exchanges."
+        ]
+      },
+      "premier-chargement-load-board": {
+        "title": "Guide: post your first load on the Load Board",
+        "excerpt": "A step-by-step guide for brokers who want to publish loads and find reliable carriers.",
+        "content": [
+          "The Nzela Load Board lets brokers publish a load in minutes: origin, destination, cargo type, pickup window and indicative rate.",
+          "Start by completing your company profile and verifying your documents. An up-to-date profile builds trust with carriers reviewing your offers.",
+          "Once the load is live, use smart matching to identify the most relevant carriers, then track responses and booking directly from your dashboard."
+        ]
+      },
+      "suivi-gps-temps-reel": {
+        "title": "The benefits of real-time GPS tracking",
+        "excerpt": "GPS tracking improves transparency, reduces delays and strengthens trust between stakeholders.",
+        "content": [
+          "Real-time GPS tracking gives brokers and shippers continuous visibility on truck location, stops and progress toward delivery.",
+          "This transparency cuts repeated calls to drivers, speeds up decisions when issues arise and strengthens trust between partners.",
+          "On Nzela, tracking is integrated into the load lifecycle: posting, booking, transit and closure, with a history available for each operation."
+        ]
+      },
+      "securite-conformite-transport": {
+        "title": "Security and compliance in freight transport",
+        "excerpt": "Best practices to secure shipments and meet local regulations.",
+        "content": [
+          "Cargo security starts with document checks: permits, insurance, licences and vehicle compliance. Nzela streamlines this verification before matching.",
+          "Best practices also include BOL traceability, checkpoint validation and clear communication between broker, carrier and end customer.",
+          "By structuring these steps in the platform, teams reduce dispute risk and improve compliance across the corridor."
+        ]
+      },
+      "matching-intelligent": {
+        "title": "Nzela launches smart carrier–broker matching",
+        "excerpt": "Our matching algorithm uses multiple criteria to connect the right carriers with the right loads.",
+        "content": [
+          "Smart matching analyses load type, geography, truck availability, performance history and document compatibility.",
+          "The goal is not just to find an available truck, but the most reliable partner to execute the job on time.",
+          "This approach speeds up booking, reduces last-minute cancellations and improves success rates for loads posted on the Load Board."
+        ]
+      },
+      "impact-numerique-logistique-rdc": {
+        "title": "The economic impact of digitalisation on logistics in the DRC",
+        "excerpt": "Analysis of how digitalisation is changing the transport sector in the Democratic Republic of Congo.",
+        "content": [
+          "Digital logistics in the DRC reduces commercial friction, improves fleet utilisation and professionalises sectors that are still largely informal.",
+          "Platforms like Nzela create a trust network among local players, with shared data on pricing, timelines and performance.",
+          "As more companies adopt these tools, the network effect strengthens Katanga corridor competitiveness and opens new opportunities for transport SMEs."
+        ]
+      }
+    }
+  },
+  "news": {
+    "title": "News",
+    "subtitle": "The latest updates from Nzela and the logistics sector.",
+    "readMore": "Read more",
+    "news1Title": "Nzela raises funds for DRC expansion",
+    "news1Source": "Local press",
+    "news1Excerpt": "Nzela announced a funding round to accelerate deployment across the DRC (26 provinces).",
+    "news2Title": "Strategic partnership with Katanga carriers",
+    "news2Source": "Nzela",
+    "news2Excerpt": "Nzela signed a partnership with leading regional carrier associations to expand its network.",
+    "news3Title": "Update: new real-time GPS tracking features",
+    "news3Source": "Nzela",
+    "news3Excerpt": "The platform now integrates real-time GPS tracking for all shipments, improving visibility and security.",
+    "news4Title": "Nzela at the Lubumbashi logistics forum",
+    "news4Source": "Logistics Forum",
+    "news4Excerpt": "The Nzela team took part in the annual logistics forum in Lubumbashi, presenting its innovative solutions."
   }
 }

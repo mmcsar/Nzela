@@ -3,14 +3,16 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Link } from '@/lib/i18n/routing';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { HomeFloatingImage } from '@/components/home/HomeFloatingImage';
+import { HomeCorridorBar } from '@/components/home/HomeCorridorBar';
 import { HomeReveal } from '@/components/home/HomeReveal';
 import { HomeEditorialBanner } from '@/components/home/HomeEditorialBanner';
 import { HomeValueCards } from '@/components/home/HomeValueCards';
 import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
-import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, CheckCircle, Sparkles } from 'lucide-react';
+import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, Sparkles } from 'lucide-react';
 
-/** Camion route (même visuel hero / carte revenus — neutre, sans marque) */
+/** Camion route (hero / carte revenus — neutre, sans marque) */
 const UNSPLASH_TRUCK = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7' as const;
 const HERO_TRUCK_IMAGE = `${UNSPLASH_TRUCK}?w=800&q=80`;
 const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584';
@@ -32,7 +34,6 @@ const HOME_PHOTO = {
   howPublish: '/api/home-images/how-publish',
   howMatch: '/api/home-images/value-ops',
   howTrack: '/api/home-images/how-track',
-  whyPanel: `${UNSPLASH_TRUCK}?w=1000&q=80`,
 } as const;
 
 const HOW_IT_WORKS = [
@@ -83,8 +84,6 @@ const HOME_FEATURES = [
   { icon: Smartphone, titleKey: 'feature6Title', descKey: 'feature6Desc' },
 ] as const;
 
-const WHY_POINTS = ['whyPoint1', 'whyPoint2', 'whyPoint3', 'whyPoint4'] as const;
-
 const HERO_CHIPS = ['heroChip1', 'heroChip2', 'heroChip3', 'heroChip4'] as const;
 
 const WHY_KPIS = [
@@ -101,24 +100,31 @@ const TRUST_STATS = [
   { vKey: 'trustStat4Value', lKey: 'trustStat4' },
 ] as const;
 
+/** Bandeau éditorial — URLs directes (mêmes visuels que /api/home-images, compatibles next/image) */
+const HOME_EDITORIAL = {
+  corridor: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1600&q=80',
+  warehouse: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1600&q=80',
+  docs: 'https://images.unsplash.com/photo-1771923082503-0a3381c46cef?w=1600&q=85',
+} as const;
+
 const EDITORIAL_SLIDE_KEYS = [
   {
-    src: '/api/home-images/editorial-corridor',
+    src: HOME_EDITORIAL.corridor,
     altKey: 'homePhotoEditorial1Alt' as const,
     captionKey: 'homePhotoEditorial1Caption' as const,
     objectPosition: '55% center',
   },
   {
-    src: '/api/home-images/editorial-warehouse',
+    src: HOME_EDITORIAL.warehouse,
     altKey: 'homePhotoEditorial2Alt' as const,
     captionKey: 'homePhotoEditorial2Caption' as const,
     objectPosition: 'center center',
   },
   {
-    src: '/api/home-images/editorial-docs',
+    src: HOME_EDITORIAL.docs,
     altKey: 'homePhotoEditorial3Alt' as const,
     captionKey: 'homePhotoEditorial3Caption' as const,
-    objectPosition: 'center 35%',
+    objectPosition: 'center 22%',
   },
 ] as const;
 
@@ -152,7 +158,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Bandeau défilant — bienvenue & sortie (texte doré sur fond profond) */}
+      {/* Bandeau défilant — texte doré */}
       <div
         className="flex items-stretch bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 border-b border-amber-600/40 shadow-[inset_0_1px_0_rgba(253,230,138,0.12)]"
         role="region"
@@ -180,7 +186,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Hero Section */}
+      {/* Hero — structure nzelaa.com, palette émeraude + carte corridor */}
       <main className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-800 to-primary-700 text-white">
         <div
           className="absolute inset-0 z-0 opacity-[0.35] pointer-events-none"
@@ -191,17 +197,14 @@ export default async function HomePage() {
           }}
           aria-hidden
         />
-        <div
-          className="home-hero-aurora pointer-events-none absolute inset-0 z-0"
-          aria-hidden
-        />
+        <div className="home-hero-aurora pointer-events-none absolute inset-0 z-0" aria-hidden />
         <div className="absolute inset-0 z-0 opacity-[0.26] pointer-events-none">
-          <div className="absolute top-16 left-8 w-80 h-80 bg-amber-200/50 rounded-full blur-3xl animate-float-soft" />
+          <div className="absolute top-16 left-8 w-80 h-80 bg-amber-200/45 rounded-full blur-3xl animate-float-soft" />
           <div className="absolute bottom-8 right-16 w-[28rem] h-[28rem] bg-primary-300/45 rounded-full blur-3xl animate-float-soft" style={{ animationDelay: '1.2s' }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,42rem)] h-64 bg-white/20 rounded-full blur-3xl animate-float-soft opacity-70" style={{ animationDelay: '2.1s' }} />
         </div>
-        {/* Camion : visible à partir de md pour laisser le texte lisible sur mobile */}
-        <div className="absolute inset-0 z-[1] hidden items-center justify-end pointer-events-none md:flex" aria-hidden>
+        {/* Camion à droite — visible à partir de md (comme nzelaa.com) */}
+        <div className="absolute inset-0 z-[1] hidden items-center justify-end pointer-events-none md:flex hero-truck-drift" aria-hidden>
           <Image
             src={HERO_TRUCK_IMAGE}
             alt=""
@@ -212,91 +215,112 @@ export default async function HomePage() {
             sizes="520px"
           />
         </div>
-        {/* Overlay : plus fort sur mobile (pas de camion à droite) */}
         <div className="absolute inset-0 z-[2] bg-gradient-to-b from-slate-950/90 via-primary-900/75 to-primary-800/85 pointer-events-none md:bg-gradient-to-r md:from-slate-950/85 md:via-primary-900/55 md:to-transparent" aria-hidden />
-        <div
-          className="home-hero-aurora-veil pointer-events-none absolute inset-0 z-[3]"
-          aria-hidden
-        />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 md:py-28 lg:py-36">
+        <div className="home-hero-aurora-veil pointer-events-none absolute inset-0 z-[3]" aria-hidden />
+
+        <div className="relative z-10 flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 md:py-28 lg:py-32">
           <div className="absolute top-4 right-4 sm:top-6 sm:right-6 md:right-8 z-20 animate-fade-in animation-delay-200 opacity-0-init">
             <div className="rounded-2xl border border-white/20 bg-white/10 px-2.5 py-1.5 sm:px-3 sm:py-2 shadow-lg backdrop-blur-md">
               <Clock />
             </div>
           </div>
+
+          {/* Carte glass — même cadrage que nzelaa.com (max-w-3xl à gauche) */}
           <div className="relative max-w-3xl overflow-hidden opacity-0-init animate-fade-in-left animation-delay-100 rounded-2xl sm:rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-5 sm:p-8 md:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
             <div className="home-hero-card-sheen pointer-events-none absolute inset-0 rounded-3xl" aria-hidden />
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2.5 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-3.5 sm:px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
-                {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG flag */}
-                <img
-                  src="/images/flag-rdc.svg"
-                  alt={t('rdcFlagAlt')}
-                  width={24}
-                  height={32}
-                  className="h-5 w-auto shrink-0 rounded-sm shadow-sm ring-1 ring-amber-200/30 sm:h-6"
-                />
-                <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
-                {t('heroBadge')}
-              </div>
-              <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-3 sm:mb-4 leading-[1.1] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
-                {t('heroTitle')}
-              </h1>
-              <p className="text-lg sm:text-2xl md:text-3xl font-semibold text-amber-100/95 mb-3 sm:mb-4 leading-snug">
-                {t('heroTagline')}
-              </p>
-              <p className="text-sm sm:text-lg md:text-xl mb-3 sm:mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-3 sm:pl-4">
-                {t('heroLaunch')}
-              </p>
-              <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-primary-100/95 leading-relaxed">
-                {t('heroLead')}
-              </p>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6 sm:mb-8">
-                {HERO_CHIPS.map((chipKey, chipIndex) => (
-                  <span
-                    key={chipKey}
-                    className="home-hero-chip inline-flex items-center gap-1 px-2.5 py-1 sm:gap-1.5 sm:px-3.5 sm:py-1.5 rounded-full border border-white/25 bg-white/10 text-[11px] sm:text-xs md:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
-                    style={{ animationDelay: `${80 * chipIndex}ms` }}
+                  {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG flag */}
+                  <img
+                    src="/images/flag-rdc.svg"
+                    alt={t('rdcFlagAlt')}
+                    width={24}
+                    height={32}
+                    className="h-5 w-auto shrink-0 rounded-sm shadow-sm ring-1 ring-amber-200/30 sm:h-6"
+                  />
+                  <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
+                  {t('heroBadge')}
+                </div>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold tracking-tight mb-3 sm:mb-4 leading-[1.1] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
+                  {t('heroTitle')}
+                </h1>
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold text-amber-100/95 mb-3 sm:mb-4 leading-snug">
+                  {t('heroTagline')}
+                </p>
+                <p className="text-sm sm:text-base md:text-lg mb-3 sm:mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-3 sm:pl-4">
+                  {t('heroLaunch')}
+                </p>
+                <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-primary-100/95 leading-relaxed">
+                  {t('heroLead')}
+                </p>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6 sm:mb-8">
+                  {HERO_CHIPS.map((chipKey, chipIndex) => (
+                    <span
+                      key={chipKey}
+                      className="home-hero-chip inline-flex items-center gap-1 px-2.5 py-1 sm:gap-1.5 sm:px-3.5 sm:py-1.5 rounded-full border border-white/25 bg-white/10 text-[11px] sm:text-xs md:text-sm text-white shadow-sm backdrop-blur-sm transition hover:bg-white/15"
+                      style={{ animationDelay: `${80 * chipIndex}ms` }}
+                    >
+                      <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
+                      {t(chipKey)}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <ButtonLink
+                    href="/register/broker"
+                    size="lg"
+                    variant="secondary"
+                    className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40"
                   >
-                    <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
-                    {t(chipKey)}
-                  </span>
-                ))}
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <ButtonLink
-                  href="/register/broker"
-                  size="lg"
-                  variant="secondary"
-                  className="w-full sm:w-auto shadow-lg shadow-amber-900/20 ring-1 ring-amber-200/40"
-                >
-                  {t('heroCtaPublish')} <ArrowRight className="w-4 h-4 ml-2" />
-                </ButtonLink>
-                <ButtonLink
-                  href="/register/company"
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white"
-                >
-                  {t('heroCtaFind')}
-                </ButtonLink>
-              </div>
-              <p className="mt-8 text-sm text-white/75">
-                <span>{t('homeLoginPrompt')}</span>{' '}
-                <Link href="/login" className="font-semibold text-amber-200 underline decoration-amber-400/60 underline-offset-4 transition hover:text-amber-100">
-                  {t('homeLoginLink')}
-                </Link>
-              </p>
+                    {t('heroCtaPublish')} <ArrowRight className="w-4 h-4 ml-2" />
+                  </ButtonLink>
+                  <ButtonLink
+                    href="/register/company"
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white"
+                  >
+                    {t('heroCtaFind')}
+                  </ButtonLink>
+                </div>
+                <p className="mt-8 text-sm text-white/75">
+                  <span>{t('homeLoginPrompt')}</span>{' '}
+                  <Link href="/login" className="font-semibold text-amber-200 underline decoration-amber-400/60 underline-offset-4 transition hover:text-amber-100">
+                    {t('homeLoginLink')}
+                  </Link>
+                </p>
               <p className="mt-3 text-xs text-amber-100/90">
                 {t('homeAntiPhishing')} <span className="font-semibold">info@nzelaa.com</span>.
               </p>
             </div>
           </div>
+
+          {/* Bandeau corridor — intégré au bas du hero, verre dépoli, camion libre au-dessus */}
+          <div className="relative z-10 mt-10 w-full opacity-0-init animate-fade-in animation-delay-400 sm:mt-12 md:mt-14 lg:mt-16">
+            <HomeCorridorBar
+              label={t('corridorCardLabel')}
+              title={t('corridorCardTitle')}
+              titleHighlight={t('corridorCardHighlight')}
+              nodes={[
+                { city: t('corridorNode1City'), meta: t('corridorNode1Meta'), active: true },
+                { city: t('corridorNode2City'), meta: t('corridorNode2Meta') },
+                { city: t('corridorNode3City'), meta: t('corridorNode3Meta') },
+                { city: t('corridorNode4City'), meta: t('corridorNode4Meta'), active: true },
+              ]}
+              countries={[
+                t('corridorCountry1'),
+                t('corridorCountry2'),
+                t('corridorCountry3'),
+                t('corridorCountry4'),
+                t('corridorCountry5'),
+              ]}
+            />
+          </div>
         </div>
       </main>
 
       {/* Trust Bar */}
-      <HomeReveal className="relative py-10 sm:py-12 bg-gradient-to-b from-slate-50 to-white border-b border-slate-200/80">
+      <HomeReveal className="relative py-10 sm:py-12 bg-gradient-to-b from-primary-50/55 to-white border-b border-primary-100/50">
         <div className="trust-line-sheen pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-300/60 to-transparent" aria-hidden />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 max-w-2xl mx-auto">
@@ -307,7 +331,7 @@ export default async function HomePage() {
             {TRUST_STATS.map((s) => (
               <div
                 key={s.lKey}
-                className="group rounded-2xl bg-white/90 border border-slate-200/90 py-4 px-2 sm:py-5 sm:px-3 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-primary-100"
+                className="group rounded-2xl bg-white/90 border border-primary-100/70 py-4 px-2 sm:py-5 sm:px-3 shadow-sm ring-1 ring-primary-50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-primary-100"
               >
                 <div className="text-lg sm:text-xl font-extrabold bg-gradient-to-br from-primary-600 via-primary-700 to-slate-800 bg-clip-text text-transparent leading-tight">
                   {t(s.vKey)}
@@ -333,20 +357,19 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* Value Props - 3 columns */}
-      <HomeReveal className="py-16 sm:py-20 bg-white">
+      <HomeReveal className="py-16 sm:py-20 bg-emerald-50/45">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 max-w-2xl mx-auto">
-            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-emerald-400" aria-hidden />
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeValueHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeValueSub')}</p>
           </div>
           <div className="relative mb-8 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 aspect-[16/10] min-h-[160px] sm:min-h-[200px] md:aspect-[21/9] md:min-h-[240px]">
-            <Image
+            <HomeFloatingImage
               src={HOME_PHOTO.valueSectionBanner}
               alt={t('valueSectionBannerAlt')}
-              fill
-              className="object-cover"
               sizes="(max-width: 1280px) 100vw, 1152px"
+              slow
             />
           </div>
           <HomeValueCards
@@ -366,10 +389,10 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* How it works */}
-      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 border-t border-slate-100">
+      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-emerald-50/35 via-emerald-50/50 to-emerald-50/30 border-t border-emerald-100/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-2xl mx-auto">
-            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-emerald-400" aria-hidden />
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeHowHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeHowSub')}</p>
           </div>
@@ -379,27 +402,27 @@ export default async function HomePage() {
               return (
                 <div
                   key={item.step}
-                  className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md ring-1 ring-slate-100/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-xl md:flex-row md:items-stretch ${
+                  className={`group flex flex-col overflow-hidden rounded-2xl border border-emerald-100/80 bg-white/95 shadow-md ring-1 ring-emerald-50/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-xl md:flex-row md:items-stretch ${
                     reverse ? 'md:flex-row-reverse' : ''
                   }`}
                 >
-                  <div className="relative min-h-[200px] w-full md:w-[44%] md:min-h-[240px] shrink-0 bg-slate-200">
-                    <Image
+                  <div className="relative min-h-[200px] w-full overflow-hidden md:w-[44%] md:min-h-[240px] shrink-0 bg-slate-200">
+                    <HomeFloatingImage
                       src={item.image}
                       alt={t(item.altKey)}
-                      fill
-                      className={`object-cover ${item.imageClassName || 'object-center'} transition duration-500 group-hover:scale-[1.02]`}
                       sizes="(max-width: 768px) 100vw, 40vw"
+                      className={`object-cover ${item.imageClassName || 'object-center'}`}
+                      phase={((index % 3) + 1) as 1 | 2 | 3}
                     />
                     <div
-                      className={`absolute inset-0 ${item.imageOverlayClassName || 'bg-gradient-to-t from-slate-950/25 via-transparent to-transparent'}`}
+                      className={`absolute inset-0 z-[1] ${item.imageOverlayClassName || 'bg-gradient-to-t from-slate-950/25 via-transparent to-transparent'}`}
                       aria-hidden
                     />
                   </div>
                   <div className="relative flex flex-1 flex-col justify-center p-7 sm:p-8 md:p-10">
                     <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-primary-500/5 blur-2xl transition group-hover:bg-primary-500/10" aria-hidden />
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary-700 bg-gradient-to-r from-primary-50 to-amber-50 px-3 py-1.5 rounded-full border border-primary-100/80">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary-700 bg-gradient-to-r from-primary-50 to-emerald-50 px-3 py-1.5 rounded-full border border-primary-100/80">
                         {t('howStepLabel', { step: item.step })}
                       </span>
                       <item.icon className="h-7 w-7 text-primary-500 transition-transform group-hover:scale-110" />
@@ -415,10 +438,10 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* Feature Highlights */}
-      <HomeReveal className="py-16 sm:py-20 bg-slate-100/60">
+      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-emerald-100/30 to-emerald-50/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-2xl mx-auto">
-            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-emerald-400" aria-hidden />
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeFeaturesHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeFeaturesSub')}</p>
           </div>
@@ -426,7 +449,7 @@ export default async function HomePage() {
             {HOME_FEATURES.map((f) => (
               <div
                 key={f.titleKey}
-                className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-white/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
+                className="rounded-2xl border border-emerald-100/80 bg-white/95 p-6 sm:p-7 shadow-md ring-1 ring-emerald-50/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
               >
                 <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/80 p-3 ring-1 ring-primary-100">
                   <f.icon className="w-8 h-8 text-primary-600" />
@@ -440,49 +463,29 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* Why teams choose Nzela */}
-      <HomeReveal className="py-16 sm:py-20 bg-white">
+      <HomeReveal className="py-16 sm:py-20 bg-cream">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
-            <div>
-              <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400 lg:mx-0" aria-hidden />
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3 tracking-tight">{t('homeWhyHeading')}</h2>
-              <p className="text-slate-600 mb-8 leading-relaxed">
-                {t('homeWhySub')}
-              </p>
-              <div className="space-y-4">
-                {WHY_POINTS.map((pointKey) => (
-                  <div key={pointKey} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3">
-                    <CheckCircle className="w-5 h-5 text-primary-600 mt-0.5 shrink-0" />
-                    <p className="text-sm text-slate-700 leading-relaxed">{t(pointKey)}</p>
-                  </div>
-                ))}
+          <div className="rounded-[26px] bg-gradient-to-br from-primary-900 to-primary-700 p-8 sm:p-12 text-white shadow-[0_30px_70px_-28px_rgba(5,61,44,0.42)]">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-12 items-center">
+              <div>
+                <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-primary-300 mb-3 before:inline-block before:mr-2 before:h-px before:w-5 before:bg-primary-300 before:align-middle">
+                  {t('whyPerfHeading')}
+                </p>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">{t('homeWhyHeading')}</h2>
+                <p className="text-[#d6f5e8] leading-relaxed max-w-[42ch]">
+                  {t('homeWhySub')}
+                </p>
               </div>
-            </div>
-            <div className="relative overflow-hidden rounded-3xl border border-primary-200/60 shadow-lg ring-1 ring-primary-100/50">
-              <div className="absolute inset-0">
-                <Image
-                  src={HOME_PHOTO.whyPanel}
-                  alt={t('homePhotoWhyAlt')}
-                  fill
-                  className="object-cover object-center opacity-[0.22] sm:opacity-[0.28]"
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                />
-              </div>
-              <div
-                className="absolute inset-0 bg-gradient-to-br from-primary-50/95 via-white/96 to-amber-50/90"
-                aria-hidden
-              />
-              <div className="pointer-events-none absolute -right-10 top-0 h-40 w-40 rounded-full bg-amber-200/25 blur-3xl" aria-hidden />
-              <div className="relative p-7 sm:p-9">
-              <p className="relative text-xs uppercase tracking-[0.2em] text-primary-700 font-bold mb-5">{t('whyPerfHeading')}</p>
-              <div className="relative grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6 sm:gap-8">
                 {WHY_KPIS.map((k) => (
-                  <div key={k.v} className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
-                    <p className="text-2xl font-extrabold bg-gradient-to-br from-primary-600 to-slate-800 bg-clip-text text-transparent">{k.v}</p>
-                    <p className="text-xs text-slate-600 mt-1.5 leading-snug">{t(k.lKey)}</p>
+                  <div key={k.v}>
+                    <p className="font-display text-3xl sm:text-4xl font-extrabold text-white leading-none">
+                      {k.v.replace('%', '')}
+                      {k.v.includes('%') && <span className="text-primary-300">%</span>}
+                    </p>
+                    <p className="text-sm text-[#bfe9d6] mt-2 leading-snug">{t(k.lKey)}</p>
                   </div>
                 ))}
-              </div>
               </div>
             </div>
           </div>
@@ -490,7 +493,7 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* Outils : teaser vers la page dédiée */}
-      <HomeReveal className="py-12 sm:py-16 bg-white border-t border-gray-100">
+      <HomeReveal className="py-12 sm:py-16 bg-emerald-50/40 border-t border-emerald-100/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto text-center mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{te('homeToolsTitle')}</h2>
@@ -511,7 +514,7 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* Des outils pour la route et le bureau */}
-      <HomeReveal className="py-12 sm:py-16 bg-gray-50">
+      <HomeReveal className="py-12 sm:py-16 bg-emerald-50/35">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">{te('toolsSectionTitle')}</h2>
           <p className="text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
@@ -525,7 +528,7 @@ export default async function HomePage() {
               { icon: Navigation, titleKey: 'toolTileNavTitle' as const, descKey: 'toolTileNavDesc' as const },
               { icon: Smartphone, titleKey: 'toolTileMobileTitle' as const, descKey: 'toolTileMobileDesc' as const },
             ].map((f) => (
-              <div key={f.titleKey} className="bg-white rounded-xl p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+              <div key={f.titleKey} className="bg-white/95 rounded-xl p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-emerald-100/70 ring-1 ring-emerald-50/40">
                 <f.icon className="w-10 h-10 text-primary-600 mb-3" />
                 <h3 className="font-semibold text-gray-900 mb-1">{te(f.titleKey)}</h3>
                 <p className="text-sm text-gray-500">{te(f.descKey)}</p>
@@ -541,17 +544,17 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* Testimonials */}
-      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-white to-slate-50">
+      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-emerald-50/50 to-emerald-50/25">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-amber-400" aria-hidden />
+            <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-emerald-400" aria-hidden />
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeTestimonialsHeading')}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {TESTIMONIALS.map((row) => (
               <div
                 key={row.nameKey}
-                className="relative rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                className="relative rounded-2xl border border-emerald-100/80 bg-white/95 p-6 sm:p-7 shadow-md ring-1 ring-emerald-50/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
                 <span className="absolute left-5 top-5 text-4xl font-serif text-primary-200/90 leading-none" aria-hidden>
                   &ldquo;
@@ -568,41 +571,41 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* CTA Section */}
-      <HomeReveal className="relative overflow-hidden py-20 sm:py-24 bg-gradient-to-br from-primary-800 via-primary-600 to-indigo-900 text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden>
-          <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
-          <div className="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-primary-300/25 blur-3xl" />
-        </div>
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-white to-amber-100 bg-clip-text text-transparent">
-            {t('homeCtaTitle')}
-          </h2>
-          <p className="text-lg sm:text-xl mb-10 sm:mb-12 text-primary-100/95 max-w-2xl mx-auto leading-relaxed">
-            {t('homeCtaSub')}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 text-left">
-            <div className="rounded-2xl bg-white/10 border border-white/25 p-6 sm:p-7 shadow-lg backdrop-blur-md ring-1 ring-white/10 transition hover:bg-white/[0.14]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">{t('ctaBrokerBadge')}</p>
-              <h3 className="text-xl font-semibold mb-2">{t('ctaBrokerTitle')}</h3>
-              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">{t('ctaBrokerDesc')}</p>
-              <ButtonLink href="/register/broker" size="lg" variant="secondary" className="shadow-lg">
+      <HomeReveal className="py-16 sm:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 max-w-2xl mx-auto">
+            <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-primary-700 mb-3">
+              {t('homeCtaEyebrow')}
+            </p>
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-ink mb-3">
+              {t('homeCtaTitle')}
+            </h2>
+            <p className="text-base sm:text-lg text-ink-soft leading-relaxed">
+              {t('homeCtaSub')}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+            <div className="rounded-[22px] border border-primary-100 bg-gradient-to-br from-white to-primary-50 p-7 sm:p-9 shadow-[0_1px_2px_rgba(8,35,26,0.04),0_12px_32px_-12px_rgba(6,95,70,0.18)]">
+              <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-primary-700 mb-2">{t('ctaBrokerBadge')}</p>
+              <h3 className="font-display text-xl sm:text-2xl font-bold text-ink mb-2">{t('ctaBrokerTitle')}</h3>
+              <p className="text-sm text-ink-soft mb-5 leading-relaxed">{t('ctaBrokerDesc')}</p>
+              <ButtonLink href="/register/broker" size="lg" className="shadow-[0_10px_24px_-10px_rgba(4,120,87,0.6)]">
                 {t('ctaBrokerButton')} <ArrowRight className="w-4 h-4 ml-2" />
               </ButtonLink>
             </div>
-            <div className="rounded-2xl bg-white/10 border border-white/25 p-6 sm:p-7 shadow-lg backdrop-blur-md ring-1 ring-white/10 transition hover:bg-white/[0.14]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/90 mb-2">{t('ctaCarrierBadge')}</p>
-              <h3 className="text-xl font-semibold mb-2">{t('ctaCarrierTitle')}</h3>
-              <p className="text-sm text-primary-100/95 mb-5 leading-relaxed">{t('ctaCarrierDesc')}</p>
+            <div className="rounded-[22px] border border-primary-100 bg-white p-7 sm:p-9 shadow-[0_1px_2px_rgba(8,35,26,0.04),0_12px_32px_-12px_rgba(6,95,70,0.18)]">
+              <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-primary-700 mb-2">{t('ctaCarrierBadge')}</p>
+              <h3 className="font-display text-xl sm:text-2xl font-bold text-ink mb-2">{t('ctaCarrierTitle')}</h3>
+              <p className="text-sm text-ink-soft mb-5 leading-relaxed">{t('ctaCarrierDesc')}</p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-                <ButtonLink href="/register/company" size="lg" variant="secondary" className="shadow-lg">
+                <ButtonLink
+                  href="/register/company"
+                  size="lg"
+                  className="bg-ink text-white hover:bg-primary-900 hover:-translate-y-0.5 hover:shadow-md focus:ring-ink"
+                >
                   {t('ctaCarrierButton')} <ArrowRight className="w-4 h-4 ml-2" />
                 </ButtonLink>
-                <ButtonLink
-                  href="/pricing"
-                  size="lg"
-                  variant="outline"
-                  className="border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white"
-                >
+                <ButtonLink href="/pricing" size="lg" variant="outline" className="border-primary-200 text-primary-800">
                   {t('ctaCarrierPricing')}
                 </ButtonLink>
               </div>

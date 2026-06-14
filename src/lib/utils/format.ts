@@ -2,20 +2,47 @@
  * Utilitaires de formatage pour la plateforme Nzela
  */
 
-/**
- * Formater une date en français
- */
-export function formatDate(date: Date | string, style: 'short' | 'long' | 'relative' = 'short'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+const INVALID_DATE_LABEL: Record<string, string> = {
+  'fr-CD': 'Date invalide',
+  'fr-FR': 'Date invalide',
+  'en-GB': 'Invalid date',
+  'en-US': 'Invalid date',
+};
 
-  if (isNaN(d.getTime())) return 'Date invalide';
+/** Map next-intl locale (`fr` / `en`) to BCP 47 tag for dates. */
+export function resolveDateLocale(locale?: string): string {
+  return locale === 'en' ? 'en-GB' : 'fr-CD';
+}
+
+/** Parse YYYY-MM-DD at local noon to avoid timezone day shifts. */
+export function parseDateInput(date: Date | string): Date {
+  if (date instanceof Date) return date;
+  const trimmed = date.trim();
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? `${trimmed}T12:00:00` : trimmed;
+  return new Date(normalized);
+}
+
+/**
+ * Formater une date
+ */
+export function formatDate(
+  date: Date | string,
+  style: 'short' | 'long' | 'medium' | 'relative' = 'short',
+  locale: string = 'fr-CD',
+): string {
+  const d = parseDateInput(date);
+  const dateLocale = locale in INVALID_DATE_LABEL ? locale : resolveDateLocale(locale);
+
+  if (isNaN(d.getTime())) {
+    return INVALID_DATE_LABEL[dateLocale] ?? INVALID_DATE_LABEL['fr-CD'];
+  }
 
   if (style === 'relative') {
-    return getRelativeTime(d);
+    return getRelativeTime(d, dateLocale);
   }
 
   if (style === 'long') {
-    return d.toLocaleDateString('fr-CD', {
+    return d.toLocaleDateString(dateLocale, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -23,7 +50,15 @@ export function formatDate(date: Date | string, style: 'short' | 'long' | 'relat
     });
   }
 
-  return d.toLocaleDateString('fr-CD', {
+  if (style === 'medium') {
+    return d.toLocaleDateString(dateLocale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+
+  return d.toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -33,11 +68,14 @@ export function formatDate(date: Date | string, style: 'short' | 'long' | 'relat
 /**
  * Formater une date et heure
  */
-export function formatDateTime(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(d.getTime())) return 'Date invalide';
+export function formatDateTime(date: Date | string, locale: string = 'fr-CD'): string {
+  const d = parseDateInput(date);
+  const dateLocale = locale in INVALID_DATE_LABEL ? locale : resolveDateLocale(locale);
+  if (isNaN(d.getTime())) {
+    return INVALID_DATE_LABEL[dateLocale] ?? INVALID_DATE_LABEL['fr-CD'];
+  }
 
-  return d.toLocaleDateString('fr-CD', {
+  return d.toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -49,7 +87,7 @@ export function formatDateTime(date: Date | string): string {
 /**
  * Temps relatif (il y a X minutes/heures/jours)
  */
-export function getRelativeTime(date: Date): string {
+export function getRelativeTime(date: Date, locale: string = 'fr-CD'): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffSec = Math.floor(diffMs / 1000);
@@ -58,14 +96,15 @@ export function getRelativeTime(date: Date): string {
   const diffDays = Math.floor(diffHours / 24);
   const diffWeeks = Math.floor(diffDays / 7);
   const diffMonths = Math.floor(diffDays / 30);
+  const isEn = locale.startsWith('en');
 
-  if (diffSec < 60) return 'À l\'instant';
-  if (diffMin < 60) return `Il y a ${diffMin} min`;
-  if (diffHours < 24) return `Il y a ${diffHours}h`;
-  if (diffDays < 7) return `Il y a ${diffDays}j`;
-  if (diffWeeks < 4) return `Il y a ${diffWeeks} sem.`;
-  if (diffMonths < 12) return `Il y a ${diffMonths} mois`;
-  return formatDate(date, 'short');
+  if (diffSec < 60) return isEn ? 'Just now' : 'À l\'instant';
+  if (diffMin < 60) return isEn ? `${diffMin} min ago` : `Il y a ${diffMin} min`;
+  if (diffHours < 24) return isEn ? `${diffHours}h ago` : `Il y a ${diffHours}h`;
+  if (diffDays < 7) return isEn ? `${diffDays}d ago` : `Il y a ${diffDays}j`;
+  if (diffWeeks < 4) return isEn ? `${diffWeeks} wk ago` : `Il y a ${diffWeeks} sem.`;
+  if (diffMonths < 12) return isEn ? `${diffMonths} mo ago` : `Il y a ${diffMonths} mois`;
+  return formatDate(date, 'short', locale);
 }
 
 /**

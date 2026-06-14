@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import type { LucideIcon } from 'lucide-react';
+import { HomeFloatingImage } from '@/components/home/HomeFloatingImage';
 
 export type ValueCardItem = {
   titleKey: string;
@@ -14,6 +14,8 @@ type HomeValueCardsProps = {
   cards: ValueCardItem[];
 };
 
+const CARD_PHASES = [1, 2, 3] as const;
+
 export function HomeValueCards({ cards }: HomeValueCardsProps) {
   return (
     <>
@@ -22,18 +24,17 @@ export function HomeValueCards({ cards }: HomeValueCardsProps) {
         className="home-value-scroll -mx-4 flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scroll-smooth md:hidden"
         aria-label="Valeurs Nzela"
       >
-        {cards.map((card) => (
+        {cards.map((card, index) => (
           <article
             key={card.titleKey}
-            className="home-value-card group w-[min(88vw,340px)] shrink-0 snap-center overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 shadow-md ring-1 ring-slate-100"
+            className="home-value-card group w-[min(88vw,340px)] shrink-0 snap-center overflow-hidden rounded-2xl border border-primary-100/80 bg-gradient-to-b from-white/95 to-primary-50/50 shadow-md ring-1 ring-primary-50/60"
           >
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-200">
-              <Image
+              <HomeFloatingImage
                 src={card.image}
                 alt={card.alt}
-                fill
-                className="object-cover"
                 sizes="88vw"
+                phase={CARD_PHASES[index % CARD_PHASES.length]}
               />
             </div>
             <div className="p-5 text-center">
@@ -49,18 +50,17 @@ export function HomeValueCards({ cards }: HomeValueCardsProps) {
 
       {/* Desktop : grille 3 colonnes */}
       <div className="hidden gap-8 md:grid md:grid-cols-3 md:gap-10">
-        {cards.map((card) => (
+        {cards.map((card, index) => (
           <article
             key={card.titleKey}
-            className="group overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/80 shadow-md ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:border-primary-100 hover:shadow-xl"
+            className="group overflow-hidden rounded-2xl border border-primary-100/80 bg-gradient-to-b from-white/95 to-primary-50/50 shadow-md ring-1 ring-primary-50/60 transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-xl"
           >
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-200">
-              <Image
+              <HomeFloatingImage
                 src={card.image}
                 alt={card.alt}
-                fill
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
                 sizes="33vw"
+                phase={CARD_PHASES[index % CARD_PHASES.length]}
               />
             </div>
             <div className="p-7 text-center lg:p-8">
