@@ -56,7 +56,7 @@ export function HomeEditorialBanner({ quote, slides }: HomeEditorialBannerProps)
 
   return (
     <section
-      className="relative min-h-[min(40vh,280px)] overflow-hidden border-b border-slate-200/80 sm:min-h-[300px] lg:min-h-[360px]"
+      className="relative min-h-[220px] overflow-hidden border-b border-slate-200/80 sm:min-h-[280px] md:min-h-[300px] lg:min-h-[360px]"
       aria-labelledby="home-editorial-quote"
       aria-roledescription="carousel"
       aria-label={quote}
@@ -86,21 +86,21 @@ export function HomeEditorialBanner({ quote, slides }: HomeEditorialBannerProps)
       ))}
 
       <div
-        className="absolute inset-0 z-[1] bg-gradient-to-r from-slate-950/88 via-slate-900/72 to-primary-900/45 sm:from-slate-950/82 sm:via-slate-900/65 sm:to-primary-900/40"
+        className="absolute inset-0 z-[1] bg-gradient-to-b from-slate-950/92 via-slate-900/78 to-primary-900/55 sm:bg-gradient-to-r sm:from-slate-950/88 sm:via-slate-900/72 sm:to-primary-900/45 md:from-slate-950/82 md:via-slate-900/65 md:to-primary-900/40"
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto grid min-h-[min(40vh,280px)] max-w-7xl grid-cols-1 items-center gap-6 px-4 py-8 sm:min-h-[300px] sm:px-6 sm:py-10 lg:min-h-[360px] lg:grid-cols-[1fr_auto] lg:gap-10 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-[220px] max-w-7xl flex-col justify-center gap-4 px-4 py-6 sm:min-h-[280px] sm:gap-6 sm:px-6 sm:py-8 md:min-h-[300px] md:py-10 lg:min-h-[360px] lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-10 lg:px-8">
         <div className="flex flex-col justify-center">
           <p
             id="home-editorial-quote"
-            className="max-w-xl border-l-4 border-amber-400/90 pl-4 text-base font-medium leading-snug text-white drop-shadow-md sm:max-w-2xl sm:pl-6 sm:text-xl md:text-2xl md:leading-snug"
+            className="max-w-xl border-l-4 border-amber-400/90 pl-3 text-sm font-medium leading-relaxed text-white drop-shadow-md sm:max-w-2xl sm:pl-5 sm:text-lg sm:leading-snug md:pl-6 md:text-xl lg:text-2xl"
           >
             {quote}
           </p>
 
           {count > 1 && (
-            <div className="mt-5 sm:mt-6">
+            <div className="mt-4 sm:mt-5 md:mt-6">
               <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Visuels plateforme">
                 {slides.map((slide, index) => (
                   <button
@@ -117,7 +117,7 @@ export function HomeEditorialBanner({ quote, slides }: HomeEditorialBannerProps)
                 ))}
               </div>
               {slides[active]?.caption && (
-                <p className="mt-2 text-xs font-medium uppercase tracking-[0.15em] text-amber-200/90 sm:text-sm">
+                <p className="mt-2 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-amber-200/90 sm:text-xs sm:tracking-[0.15em] md:text-sm">
                   {slides[active].caption}
                 </p>
               )}
@@ -153,15 +153,15 @@ export function HomeEditorialBanner({ quote, slides }: HomeEditorialBannerProps)
           </div>
         )}
 
-        {/* Aperçus horizontaux — mobile / tablette */}
+        {/* Aperçus horizontaux — tablette uniquement (mobile : points suffisent) */}
         {count > 1 && (
-          <div className="flex gap-2.5 overflow-x-auto pb-1 lg:hidden" aria-hidden>
+          <div className="hidden gap-2.5 overflow-x-auto pb-1 sm:flex lg:hidden" aria-hidden>
             {slides.map((slide, index) => (
               <button
                 key={`mthumb-${slide.src}`}
                 type="button"
                 onClick={() => goTo(index)}
-                className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 shadow-md transition-all duration-500 ${
+                className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 shadow-md transition-all duration-500 md:h-16 md:w-24 ${
                   index === active
                     ? 'editorial-thumb-float border-amber-400 scale-[1.02]'
                     : 'border-white/30 opacity-80'
@@ -173,6 +173,7 @@ export function HomeEditorialBanner({ quote, slides }: HomeEditorialBannerProps)
                   alt=""
                   fill
                   className="object-cover"
+                  style={slide.objectPosition ? { objectPosition: slide.objectPosition } : undefined}
                   sizes="96px"
                 />
               </button>

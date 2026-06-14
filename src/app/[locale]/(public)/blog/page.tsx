@@ -20,16 +20,16 @@ export default async function BlogPage({ params }: PageProps) {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16">
+      <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-10 sm:py-14 md:py-16">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-3">{t('title')}</h1>
-          <p className="text-primary-100 text-lg">{t('subtitle')}</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">{t('title')}</h1>
+          <p className="text-primary-100 text-sm sm:text-base md:text-lg">{t('subtitle')}</p>
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50 flex-1">
+      <section className="py-10 sm:py-14 md:py-16 bg-gray-50 flex-1">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {BLOG_POSTS.map((post, index) => (
               <article
                 key={post.slug}

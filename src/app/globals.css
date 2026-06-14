@@ -628,6 +628,49 @@ textarea.input-visible {
   display: none;
 }
 
+/* Menu mobile — style app native (tiroir + animations) */
+.mobile-nav-root {
+  pointer-events: auto;
+}
+
+.mobile-nav-backdrop {
+  animation: mobile-nav-fade-in 0.28s ease forwards;
+}
+
+.mobile-nav-panel {
+  animation: mobile-nav-slide-in 0.32s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  will-change: transform;
+}
+
+@keyframes mobile-nav-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-nav-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.mobile-nav-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-backdrop,
+  .mobile-nav-panel {
+    animation: none !important;
+  }
+}
+
 /* TMS Pro (ShipLabel-style) dark theme */
 .tms-pro-wrap {
   --tms-bg: #0b0b0d;

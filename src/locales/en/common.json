@@ -910,7 +910,11 @@
     "news": "News",
     "caseStudies": "Case studies",
     "faq": "FAQ",
-    "guides": "Guides"
+    "guides": "Guides",
+    "menuTitle": "Menu",
+    "menuClose": "Close",
+    "menuDiscover": "Discover",
+    "menuLanguage": "Language"
   },
   "footer": {
     "tagline": "Logistics and transport platform for the DRC. Connect carriers and brokers.",

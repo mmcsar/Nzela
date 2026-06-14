@@ -909,7 +909,11 @@
     "news": "Actualités",
     "caseStudies": "Études de cas",
     "faq": "FAQ",
-    "guides": "Guides"
+    "guides": "Guides",
+    "menuTitle": "Menu",
+    "menuClose": "Fermer",
+    "menuDiscover": "Découvrir",
+    "menuLanguage": "Langue"
   },
   "footer": {
     "tagline": "Plateforme de logistique et transport pour la RDC. Connectez transporteurs et courtiers.",

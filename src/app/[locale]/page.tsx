@@ -218,15 +218,16 @@ export default async function HomePage() {
         <div className="absolute inset-0 z-[2] bg-gradient-to-b from-slate-950/90 via-primary-900/75 to-primary-800/85 pointer-events-none md:bg-gradient-to-r md:from-slate-950/85 md:via-primary-900/55 md:to-transparent" aria-hidden />
         <div className="home-hero-aurora-veil pointer-events-none absolute inset-0 z-[3]" aria-hidden />
 
-        <div className="relative z-10 flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 md:py-28 lg:py-32">
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 md:right-8 z-20 animate-fade-in animation-delay-200 opacity-0-init">
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-2.5 py-1.5 sm:px-3 sm:py-2 shadow-lg backdrop-blur-md">
+        <div className="relative z-10 flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 md:py-28 lg:py-32">
+          {/* Horloge : dans le flux sur mobile (évite le chevauchement), flottante sur md+ */}
+          <div className="mb-3 flex justify-end sm:mb-0 md:absolute md:top-6 md:right-6 lg:right-8 md:z-20 animate-fade-in animation-delay-200 opacity-0-init">
+            <div className="rounded-xl sm:rounded-2xl border border-white/20 bg-white/10 px-1.5 py-1 sm:px-3 sm:py-2 shadow-lg backdrop-blur-md">
               <Clock />
             </div>
           </div>
 
           {/* Carte glass — même cadrage que nzelaa.com (max-w-3xl à gauche) */}
-          <div className="relative max-w-3xl overflow-hidden opacity-0-init animate-fade-in-left animation-delay-100 rounded-2xl sm:rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-5 sm:p-8 md:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
+          <div className="relative max-w-3xl overflow-hidden opacity-0-init animate-fade-in-left animation-delay-100 rounded-2xl sm:rounded-3xl border border-white/20 bg-gradient-to-br from-white/[0.12] to-white/[0.03] p-4 sm:p-8 md:p-10 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md">
             <div className="home-hero-card-sheen pointer-events-none absolute inset-0 rounded-3xl" aria-hidden />
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2.5 mb-5 rounded-full border border-amber-300/35 bg-amber-400/15 px-3.5 sm:px-4 py-1.5 text-xs font-medium text-amber-50 backdrop-blur-sm">
@@ -241,10 +242,10 @@ export default async function HomePage() {
                   <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-200" />
                   {t('heroBadge')}
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold tracking-tight mb-3 sm:mb-4 leading-[1.1] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
+                <h1 className="text-2xl min-[380px]:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold tracking-tight mb-3 sm:mb-4 leading-[1.12] sm:leading-[1.1] bg-gradient-to-br from-white via-amber-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm">
                   {t('heroTitle')}
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl font-semibold text-amber-100/95 mb-3 sm:mb-4 leading-snug">
+                <p className="text-base sm:text-xl md:text-2xl font-semibold text-amber-100/95 mb-3 sm:mb-4 leading-snug">
                   {t('heroTagline')}
                 </p>
                 <p className="text-sm sm:text-base md:text-lg mb-3 sm:mb-4 text-white/85 leading-relaxed border-l-4 border-amber-400/80 pl-3 sm:pl-4">
@@ -296,7 +297,7 @@ export default async function HomePage() {
           </div>
 
           {/* Bandeau corridor — intégré au bas du hero, verre dépoli, camion libre au-dessus */}
-          <div className="relative z-10 mt-10 w-full opacity-0-init animate-fade-in animation-delay-400 sm:mt-12 md:mt-14 lg:mt-16">
+          <div className="relative z-10 mt-6 w-full opacity-0-init animate-fade-in animation-delay-400 sm:mt-10 md:mt-14 lg:mt-16">
             <HomeCorridorBar
               label={t('corridorCardLabel')}
               title={t('corridorCardTitle')}
@@ -357,14 +358,14 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* Value Props - 3 columns */}
-      <HomeReveal className="py-16 sm:py-20 bg-emerald-50/45">
+      <HomeReveal className="py-12 sm:py-16 md:py-20 bg-emerald-50/45">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 max-w-2xl mx-auto">
             <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-emerald-400" aria-hidden />
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('homeValueHeading')}</h2>
             <p className="mt-2 text-slate-600 text-sm sm:text-base">{t('homeValueSub')}</p>
           </div>
-          <div className="relative mb-8 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 aspect-[16/10] min-h-[160px] sm:min-h-[200px] md:aspect-[21/9] md:min-h-[240px]">
+          <div className="relative mb-6 sm:mb-8 md:mb-12 mx-auto w-full max-w-6xl overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl border border-slate-200 bg-slate-200 shadow-lg ring-1 ring-slate-100 aspect-[16/9] min-h-[140px] sm:aspect-[16/10] sm:min-h-[180px] md:min-h-[240px] lg:aspect-[21/9]">
             <HomeFloatingImage
               src={HOME_PHOTO.valueSectionBanner}
               alt={t('valueSectionBannerAlt')}
@@ -389,7 +390,7 @@ export default async function HomePage() {
       </HomeReveal>
 
       {/* How it works */}
-      <HomeReveal className="py-16 sm:py-20 bg-gradient-to-b from-emerald-50/35 via-emerald-50/50 to-emerald-50/30 border-t border-emerald-100/40">
+      <HomeReveal className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-emerald-50/35 via-emerald-50/50 to-emerald-50/30 border-t border-emerald-100/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-2xl mx-auto">
             <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-primary-400 to-emerald-400" aria-hidden />
@@ -406,7 +407,7 @@ export default async function HomePage() {
                     reverse ? 'md:flex-row-reverse' : ''
                   }`}
                 >
-                  <div className="relative min-h-[200px] w-full overflow-hidden md:w-[44%] md:min-h-[240px] shrink-0 bg-slate-200">
+                  <div className="relative min-h-[168px] w-full overflow-hidden sm:min-h-[200px] md:w-[44%] md:min-h-[240px] shrink-0 bg-slate-200">
                     <HomeFloatingImage
                       src={item.image}
                       alt={t(item.altKey)}
@@ -419,7 +420,7 @@ export default async function HomePage() {
                       aria-hidden
                     />
                   </div>
-                  <div className="relative flex flex-1 flex-col justify-center p-7 sm:p-8 md:p-10">
+                  <div className="relative flex flex-1 flex-col justify-center p-5 sm:p-7 md:p-10">
                     <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-primary-500/5 blur-2xl transition group-hover:bg-primary-500/10" aria-hidden />
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                       <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary-700 bg-gradient-to-r from-primary-50 to-emerald-50 px-3 py-1.5 rounded-full border border-primary-100/80">
