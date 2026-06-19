@@ -8,11 +8,14 @@ import {
   Search, RefreshCw, Plus, Eye, Truck, MapPin, Filter, X, Download,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, DollarSign,
   Scale, Star, Sparkles, LayoutGrid, LayoutList, ChevronDown,
-  Phone, MessageSquare, CalendarClock, XCircle, Map, Building2,
-  Wrench, Gauge, Mail, ArrowRight,
+  Phone, MessageSquare, CalendarClock, XCircle, Building2,
+  Wrench, Gauge, Mail,
 } from 'lucide-react';
 import { useRequireRole } from '@/hooks/useRequireRole';
 import { corridorLocationSearchBlob, countryCodeForSearchProvince } from '@/lib/utils/corridor-search';
+import { getProvAbbr } from '@/lib/utils/province-abbr';
+import { LoadRouteVisual } from '@/components/loads/LoadRouteVisual';
+import { LoadBoardSkeleton } from '@/components/loads/LoadBoardSkeleton';
 
 // ══════════════════════════════════════════
 // INTERFACES & CONSTANTS
@@ -334,7 +337,11 @@ export default function TruckBoardPage() {
   );
 
   if (authLoading) {
-    return <div className="flex items-center justify-center min-h-[400px]"><div className="w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" /></div>;
+    return (
+      <div className="min-h-[400px] py-2">
+        <LoadBoardSkeleton variant="page" label={t('loadingTruck')} />
+      </div>
+    );
   }
 
   if (!isAuthorized) {
@@ -359,7 +366,7 @@ export default function TruckBoardPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-gradient-to-b from-slate-50/70 to-gray-50/50 min-h-screen py-1">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
@@ -407,7 +414,7 @@ export default function TruckBoardPage() {
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-2 pt-0.5 snap-x snap-mandatory [-webkit-overflow-scrolling:touch] sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:overflow-x-visible sm:pb-0 sm:snap-none sm:gap-2">
         {[
           { label: t('total'), value: stats.total, icon: Truck, color: 'text-gray-700', bg: 'from-gray-50 to-gray-100/50', border: 'border-gray-200' },
           { label: t('available'), value: stats.available, icon: MapPin, color: 'text-emerald-700', bg: 'from-emerald-50 to-emerald-100/30', border: 'border-emerald-200' },
@@ -416,7 +423,7 @@ export default function TruckBoardPage() {
           { label: t('avgPrice'), value: `${stats.avgPrice.toLocaleString()} CDF`, icon: DollarSign, color: 'text-green-700', bg: 'from-green-50 to-green-100/30', border: 'border-green-200' },
           { label: t('totalCapacity'), value: formatWeight(stats.totalCapacity), icon: Scale, color: 'text-blue-700', bg: 'from-blue-50 to-blue-100/30', border: 'border-blue-200' },
         ].map((kpi) => { const Icon = kpi.icon; return (
-          <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-xl border ${kpi.border} p-2.5 transition-all hover:shadow-sm hover:-translate-y-0.5`}>
+          <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-xl border ${kpi.border} p-2.5 min-w-[7.5rem] shrink-0 snap-start transition-all hover:shadow-sm hover:-translate-y-0.5 sm:min-w-0`}>
             <div className="flex items-center gap-1.5 mb-0.5"><Icon className={`w-3 h-3 ${kpi.color}`} /><span className="text-[9px] text-gray-500 font-semibold uppercase tracking-wide">{kpi.label}</span></div>
             <div className={`text-base font-bold ${kpi.color} leading-tight`}>{kpi.value}</div>
           </div>
@@ -506,7 +513,7 @@ export default function TruckBoardPage() {
 
       {/* TABLE VIEW */}
       {viewMode === 'table' && (
-        <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-white/95 border border-gray-200/90 rounded-xl overflow-hidden shadow-sm backdrop-blur-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50/80 border-b">
@@ -514,8 +521,7 @@ export default function TruckBoardPage() {
                   <th className="w-8 px-2"></th>
                   <SortHeader col="available_date" label={t('dispo')} />
                   <SortHeader col="type" label={t('type')} />
-                  <SortHeader col="location_city" label={t('location')} />
-                  <SortHeader col="dest_city" label={t('destination')} />
+                  <th className="px-3 py-2.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{t('traject')}</th>
                   <SortHeader col="capacity" label={t('capacity')} align="right" />
                   <SortHeader col="price_per_km" label={t('pricePerKm')} align="right" />
                   <SortHeader col="status" label={t('status')} />
@@ -525,9 +531,9 @@ export default function TruckBoardPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {isLoading ? (
-                  <tr><td colSpan={10} className="px-6 py-16 text-center"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary-400" /><p className="text-sm text-gray-500">{t('loading')}</p></td></tr>
+                  <LoadBoardSkeleton variant="table" rows={8} />
                 ) : paginatedTrucks.length === 0 ? (
-                  <tr><td colSpan={10} className="px-6 py-20 text-center">
+                  <tr><td colSpan={9} className="px-6 py-20 text-center">
                     <Truck className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                     <p className="text-sm font-semibold text-gray-600">{t('noTrucksFound')}</p>
                     {(userRole === 'company' || userRole === 'admin') && (
@@ -557,17 +563,17 @@ export default function TruckBoardPage() {
                         </div>
                       </td>
                       <td className="px-3 py-2.5">
-                        <span className="text-xs font-medium text-gray-700 px-1.5 py-0.5 bg-orange-50 rounded">{trailerLabel(truck.type)}</span>
+                        <span className="text-xs font-medium text-gray-700 px-1.5 py-0.5 bg-orange-50 rounded border border-orange-100/80">{trailerLabel(truck.type)}</span>
                       </td>
                       <td className="px-3 py-2.5">
-                        <span className="text-xs font-semibold text-gray-800">{truck.location_city || '—'}</span>
-                        {truck.location_province && <span className="text-[9px] text-gray-400 ml-1">{truck.location_province.substring(0, 3).toUpperCase()}</span>}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="inline-flex items-center gap-1.5">
-                          <ArrowRight className="w-3.5 h-3.5 text-primary-400 transition-transform duration-200 group-hover:translate-x-0.5" />
-                          <span className="text-xs text-gray-600">{truck.dest_city || t('anyDestination')}</span>
-                        </div>
+                        <LoadRouteVisual
+                          variant="table"
+                          originCity={truck.location_city}
+                          originAbbr={truck.location_province ? getProvAbbr(truck.location_province) : undefined}
+                          destinationCity={truck.dest_city}
+                          destAbbr={truck.dest_province ? getProvAbbr(truck.dest_province) : undefined}
+                          destinationPlaceholder={t('anyDestination')}
+                        />
                       </td>
                       <td className="px-3 py-2.5 text-right">
                         <span className="text-xs font-medium text-gray-800">{formatWeight(truck.capacity)}</span>
@@ -629,6 +635,19 @@ export default function TruckBoardPage() {
 
       {/* CARDS VIEW */}
       {viewMode === 'cards' && (
+        isLoading ? (
+          <LoadBoardSkeleton variant="cards" rows={6} />
+        ) : paginatedTrucks.length === 0 ? (
+          <div className="rounded-xl border border-gray-200/90 bg-white/95 px-6 py-16 text-center shadow-sm">
+            <Truck className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+            <p className="text-sm font-semibold text-gray-600">{t('noTrucksFound')}</p>
+            {(userRole === 'company' || userRole === 'admin') && (
+              <Button size="sm" className="mt-4" onClick={() => router.push('/dashboard/publish')}>
+                <Plus className="mr-1 h-3.5 w-3.5" /> {t('postFirstTruck')}
+              </Button>
+            )}
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {paginatedTrucks.map(truck => {
             const statusCfg = STATUS_CONFIG[truck.status] || STATUS_CONFIG.available;
@@ -637,7 +656,7 @@ export default function TruckBoardPage() {
 
             return (
               <div key={truck.id} onClick={() => setPreviewTruck(truck)}
-                className={`bg-white border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 ${isNewTruck ? 'ring-2 ring-amber-200/50' : ''} ${isFav ? 'border-l-4 border-l-amber-400' : ''}`}>
+                className={`bg-white/95 border border-gray-200/90 rounded-xl p-4 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 backdrop-blur-sm ${isNewTruck ? 'ring-2 ring-amber-200/50' : ''} ${isFav ? 'border-l-4 border-l-amber-400' : ''}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusCfg.bg}`}>
@@ -651,20 +670,17 @@ export default function TruckBoardPage() {
                   </button>
                 </div>
 
-                {/* Location */}
-                <div className="mb-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-sm font-bold text-gray-900">{truck.location_city || '—'}</span>
-                    <span className="text-[10px] text-gray-400">{truck.location_province}</span>
-                  </div>
-                  {truck.dest_city && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                      <ArrowRight className="w-3.5 h-3.5 text-primary-400 animate-pulse transition-transform duration-200 group-hover:translate-x-0.5" />
-                      <span>{truck.dest_city}</span>
-                    </div>
-                  )}
-                </div>
+                <LoadRouteVisual
+                  variant="card"
+                  className="mb-3"
+                  originCity={truck.location_city}
+                  originProvince={truck.location_province}
+                  originAbbr={truck.location_province ? getProvAbbr(truck.location_province) : undefined}
+                  destinationCity={truck.dest_city}
+                  destinationProvince={truck.dest_province}
+                  destAbbr={truck.dest_province ? getProvAbbr(truck.dest_province) : undefined}
+                  destinationPlaceholder={t('anyDestination')}
+                />
 
                 {/* Details */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
@@ -722,6 +738,7 @@ export default function TruckBoardPage() {
             );
           })}
         </div>
+        )
       )}
 
       {/* PREVIEW DRAWER */}
@@ -751,20 +768,16 @@ export default function TruckBoardPage() {
                 <span className="px-2 py-0.5 text-xs font-medium text-orange-700 bg-orange-50 rounded">{trailerLabel(previewTruck.type)}</span>
               </div>
 
-              <div className="bg-gray-50 rounded-xl border p-4 space-y-3">
-                <div>
-                  <div className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">{t('location')}</div>
-                  <div className="text-base font-bold text-gray-900">{previewTruck.location_city || '—'}</div>
-                  <div className="text-xs text-gray-500">{previewTruck.location_province}</div>
-                </div>
-                {previewTruck.dest_city && (
-                  <div>
-                    <div className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">{t('destinationWanted')}</div>
-                    <div className="text-base font-bold text-gray-900">{previewTruck.dest_city}</div>
-                    <div className="text-xs text-gray-500">{previewTruck.dest_province}</div>
-                  </div>
-                )}
-              </div>
+              <LoadRouteVisual
+                variant="drawer"
+                originCity={previewTruck.location_city}
+                originProvince={previewTruck.location_province}
+                originAbbr={previewTruck.location_province ? getProvAbbr(previewTruck.location_province) : undefined}
+                destinationCity={previewTruck.dest_city}
+                destinationProvince={previewTruck.dest_province}
+                destAbbr={previewTruck.dest_province ? getProvAbbr(previewTruck.dest_province) : undefined}
+                destinationPlaceholder={t('anyDestination')}
+              />
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 rounded-lg p-3">

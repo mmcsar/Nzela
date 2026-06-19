@@ -61,6 +61,268 @@ textarea.input-visible {
   }
 }
 
+/* Load Board — animation route origine → destination */
+@keyframes lb-route-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes lb-route-travel {
+  0% {
+    left: 0%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  88% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+}
+
+@keyframes lb-route-travel-vertical {
+  0% {
+    top: 0%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  88% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+}
+
+@keyframes lb-route-dot-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.32);
+  }
+}
+
+@keyframes lb-route-dot-glow-dest {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.32);
+  }
+}
+
+.lb-route-dot {
+  display: block;
+  flex-shrink: 0;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+}
+
+.lb-route-dot-origin {
+  background: #3b82f6;
+  animation: lb-route-dot-glow 2.6s ease-in-out infinite;
+}
+
+.lb-route-dot-dest {
+  background: #10b981;
+  animation: lb-route-dot-glow-dest 2.6s ease-in-out infinite;
+  animation-delay: 0.35s;
+}
+
+.lb-route-bed {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.22), rgba(16, 185, 129, 0.38));
+}
+
+.lb-route-flow-inner {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(110, 231, 183, 0.85) 45%,
+    rgba(59, 130, 246, 0.55) 55%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: lb-route-shimmer 2.8s ease-in-out infinite;
+}
+
+.lb-route-packet {
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 9999px;
+  background: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.55);
+  animation: lb-route-travel 3.1s ease-in-out infinite;
+}
+
+.lb-route-bridge:hover .lb-route-flow-inner,
+.lb-route-stack:hover .lb-route-flow-inner {
+  animation-duration: 2s;
+}
+
+.lb-route-bridge:hover .lb-route-packet,
+.lb-route-stack:hover .lb-route-packet {
+  animation-duration: 2.2s;
+}
+
+.lb-route-arrow {
+  width: 0;
+  height: 0;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-left: 5px solid #10b981;
+}
+
+.lb-route-bed-vertical {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.28), rgba(16, 185, 129, 0.42));
+}
+
+.lb-route-flow-inner-vertical {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(110, 231, 183, 0.85) 45%,
+    rgba(59, 130, 246, 0.55) 55%,
+    transparent 100%
+  );
+  background-size: 100% 220%;
+  animation: lb-route-shimmer-vertical 2.8s ease-in-out infinite;
+}
+
+@keyframes lb-route-shimmer-vertical {
+  0% {
+    background-position: center 200%;
+  }
+  100% {
+    background-position: center -200%;
+  }
+}
+
+.lb-route-packet-vertical {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.65);
+  animation: lb-route-travel-vertical 3.1s ease-in-out infinite;
+}
+
+.lb-route-card:hover .lb-route-flow-inner,
+.lb-route-table:hover .lb-route-flow-inner,
+.lb-route-drawer:hover .lb-route-flow-inner-vertical {
+  animation-duration: 2s;
+}
+
+.lb-route-card:hover .lb-route-packet,
+.lb-route-table:hover .lb-route-packet,
+.lb-route-drawer:hover .lb-route-packet-vertical {
+  animation-duration: 2.2s;
+}
+
+/* Load Board — skeleton shimmer */
+@keyframes lb-skeleton-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.lb-skeleton-shimmer {
+  background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 45%, #e2e8f0 90%);
+  background-size: 200% 100%;
+  animation: lb-skeleton-wave 1.6s ease-in-out infinite;
+}
+
+@keyframes lb-map-skeleton-dash {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+@keyframes lb-map-skeleton-travel {
+  0% {
+    transform: translate(-120%, 40%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(120%, -30%);
+    opacity: 0;
+  }
+}
+
+@keyframes lb-map-skeleton-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.lb-map-skeleton-route {
+  animation: lb-map-skeleton-dash 2.2s linear infinite;
+}
+
+.lb-map-skeleton-route-delay {
+  animation-delay: 0.6s;
+}
+
+.lb-map-skeleton-travel {
+  animation: lb-map-skeleton-travel 3.4s ease-in-out infinite;
+}
+
+.lb-map-skeleton-pulse {
+  animation: lb-map-skeleton-pulse 2.4s ease-in-out infinite;
+}
+
+/* Leaflet — routes animées */
+@keyframes lb-map-route-dash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+.leaflet-interactive.lb-map-route-line {
+  animation: lb-map-route-dash 1.4s linear infinite;
+}
+
+.lb-map-legend-dot {
+  animation: lb-map-skeleton-pulse 2s ease-in-out infinite;
+}
+
 /* Custom Animations for LoadBoard */
 @keyframes fade-in {
   from {
@@ -358,6 +620,44 @@ textarea.input-visible {
   position: relative;
 }
 
+.corridor-route-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 100%
+  );
+  animation: corridor-route-shimmer 3.2s ease-in-out infinite;
+}
+
+@keyframes corridor-route-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.corridor-route-stop {
+  opacity: 0;
+  animation: corridor-fadeup 0.55s ease forwards;
+}
+
+@keyframes corridor-truck-bob-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.corridor-truck-bob-inner {
+  animation: corridor-truck-bob-y 2.2s ease-in-out infinite;
+}
+
 .corridor-truck {
   position: absolute;
   top: 50%;
@@ -578,6 +878,40 @@ textarea.input-visible {
     animation: none !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
+  }
+  .corridor-truck-bob-inner {
+    animation: none !important;
+  }
+  .corridor-route-shimmer {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .corridor-route-stop {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+  .lb-route-flow-inner,
+  .lb-route-flow-inner-vertical {
+    animation: none !important;
+  }
+  .lb-route-packet,
+  .lb-route-packet-vertical {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .lb-route-dot-origin,
+  .lb-route-dot-dest {
+    animation: none !important;
+  }
+  .lb-skeleton-shimmer,
+  .lb-map-skeleton-route,
+  .lb-map-skeleton-travel,
+  .lb-map-skeleton-pulse,
+  .lb-map-legend-dot {
+    animation: none !important;
+  }
+  .leaflet-interactive.lb-map-route-line {
+    animation: none !important;
   }
   .corridor-truck-once {
     display: none !important;

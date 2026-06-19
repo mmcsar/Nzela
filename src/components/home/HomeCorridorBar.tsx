@@ -57,17 +57,19 @@ export function HomeCorridorBar({ label, title, titleHighlight, nodes, countries
             <div className="corridor-route-bed absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 rounded-sm bg-white/16" aria-hidden />
             <div className="corridor-route-surface absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 overflow-hidden rounded-sm" aria-hidden>
               <div className="h-full w-full bg-gradient-to-r from-amber-400/75 via-primary-300/90 to-amber-200/80" />
+              <div className="corridor-route-shimmer absolute inset-0" />
             </div>
             <div className="corridor-truck corridor-truck-loop text-sm sm:text-base md:text-lg" aria-hidden>
-              🚛
+              <span className="corridor-truck-bob-inner inline-block leading-none">🚛</span>
             </div>
           </div>
 
           <div className="relative flex justify-between gap-0.5 sm:gap-1 md:gap-2">
-            {nodes.map((node) => (
+            {nodes.map((node, index) => (
               <div
                 key={node.city}
                 className="corridor-route-stop flex min-w-0 flex-1 flex-col items-center gap-1 text-center sm:gap-1.5 md:gap-2"
+                style={{ animationDelay: `${0.15 + index * 0.12}s` }}
               >
                 <span
                   className={`corridor-route-pin z-[1] -mt-2.5 h-[10px] w-[10px] shrink-0 rounded-full sm:-mt-3 sm:h-[11px] sm:w-[11px] md:-mt-3.5 md:h-3 md:w-3 ${

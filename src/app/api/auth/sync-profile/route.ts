@@ -26,6 +26,11 @@ export async function POST() {
   let companyId = existing?.company_id ?? null;
   let brokerId = existing?.broker_id ?? null;
 
+  // Rôle manquant sur une ligne existante (anciens comptes)
+  if (existing && !existing.role && metadataRole && ['admin', 'company', 'broker'].includes(metadataRole)) {
+    await supabase.from('users').update({ role: metadataRole }).eq('id', user.id);
+  }
+
   // Cas 1: Pas de ligne users -> créer ou mettre à jour le profil
   if (!existing) {
     const fullName = (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || '';

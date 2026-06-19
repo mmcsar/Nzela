@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "node scripts/dev.cjs",
+    "dev:strict": "next dev --webpack",
     "dev:turbo": "next dev",
     "prebuild": "node scripts/check-next-install.cjs",
     "build": "next build --webpack",
