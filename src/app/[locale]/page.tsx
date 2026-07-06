@@ -11,11 +11,11 @@ import { HomeValueCards } from '@/components/home/HomeValueCards';
 import { Clock } from '@/components/ui/Clock';
 import Image from 'next/image';
 import { Truck, Package, FileText, Shield, Smartphone, MapPin, Cpu, BarChart3, ArrowRight, Calculator, Fuel, FileCheck, Navigation, Sparkles } from 'lucide-react';
+import { SUPPORT_PHONE, supportPhoneTel } from '@/lib/constants/support';
 
 /** Camion route (hero / carte revenus — neutre, sans marque) */
 const UNSPLASH_TRUCK = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7' as const;
 const HERO_TRUCK_IMAGE = `${UNSPLASH_TRUCK}?w=800&q=80`;
-const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584';
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'info@nzelaa.com';
 
 /**
@@ -147,7 +147,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs sm:text-sm">
           <p className="text-slate-300">{t('homeContactBar')}</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <a href={`tel:${SUPPORT_PHONE.replace(/\s+/g, '')}`} className="font-medium text-amber-200 hover:text-amber-100 transition-colors">
+            <a href={`tel:${supportPhoneTel()}`} className="font-medium text-amber-200 hover:text-amber-100 transition-colors">
               {SUPPORT_PHONE}
             </a>
             <span className="text-slate-500" aria-hidden>•</span>

@@ -6,12 +6,12 @@ import { Footer } from '@/components/layout/Footer';
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toErrorMessage } from '@/lib/api/error';
+import { SUPPORT_PHONE, supportPhoneTel, supportPhoneWhatsApp } from '@/lib/constants/support';
 
-const supportPhone = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584';
 const contactInfo = [
   { icon: MapPin, label: 'Adresse', value: '04, Avenue Monga, Quartier Craa, Lubumbashi, RDC — RCCM LSHI 17-B-6981' },
-  { icon: Phone, label: 'Téléphone', value: supportPhone },
-  { icon: Mail, label: 'Email', value: 'info@nzelaa.com' },
+  { icon: Phone, label: 'Téléphone', value: SUPPORT_PHONE, href: `tel:${supportPhoneTel()}` },
+  { icon: Mail, label: 'Email', value: 'info@nzelaa.com', href: 'mailto:info@nzelaa.com' },
   { icon: Clock, label: 'Heures', value: 'Lun - Ven : 8h00 - 17h00' },
   { icon: MapPin, label: 'Zones couvertes', value: 'RDC, Zambie, Afrique du Sud, Tanzanie, Angola' },
 ];
@@ -70,16 +70,31 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">{item.label}</p>
-                    <p className="text-sm text-gray-500">{item.value}</p>
+                    {'href' in item && item.href ? (
+                      <a href={item.href} className="text-sm text-gray-500 hover:text-primary-600 transition-colors">
+                        {item.value}
+                      </a>
+                    ) : (
+                      <p className="text-sm text-gray-500">{item.value}</p>
+                    )}
                   </div>
                 </div>
               ))}
 
               <div className="mt-8 p-6 bg-primary-50 rounded-xl">
                 <h3 className="font-semibold text-primary-800 mb-2">Support Premium</h3>
-                <p className="text-sm text-primary-700">
+                <p className="text-sm text-primary-700 mb-3">
                   Les abonnes Pro et Select beneficient d&apos;un support prioritaire avec un temps de reponse garanti sous 2h.
                 </p>
+                <a
+                  href={`https://wa.me/${supportPhoneWhatsApp()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary-700 hover:text-primary-900 transition-colors"
+                >
+                  <Phone className="w-4 h-4" />
+                  WhatsApp — {SUPPORT_PHONE}
+                </a>
               </div>
             </div>
 

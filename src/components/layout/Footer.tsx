@@ -3,6 +3,7 @@
 import { Link } from '@/lib/i18n/routing';
 import { Truck, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Youtube } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { SUPPORT_PHONE, supportPhoneTel } from '@/lib/constants/support';
 
 export function Footer() {
   const t = useTranslations('footer');
@@ -85,7 +86,9 @@ export function Footer() {
             </div>
             <div className="flex items-center gap-3">
               <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
-              <span className="text-sm">{process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584'}</span>
+              <a href={`tel:${supportPhoneTel()}`} className="text-sm hover:text-white transition-colors">
+                {SUPPORT_PHONE}
+              </a>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />

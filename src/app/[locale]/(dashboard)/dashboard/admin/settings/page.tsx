@@ -15,6 +15,7 @@ import {
   ArrowUpRight, ArrowDownRight, Layers, GitBranch,
 } from 'lucide-react';
 import { ALL_CORRIDOR_REGION_IDS, ALL_CORRIDOR_REGION_NAMES } from '@/lib/constants/country-regions';
+import { SUPPORT_PHONE } from '@/lib/constants/support';
 
 // ── Toggle Switch Component ──
 function Toggle({ enabled, onChange, disabled = false }: { enabled: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -724,7 +725,7 @@ export default function AdminSettingsPage() {
     companyName: 'Maintenance de Matériel au Congo (M M C SARL)',
     description: 'Plateforme de transport et logistique pour la RDC',
     supportEmail: 'support@nzela.cd',
-    supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584',
+    supportPhone: SUPPORT_PHONE,
     website: 'https://nzela.cd',
     address: '04, Avenue Monga, Quartier Craa, Lubumbashi, RDC — RCCM LSHI 17-B-6981',
   });

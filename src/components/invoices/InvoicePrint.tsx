@@ -1,6 +1,7 @@
 'use client';
 
 import jsPDF from 'jspdf';
+import { SUPPORT_PHONE } from '@/lib/constants/support';
 
 export interface PaymentForInvoice {
   id: string;
@@ -18,7 +19,6 @@ export interface PaymentForInvoice {
 const APP_NAME = 'Nzela';
 const COMPANY = 'Maintenance de Matériel au Congo (M M C SARL)';
 const ADDRESS = '04, Avenue Monga, Quartier Craa, Lubumbashi, RDC — RCCM LSHI 17-B-6981';
-const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+243 990 243 584';
 
 function paymentTypeLabel(type?: string): string {
   if (!type) return 'Paiement';

@@ -2,6 +2,7 @@ import { getAuthUser } from '@/lib/supabase/server';
 import { redirect } from '@/lib/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { PrefetchLink } from '@/components/navigation/PrefetchLink';
+import { SUPPORT_PHONE, supportPhoneTel } from '@/lib/constants/support';
 
 export const dynamic = 'force-dynamic';
 import { DashboardAuthProvider } from '@/components/dashboard/DashboardAuthProvider';
@@ -213,11 +214,11 @@ export default async function DashboardLayout({
                         <span>info@nzelaa.com</span>
                       </a>
                       <a
-                        href="tel:+243990243584"
+                        href={`tel:${supportPhoneTel()}`}
                         className="flex items-center gap-3 text-sm text-gray-600 hover:text-primary-600 transition-colors"
                       >
                         <Phone className="w-4 h-4" />
-                        <span>+243 990 243 584</span>
+                        <span>{SUPPORT_PHONE}</span>
                       </a>
                     </div>
                   </div>
